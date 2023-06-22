@@ -1,6 +1,6 @@
 ﻿using ISelectableRegiment = KaizerWald.ISelectableRegiment;
 
-namespace KaizerWald2
+namespace KaizerWald
 {
     /// <summary>
     /// HIGHLIGHT SYSTEM

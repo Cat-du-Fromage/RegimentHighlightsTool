@@ -1,11 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering.Universal;
+﻿using UnityEngine.Rendering.Universal;
 
 namespace KaizerWald
 {
-    public sealed class Preselection : HighlightBehaviour
+    public class SelectionBehaviour : HighlightBehaviour
     {
         private DecalProjector projector;
         

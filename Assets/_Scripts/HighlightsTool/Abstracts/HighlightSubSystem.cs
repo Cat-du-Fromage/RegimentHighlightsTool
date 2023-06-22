@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using ISelectableRegiment = KaizerWald.ISelectableRegiment;
 
-namespace KaizerWald2
+namespace KaizerWald
 {
     public abstract class HighlightSubSystem : HighlightSystem
     {

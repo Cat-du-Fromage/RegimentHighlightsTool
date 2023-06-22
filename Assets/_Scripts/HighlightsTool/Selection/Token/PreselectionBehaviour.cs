@@ -1,8 +1,8 @@
 ﻿using UnityEngine.Rendering.Universal;
 
-namespace KaizerWald2
+namespace KaizerWald
 {
-    public class SelectionBehaviour : HighlightBehaviour
+    public class PreselectionBehaviour : HighlightBehaviour
     {
         private DecalProjector projector;
         

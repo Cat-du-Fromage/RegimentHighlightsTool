@@ -7,7 +7,7 @@ using RegimentFactory = KaizerWald.RegimentFactory;
 using ISelectableRegiment = KaizerWald.ISelectableRegiment;
 using Object = UnityEngine.Object;
 
-namespace KaizerWald2
+namespace KaizerWald
 {
     public class RegimentHighlightMediator : HighlightMediator
     {

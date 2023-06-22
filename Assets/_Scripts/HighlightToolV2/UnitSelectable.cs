@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ISelectableRegiment = KaizerWald.ISelectableRegiment;
-namespace KaizerWald2
+
+namespace KaizerWald
 {
     public class UnitSelectable : MonoBehaviour
     {

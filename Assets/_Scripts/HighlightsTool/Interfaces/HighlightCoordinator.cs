@@ -10,12 +10,7 @@ using static Unity.Mathematics.math;
 namespace KaizerWald
 {
     /*
-    public class HighlightSystemEventArgs : EventArgs
-    {
-        public HighlightSystem Sender { get; set; }
-        public byte EventType { get; set; }
-    }
-    */
+
     public abstract class HighlightCoordinator : MonoBehaviour
     {
         public ulong PlayerID = 0;
@@ -110,4 +105,5 @@ namespace KaizerWald
             HighlightSystems.ForEach(system => system.RemoveRegiment(regiment));
         }
     }
+    */
 }

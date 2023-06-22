@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Animations;
-
+/*
 namespace KaizerWald2
 {
     public abstract class HighlightBehaviour : MonoBehaviour
@@ -23,3 +23,4 @@ namespace KaizerWald2
         public abstract void Hide();
     }
 }
+*/

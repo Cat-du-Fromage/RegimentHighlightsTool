@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace KaizerWald2
+namespace KaizerWald
 {
     public abstract class CombinedController
     {
