@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using RegimentFactory = KaizerWald.RegimentFactory;
-using ISelectableRegiment = KaizerWald.ISelectableRegiment;
 using Object = UnityEngine.Object;
 
 namespace KaizerWald
@@ -25,11 +23,11 @@ namespace KaizerWald
             factory = FindObjectOfType<RegimentFactory>();
             HighlightSystems = new List<HighlightSystem>()
             {
-                new RegimentSelection(this, HighlightControls, PlayerUnitLayerMask, PreselectionDefaultPrefab, SelectionDefaultPrefab),
+                new RegimentSelection(this, HighlightControls, UnitLayerMask, PreselectionDefaultPrefab, SelectionDefaultPrefab),
             };
         }
         
-        private /*IEnumerator*/void Start()
+        private void Start()
         {
             //yield return new WaitUntil(() => factory.CreationOrders.Length == 0);
             GetBasedRegiments();
@@ -42,13 +40,6 @@ namespace KaizerWald
             foreach (ISelectableRegiment regiment in selectables)
             {
                 Debug.Log($"num Units: {regiment.UnitsTransform.Length}");
-                foreach (Transform unit in regiment.UnitsTransform)
-                {
-                    Debug.Log($"unit: {unit.name}");
-                    unit.gameObject.AddComponent<UnitSelectable>();
-                }
-                
-                //Array.ForEach(regiment.UnitsTransform, unit => unit.gameObject.AddComponent<UnitSelectable>());
                 if (regiment.OwnerID != PlayerID) continue;
                 Regiments.Add(regiment);
                 RegisterRegiment(regiment);

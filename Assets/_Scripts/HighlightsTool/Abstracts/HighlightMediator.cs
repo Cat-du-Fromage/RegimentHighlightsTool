@@ -9,7 +9,7 @@ namespace KaizerWald
         
         [Header("Layer Masks")]
         [SerializeField] protected LayerMask TerrainLayerMask;
-        [SerializeField] protected LayerMask PlayerUnitLayerMask;
+        [SerializeField] protected LayerMask UnitLayerMask;
         
         public List<ISelectableRegiment> Regiments { get; protected set; }
         public List<HighlightSystem> HighlightSystems { get; protected set; }

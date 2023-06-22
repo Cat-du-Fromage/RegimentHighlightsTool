@@ -14,7 +14,6 @@ namespace KaizerWald
         }
         
         public abstract void OnEnable();
-        
         public abstract void OnDisable();
     }
 }

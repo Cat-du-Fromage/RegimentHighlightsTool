@@ -2,7 +2,7 @@
 
 namespace KaizerWald
 {
-    public class SelectionBehaviour : HighlightBehaviour
+    public sealed class SelectionBehaviour : HighlightBehaviour
     {
         private DecalProjector projector;
         

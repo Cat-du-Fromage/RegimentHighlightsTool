@@ -248,7 +248,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             ]
         },
         {
-            ""name"": ""Preselection"",
+            ""name"": ""Selection"",
             ""id"": ""1e577cc4-e689-41a0-a0b9-415299fceaba"",
             ""actions"": [
                 {
@@ -336,76 +336,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
-        },
-        {
-            ""name"": ""Selection"",
-            ""id"": ""92b904e8-ef40-4130-a3a1-81e3b11f8fc7"",
-            ""actions"": [
-                {
-                    ""name"": ""LeftMouseClick"",
-                    ""type"": ""Value"",
-                    ""id"": ""0c1716fa-6f6b-47fd-a6d8-188bd0f5ffdc"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""LockSelection"",
-                    ""type"": ""Button"",
-                    ""id"": ""385de174-e7ce-459a-9f07-5fb4620ae51f"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": ""PositionAt"",
-                    ""id"": ""819156fb-1787-4209-942b-a53112515963"",
-                    ""path"": ""OneModifier"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""LeftMouseClick"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""modifier"",
-                    ""id"": ""f1f062e6-0c41-4575-8f83-d043e35fa03f"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""LeftMouseClick"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""binding"",
-                    ""id"": ""98ecc0ca-92e6-4c51-8791-3702b6e8fc42"",
-                    ""path"": ""<Mouse>/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""LeftMouseClick"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""dce79a98-c5f2-4947-b410-a73c80cce09f"",
-                    ""path"": ""<Keyboard>/ctrl"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""LockSelection"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                }
-            ]
         }
     ],
     ""controlSchemes"": []
@@ -420,14 +350,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Placement_RightMouseClickAndMove = m_Placement.FindAction("RightMouseClickAndMove", throwIfNotFound: true);
         m_Placement_SpaceKey = m_Placement.FindAction("SpaceKey", throwIfNotFound: true);
         m_Placement_LeftMouseCancel = m_Placement.FindAction("LeftMouseCancel", throwIfNotFound: true);
-        // Preselection
-        m_Preselection = asset.FindActionMap("Preselection", throwIfNotFound: true);
-        m_Preselection_MouseMove = m_Preselection.FindAction("MouseMove", throwIfNotFound: true);
-        m_Preselection_LeftMouseClickAndMove = m_Preselection.FindAction("LeftMouseClickAndMove", throwIfNotFound: true);
-        m_Preselection_LockSelection = m_Preselection.FindAction("LockSelection", throwIfNotFound: true);
         // Selection
         m_Selection = asset.FindActionMap("Selection", throwIfNotFound: true);
-        m_Selection_LeftMouseClick = m_Selection.FindAction("LeftMouseClick", throwIfNotFound: true);
+        m_Selection_MouseMove = m_Selection.FindAction("MouseMove", throwIfNotFound: true);
+        m_Selection_LeftMouseClickAndMove = m_Selection.FindAction("LeftMouseClickAndMove", throwIfNotFound: true);
         m_Selection_LockSelection = m_Selection.FindAction("LockSelection", throwIfNotFound: true);
     }
 
@@ -611,28 +537,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     }
     public PlacementActions @Placement => new PlacementActions(this);
 
-    // Preselection
-    private readonly InputActionMap m_Preselection;
-    private List<IPreselectionActions> m_PreselectionActionsCallbackInterfaces = new List<IPreselectionActions>();
-    private readonly InputAction m_Preselection_MouseMove;
-    private readonly InputAction m_Preselection_LeftMouseClickAndMove;
-    private readonly InputAction m_Preselection_LockSelection;
-    public struct PreselectionActions
+    // Selection
+    private readonly InputActionMap m_Selection;
+    private List<ISelectionActions> m_SelectionActionsCallbackInterfaces = new List<ISelectionActions>();
+    private readonly InputAction m_Selection_MouseMove;
+    private readonly InputAction m_Selection_LeftMouseClickAndMove;
+    private readonly InputAction m_Selection_LockSelection;
+    public struct SelectionActions
     {
         private @PlayerControls m_Wrapper;
-        public PreselectionActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @MouseMove => m_Wrapper.m_Preselection_MouseMove;
-        public InputAction @LeftMouseClickAndMove => m_Wrapper.m_Preselection_LeftMouseClickAndMove;
-        public InputAction @LockSelection => m_Wrapper.m_Preselection_LockSelection;
-        public InputActionMap Get() { return m_Wrapper.m_Preselection; }
+        public SelectionActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @MouseMove => m_Wrapper.m_Selection_MouseMove;
+        public InputAction @LeftMouseClickAndMove => m_Wrapper.m_Selection_LeftMouseClickAndMove;
+        public InputAction @LockSelection => m_Wrapper.m_Selection_LockSelection;
+        public InputActionMap Get() { return m_Wrapper.m_Selection; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(PreselectionActions set) { return set.Get(); }
-        public void AddCallbacks(IPreselectionActions instance)
+        public static implicit operator InputActionMap(SelectionActions set) { return set.Get(); }
+        public void AddCallbacks(ISelectionActions instance)
         {
-            if (instance == null || m_Wrapper.m_PreselectionActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_PreselectionActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_SelectionActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_SelectionActionsCallbackInterfaces.Add(instance);
             @MouseMove.started += instance.OnMouseMove;
             @MouseMove.performed += instance.OnMouseMove;
             @MouseMove.canceled += instance.OnMouseMove;
@@ -644,7 +570,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @LockSelection.canceled += instance.OnLockSelection;
         }
 
-        private void UnregisterCallbacks(IPreselectionActions instance)
+        private void UnregisterCallbacks(ISelectionActions instance)
         {
             @MouseMove.started -= instance.OnMouseMove;
             @MouseMove.performed -= instance.OnMouseMove;
@@ -652,60 +578,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @LeftMouseClickAndMove.started -= instance.OnLeftMouseClickAndMove;
             @LeftMouseClickAndMove.performed -= instance.OnLeftMouseClickAndMove;
             @LeftMouseClickAndMove.canceled -= instance.OnLeftMouseClickAndMove;
-            @LockSelection.started -= instance.OnLockSelection;
-            @LockSelection.performed -= instance.OnLockSelection;
-            @LockSelection.canceled -= instance.OnLockSelection;
-        }
-
-        public void RemoveCallbacks(IPreselectionActions instance)
-        {
-            if (m_Wrapper.m_PreselectionActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        public void SetCallbacks(IPreselectionActions instance)
-        {
-            foreach (var item in m_Wrapper.m_PreselectionActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_PreselectionActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    public PreselectionActions @Preselection => new PreselectionActions(this);
-
-    // Selection
-    private readonly InputActionMap m_Selection;
-    private List<ISelectionActions> m_SelectionActionsCallbackInterfaces = new List<ISelectionActions>();
-    private readonly InputAction m_Selection_LeftMouseClick;
-    private readonly InputAction m_Selection_LockSelection;
-    public struct SelectionActions
-    {
-        private @PlayerControls m_Wrapper;
-        public SelectionActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @LeftMouseClick => m_Wrapper.m_Selection_LeftMouseClick;
-        public InputAction @LockSelection => m_Wrapper.m_Selection_LockSelection;
-        public InputActionMap Get() { return m_Wrapper.m_Selection; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(SelectionActions set) { return set.Get(); }
-        public void AddCallbacks(ISelectionActions instance)
-        {
-            if (instance == null || m_Wrapper.m_SelectionActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_SelectionActionsCallbackInterfaces.Add(instance);
-            @LeftMouseClick.started += instance.OnLeftMouseClick;
-            @LeftMouseClick.performed += instance.OnLeftMouseClick;
-            @LeftMouseClick.canceled += instance.OnLeftMouseClick;
-            @LockSelection.started += instance.OnLockSelection;
-            @LockSelection.performed += instance.OnLockSelection;
-            @LockSelection.canceled += instance.OnLockSelection;
-        }
-
-        private void UnregisterCallbacks(ISelectionActions instance)
-        {
-            @LeftMouseClick.started -= instance.OnLeftMouseClick;
-            @LeftMouseClick.performed -= instance.OnLeftMouseClick;
-            @LeftMouseClick.canceled -= instance.OnLeftMouseClick;
             @LockSelection.started -= instance.OnLockSelection;
             @LockSelection.performed -= instance.OnLockSelection;
             @LockSelection.canceled -= instance.OnLockSelection;
@@ -738,15 +610,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnSpaceKey(InputAction.CallbackContext context);
         void OnLeftMouseCancel(InputAction.CallbackContext context);
     }
-    public interface IPreselectionActions
+    public interface ISelectionActions
     {
         void OnMouseMove(InputAction.CallbackContext context);
         void OnLeftMouseClickAndMove(InputAction.CallbackContext context);
-        void OnLockSelection(InputAction.CallbackContext context);
-    }
-    public interface ISelectionActions
-    {
-        void OnLeftMouseClick(InputAction.CallbackContext context);
         void OnLockSelection(InputAction.CallbackContext context);
     }
 }

@@ -8,9 +8,6 @@ using static Unity.Mathematics.math;
 using static PlayerControls;
 using static UnityEngine.InputSystem.InputAction;
 
-using ISelectableRegiment = KaizerWald.ISelectableRegiment;
-using IUnit = KaizerWald.IUnit;
-
 using Bounds = UnityEngine.Bounds;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
@@ -21,46 +18,43 @@ namespace KaizerWald
     {
         public HighlightMediator Coordinator { get; private set; }
 
-        private PreselectionActions preselectionControl;
+        private SelectionActions selectionControl;
 
         private readonly LayerMask SelectionLayer;
+        
         private bool ClickDragPerformed;
-        private Vector2 StartLMouse;
-        private Vector2 EndLMouse;
-        
+        private Vector2 StartLMouse, EndLMouse;
+
         private readonly RaycastHit[] Hits = new RaycastHit[2];
-        
-        private InputAction CtrlAction;
-        private bool IsCtrlPressed => CtrlAction.IsPressed();
         
         private HighlightSubSystem HoverSystem => CompositeSystem.SubSystem1;
         private HighlightSubSystem SelectionSystem => CompositeSystem.SubSystem2;
+        private bool IsCtrlPressed => selectionControl.LockSelection.IsPressed();
         
         public RegimentSelectionController(HighlightMediator coordinator, CompositeSystem compositeSystem, Camera camera, PlayerControls controls, LayerMask selectionLayer) : base(compositeSystem, camera)
         {
             Coordinator = coordinator;
             SelectionLayer = selectionLayer;
-            preselectionControl = controls.Preselection;
-            CtrlAction = preselectionControl.LockSelection;
+            selectionControl = controls.Selection;
             OnEnable();
         }
         
         public override void OnEnable()
         {
-            if (!preselectionControl.enabled) preselectionControl.Enable();
-            preselectionControl.MouseMove.performed             += OnMouseHover;
-            preselectionControl.LeftMouseClickAndMove.started   += OnDragSelectionStart;
-            preselectionControl.LeftMouseClickAndMove.performed += OnDragSelectionPerformed;
-            preselectionControl.LeftMouseClickAndMove.canceled  += OnSelection;
+            if (!selectionControl.enabled) selectionControl.Enable();
+            selectionControl.MouseMove.performed             += OnMouseHover;
+            selectionControl.LeftMouseClickAndMove.started   += OnDragSelectionStart;
+            selectionControl.LeftMouseClickAndMove.performed += OnDragSelectionPerformed;
+            selectionControl.LeftMouseClickAndMove.canceled  += OnSelection;
         }
 
         public override void OnDisable()
         {
-            preselectionControl.MouseMove.performed             -= OnMouseHover;
-            preselectionControl.LeftMouseClickAndMove.started   -= OnDragSelectionStart;
-            preselectionControl.LeftMouseClickAndMove.performed -= OnDragSelectionPerformed;
-            preselectionControl.LeftMouseClickAndMove.canceled  -= OnSelection;
-            preselectionControl.Disable();
+            selectionControl.MouseMove.performed             -= OnMouseHover;
+            selectionControl.LeftMouseClickAndMove.started   -= OnDragSelectionStart;
+            selectionControl.LeftMouseClickAndMove.performed -= OnDragSelectionPerformed;
+            selectionControl.LeftMouseClickAndMove.canceled  -= OnSelection;
+            selectionControl.Disable();
         }
         
         // =============================================================================================================
@@ -222,14 +216,19 @@ namespace KaizerWald
             SelectPreselection();
             //HighlightSystem.Register.OnNewSelection();//Experimental SelectionInfos
             
+            if (!ClickDragPerformed) return;
+            CheckMouseHoverUnit();
+            ClickDragPerformed = false;
+            
             void DeselectNotPreselected()
             {
-                if (!IsCtrlPressed || HoverSystem.Register.ActiveHighlights.Count == 0) return;
+                if (IsCtrlPressed) return;
                 // we remove element from list, by iterating reverse we stay inbounds
-                for (int i = HoverSystem.Register.ActiveHighlights.Count - 1; i > -1; i--)
+                for (int i = SelectionSystem.Register.ActiveHighlights.Count - 1; i > -1; i--)
                 {
-                    if (SelectionSystem.Register.ActiveHighlights[i].IsPreselected) continue;
-                    SelectionSystem.OnHide(HoverSystem.Register.ActiveHighlights[i]);
+                    ISelectableRegiment regiment = SelectionSystem.Register.ActiveHighlights[i];
+                    if (regiment.IsPreselected) continue;
+                    SelectionSystem.OnHide(regiment);
                 }
             }
             

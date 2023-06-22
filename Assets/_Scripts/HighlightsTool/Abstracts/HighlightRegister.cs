@@ -1,18 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ISelectableRegiment = KaizerWald.ISelectableRegiment;
 
 namespace KaizerWald
 {
-    public abstract class HighlightRegister
+    public class HighlightRegister
     {
         protected HighlightSystem System { get; private set; }
         protected GameObject Prefab { get; private set; }
         public Dictionary<int, HighlightBehaviour[]> Records { get; protected set; }
         public List<ISelectableRegiment> ActiveHighlights { get; protected set; }
 
-        protected HighlightRegister(HighlightSystem system, GameObject highlightPrefab)
+        public HighlightRegister(HighlightSystem system, GameObject highlightPrefab)
         {
             if (!highlightPrefab.TryGetComponent<HighlightBehaviour>(out _))
             {

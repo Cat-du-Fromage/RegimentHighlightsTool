@@ -6,8 +6,8 @@ namespace KaizerWald
 {
     public sealed class RegimentSelection : CompositeSystem
     {
-        private HighlightSubSystem PreselectionSubSystem;
-        private HighlightSubSystem SelectionSubSystem;
+        private PreselectionSubSystem PreselectionSubSystem;
+        private SelectionSubSystem SelectionSubSystem;
 
         public override CombinedController Controller { get; protected set; }
         public override HighlightSubSystem SubSystem1 => PreselectionSubSystem;

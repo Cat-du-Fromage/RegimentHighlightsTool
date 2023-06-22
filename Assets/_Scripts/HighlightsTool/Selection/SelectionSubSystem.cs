@@ -7,7 +7,7 @@ namespace KaizerWald
     {
         public SelectionSubSystem(HighlightSystem mainSystem, GameObject defaultPrefab) : base(mainSystem, defaultPrefab)
         {
-            Register = new SelectionRegister(mainSystem, defaultPrefab);
+            Register = new HighlightRegister(mainSystem, defaultPrefab);
         }
         
         public override void OnShow(ISelectableRegiment selectableRegiment)

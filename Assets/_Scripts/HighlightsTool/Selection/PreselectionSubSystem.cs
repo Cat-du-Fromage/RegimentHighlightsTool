@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
-using ISelectableRegiment = KaizerWald.ISelectableRegiment;
+
 namespace KaizerWald
 {
     public sealed class PreselectionSubSystem : HighlightSubSystem
     {
         public PreselectionSubSystem(HighlightSystem mainSystem, GameObject defaultPrefab) : base(mainSystem, defaultPrefab)
         {
-            Register = new PreselectionRegister(mainSystem, defaultPrefab);
+            Register = new HighlightRegister(mainSystem, defaultPrefab);
         }
 
         public override void OnShow(ISelectableRegiment selectableRegiment)
