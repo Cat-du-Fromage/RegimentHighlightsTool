@@ -1,73 +1,46 @@
-﻿using ISelectableRegiment = KaizerWald.ISelectableRegiment;
+﻿using System;
+using UnityEngine;
 
 namespace KaizerWald
 {
     /// <summary>
     /// HIGHLIGHT SYSTEM
     /// </summary>
-    public abstract class HighlightSystem
+    public abstract class HighlightSystem : MonoBehaviour
     {
-        public abstract void AddRegiment(ISelectableRegiment regiment);
-        public abstract void RemoveRegiment(ISelectableRegiment regiment);
-    }
-
-    /*
-    public abstract class SimpleSystem : HighlightSystem
-    {
-        public HighlightCoordinator Coordinator { get; protected set; }
-        public HighlightRegister Register { get; protected set; }
+        protected HighlightRegister[] Registers = new HighlightRegister[2];
         public HighlightController Controller { get; protected set; }
 
-        protected SimpleSystem(HighlightCoordinator coordinator, GameObject defaultPrefab)
-        {
-            Coordinator = coordinator;
-        }
-
-        public sealed override void AddRegiment(ISelectableRegiment regiment) => Register.RegisterRegiment(regiment);
-        public sealed override void RemoveRegiment(ISelectableRegiment regiment) => Register.UnregisterRegiment(regiment);
-
-        // =============================================================================================================
-        // ----- VIRTUAL METHODS -----
-        // =============================================================================================================
+        public abstract void AddRegiment(SelectableRegiment regiment);
+        public abstract void RemoveRegiment(SelectableRegiment regiment);
         
-        /// <summary>
-        /// Show Highlight
-        /// </summary>
-        /// <param name="selectableRegiment"></param>
-        public virtual void OnShow(ISelectableRegiment selectableRegiment)
+        public virtual void OnShow(SelectableRegiment selectableRegiment, int registerIndex)
         {
             if (selectableRegiment == null) return;
-            if (!Register.Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
+            if (!Registers[registerIndex].Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
             foreach (HighlightBehaviour highlight in highlights)
             {
                 if (highlight == null) continue;
                 highlight.Show();
             }
         }
-
-        /// <summary>
-        /// Hide Highlight
-        /// </summary>
-        /// <param name="selectableRegiment"></param>
-        public virtual void OnHide(ISelectableRegiment selectableRegiment)
+        
+        public virtual void OnHide(SelectableRegiment selectableRegiment, int registerIndex)
         {
             if (selectableRegiment == null) return;
-            if (!Register.Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
+            if (!Registers[registerIndex].Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
             foreach (HighlightBehaviour highlight in highlights)
             {
                 if (highlight == null) continue;
                 highlight.Hide();
             }
         }
-
-        /// <summary>
-        /// Hide all highlight
-        /// </summary>
-        public virtual void HideAll()
+        
+        public virtual void HideAll(int registerIndex)
         {
-            foreach (ISelectableRegiment activeHighlight in Register.ActiveHighlights)
+            foreach (SelectableRegiment activeHighlight in Registers[registerIndex].ActiveHighlights)
             {
-                foreach (HighlightBehaviour highlight in Register.Records[activeHighlight.RegimentID])
+                foreach (HighlightBehaviour highlight in Registers[registerIndex].Records[activeHighlight.RegimentID])
                 {
                     if (highlight == null) continue;
                     highlight.Hide();
@@ -75,5 +48,4 @@ namespace KaizerWald
             }
         }
     }
-    */
 }

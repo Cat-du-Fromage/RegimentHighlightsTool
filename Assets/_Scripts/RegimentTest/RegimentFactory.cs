@@ -17,27 +17,17 @@ namespace KaizerWald
     }
 
     [RequireComponent(typeof(UnitFactory))]
-    public class RegimentFactory : MonoBehaviour
+    public sealed class RegimentFactory : MonoBehaviourSingleton<RegimentFactory>
     {
-        public static RegimentFactory Instance { get; private set; }
-        
         private const float SPACE_BETWEEN_REGIMENT = 2.5f;
         private UnitFactory unitFactory;
         
         [SerializeField] private LayerMask PlayerUnitLayerMask;
         [field: SerializeField] public RegimentSpawner[] CreationOrders{ get; private set; }
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this) 
-            { 
-                Destroy(this); 
-            } 
-            else 
-            { 
-                Instance = this; 
-            } 
-            
+            base.Awake();
             unitFactory = GetComponent<UnitFactory>();
             CreateRegiments(transform.position);
             Debug.Log("RegimentFactory Awake");
@@ -67,13 +57,13 @@ namespace KaizerWald
                 {
                     int regIndex = CreationOrders[i].Number * i + j;
                     offsetPosition += GetOffset(currentSpawner, j) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
-                    Regiment regiment = InstantiateRegiment(regIndex, currentSpawner, instancePosition, offsetPosition);
+                    Regiment regiment = InstantiateRegiment(regIndex/*, currentSpawner*/, instancePosition, offsetPosition);
+                    //List<Transform> units = unitFactory.CreateRegimentsUnit(regiment, CreationOrders[i].BaseNumUnit, CreationOrders[i].UnitPrefab);
+                    regiment.Initialize(currentSpawner.OwnerID, unitFactory, currentSpawner);
                     regiments.Add(regiment);
-
-                    regiment.UnitsTransform = unitFactory.CreateRegimentsUnit(regiment, CreationOrders[i].BaseNumUnit, CreationOrders[i].UnitPrefab).ToArray();
                     
+                    //regiment.UnitsTransform = unitFactory.CreateRegimentsUnit(regiment, CreationOrders[i].BaseNumUnit, CreationOrders[i].UnitPrefab).ToArray();
                     //Directly on Units?
-                    
                     Array.ForEach(regiment.UnitsTransform, unit => unit.gameObject.layer = math.floorlog2(PlayerUnitLayerMask));
                 }
             }
@@ -81,22 +71,16 @@ namespace KaizerWald
             //return regiments;
         }
 
-        private Regiment InstantiateRegiment(int regimentIndex, RegimentSpawner spawner, Vector3 instancePosition, float offsetPosition)
+        private Regiment InstantiateRegiment(int regimentIndex/*, RegimentSpawner spawner*/, Vector3 instancePosition, float offsetPosition)
         {
-            //==================================================================================================
-            //TEMP FOR AI
-            //Vector3 center = GetComponent<RegimentManager>().transform.position;
-            //==================================================================================================
             Vector3 position = instancePosition + offsetPosition * Vector3.right;
             
             GameObject newRegiment = new($"{regimentIndex}", typeof(Regiment));
             newRegiment.transform.SetPositionAndRotation(position, Quaternion.identity);
-
             Regiment regimentComponent = newRegiment.GetComponent<Regiment>();
-            regimentComponent.OwnerID = spawner.OwnerID;
-            regimentComponent.RegimentID = newRegiment.GetInstanceID();
-            newRegiment.name = $"{regimentIndex}_{regimentComponent.RegimentID}";
-
+            //regimentComponent.OwnerID = spawner.OwnerID;
+            //regimentComponent.RegimentID = newRegiment.GetInstanceID();
+            //newRegiment.name = $"{regimentIndex}_{regimentComponent.RegimentID}";
             return regimentComponent;
         }
 
@@ -106,9 +90,12 @@ namespace KaizerWald
             int numRow = spawner.BaseNumUnit / 2;
             
             //DISTANCE from regiment to an other IS NOT divide by 2 !!
+            return index == 0 ? 0 : numRow * spaceBtwUnits;
+            /*
             if (index == 0) return 0;
             float offset = (numRow * spaceBtwUnits);
             return offset;
+            */
         }
     }
     

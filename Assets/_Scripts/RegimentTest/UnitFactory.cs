@@ -45,7 +45,7 @@ namespace KaizerWald
                 Unit component = unit.GetComponentInChildren<Unit>();
                 if (component == null) Debug.Log("Dont have Component: Unit");
                 //Unit component = unit.GetComponent<Unit>();
-                component.SelectableRegimentAttach = regiment.GetComponent<ISelectableRegiment>();
+                component.SelectableRegimentAttach = regiment.GetComponent<SelectableRegiment>();
                 component.IndexInRegiment = index;
                 return component;
             }

@@ -9,7 +9,7 @@ namespace KaizerWald
         protected HighlightSystem System { get; private set; }
         protected GameObject Prefab { get; private set; }
         public Dictionary<int, HighlightBehaviour[]> Records { get; protected set; }
-        public List<ISelectableRegiment> ActiveHighlights { get; protected set; }
+        public List<SelectableRegiment> ActiveHighlights { get; protected set; }
 
         public HighlightRegister(HighlightSystem system, GameObject highlightPrefab)
         {
@@ -20,10 +20,10 @@ namespace KaizerWald
             System = system;
             Prefab = highlightPrefab;
             Records = new Dictionary<int, HighlightBehaviour[]>();
-            ActiveHighlights = new List<ISelectableRegiment>();
+            ActiveHighlights = new List<SelectableRegiment>();
         }
         
-        private void PopulateRecords(ISelectableRegiment selectableRegiment, GameObject prefab)
+        private void PopulateRecords(SelectableRegiment selectableRegiment, GameObject prefab)
         {
             Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[selectableRegiment.UnitsTransform.Length];
             for (int i = 0; i < Records[selectableRegiment.RegimentID].Length; i++)
@@ -34,14 +34,14 @@ namespace KaizerWald
             }
         }
 
-        public void RegisterRegiment(ISelectableRegiment selectableRegiment, GameObject prefabOverride = null)
+        public void RegisterRegiment(SelectableRegiment selectableRegiment, GameObject prefabOverride = null)
         {
             GameObject highlightPrefab = prefabOverride == null ? Prefab : prefabOverride;
             Records.TryAdd(selectableRegiment.RegimentID, new HighlightBehaviour[selectableRegiment.UnitsTransform.Length]);
             PopulateRecords(selectableRegiment, highlightPrefab);
         }
         
-        public void UnregisterRegiment(ISelectableRegiment selectableRegiment)
+        public void UnregisterRegiment(SelectableRegiment selectableRegiment)
         {
             if (!Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
             foreach (HighlightBehaviour highlight in highlights)

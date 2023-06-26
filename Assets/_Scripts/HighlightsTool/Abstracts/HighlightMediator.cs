@@ -11,16 +11,16 @@ namespace KaizerWald
         [SerializeField] protected LayerMask TerrainLayerMask;
         [SerializeField] protected LayerMask UnitLayerMask;
         
-        public List<ISelectableRegiment> Regiments { get; protected set; }
+        public List<SelectableRegiment> Regiments { get; protected set; }
         public List<HighlightSystem> HighlightSystems { get; protected set; }
         
         
-        public void RegisterRegiment(ISelectableRegiment regiment)
+        public void RegisterRegiment(SelectableRegiment regiment)
         {
             HighlightSystems.ForEach(system => system.AddRegiment(regiment));
         }
         
-        public void UnRegisterRegiment(ISelectableRegiment regiment)
+        public void UnRegisterRegiment(SelectableRegiment regiment)
         {
             HighlightSystems.ForEach(system => system.RemoveRegiment(regiment));
         }

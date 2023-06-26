@@ -758,16 +758,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2716e651f58e554fa7f878eddc7c74e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerID: 0
-  TerrainLayerMask:
+  <TerrainLayerMask>k__BackingField:
     serializedVersion: 2
     m_Bits: 256
-  UnitLayerMask:
+  <UnitLayerMask>k__BackingField:
     serializedVersion: 2
     m_Bits: 128
-  PreselectionDefaultPrefab: {fileID: 4612140642301560438, guid: c87b9e4d6a9bd564d84e6024ac479255,
+  <PreselectionDefaultPrefab>k__BackingField: {fileID: 4612140642301560438, guid: c87b9e4d6a9bd564d84e6024ac479255,
     type: 3}
-  SelectionDefaultPrefab: {fileID: 5453810541774106665, guid: 4f6746a49ef20b4409c0fb561b86ada3,
+  <SelectionDefaultPrefab>k__BackingField: {fileID: 5453810541774106665, guid: 4f6746a49ef20b4409c0fb561b86ada3,
     type: 3}
 --- !u!4 &1490866060
 Transform:
