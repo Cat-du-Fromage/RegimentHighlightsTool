@@ -24,4 +24,22 @@ public static class GameObjectExtension
         }
         return list;
     }
+    
+    public static T GetOrAddComponent<T>(this GameObject gameObject)
+    where T : Component
+    {
+        return gameObject.TryGetComponent(out T component) ? component : gameObject.AddComponent<T>();
+    }
+    
+    public static T GetOrAddComponent<T>(this Transform transform)
+    where T : Component
+    {
+        return transform.gameObject.GetOrAddComponent<T>();
+    }
+    
+    public static T GetOrAddComponent<T>(this MonoBehaviour script)
+    where T : Component
+    {
+        return script.gameObject.GetOrAddComponent<T>();
+    }
 }

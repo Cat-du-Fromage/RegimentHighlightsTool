@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 
+using static Unity.Mathematics.math;
+
 namespace KaizerWald
 {
     [Serializable]
@@ -21,81 +23,57 @@ namespace KaizerWald
     {
         private const float SPACE_BETWEEN_REGIMENT = 2.5f;
         private UnitFactory unitFactory;
-        
-        [SerializeField] private LayerMask PlayerUnitLayerMask;
-        [field: SerializeField] public RegimentSpawner[] CreationOrders{ get; private set; }
+        [field: SerializeField] public RegimentSpawner[] CreationOrders { get; private set; }
+
+        public event Action<Regiment> OnRegimentCreated; 
 
         protected override void Awake()
         {
             base.Awake();
             unitFactory = GetComponent<UnitFactory>();
-            CreateRegiments(transform.position);
-            Debug.Log("RegimentFactory Awake");
         }
 
         private void Start()
         {
-            //CreateRegiments(transform.position);
+            CreateRegiments(transform.position);
         }
 
         public void CreateRegiments(Vector3 instancePosition)
         {
-            List<Regiment> regiments = new (2);
-
             float offsetPosition = 0;
-
             for (int i = 0; i < CreationOrders.Length; i++)
             {
                 RegimentSpawner currentSpawner = CreationOrders[i];
                 RegimentSpawner previousSpawner = i == 0 ? currentSpawner : CreationOrders[i-1];
 
-                float offset = GetOffset(currentSpawner, i) / 2f;
-                offset += i == 0 ? 0 : GetOffset(previousSpawner, i) / 2f;
+                float offset = GetOffset(currentSpawner, i) * 0.5f;
+                offset += GetOffset(previousSpawner, i) * 0.5f;
                 offsetPosition += offset;
 
-                for (int j = 0; j < CreationOrders[i].Number; j++)
+                for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
                 {
-                    int regIndex = CreationOrders[i].Number * i + j;
                     offsetPosition += GetOffset(currentSpawner, j) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
-                    Regiment regiment = InstantiateRegiment(regIndex/*, currentSpawner*/, instancePosition, offsetPosition);
-                    //List<Transform> units = unitFactory.CreateRegimentsUnit(regiment, CreationOrders[i].BaseNumUnit, CreationOrders[i].UnitPrefab);
+                    Regiment regiment = InstantiateRegiment(instancePosition, offsetPosition);
                     regiment.Initialize(currentSpawner.OwnerID, unitFactory, currentSpawner);
-                    regiments.Add(regiment);
-                    
-                    //regiment.UnitsTransform = unitFactory.CreateRegimentsUnit(regiment, CreationOrders[i].BaseNumUnit, CreationOrders[i].UnitPrefab).ToArray();
-                    //Directly on Units?
-                    Array.ForEach(regiment.UnitsTransform, unit => unit.gameObject.layer = math.floorlog2(PlayerUnitLayerMask));
+                    OnRegimentCreated?.Invoke(regiment);
                 }
             }
             Array.Clear(CreationOrders, 0, CreationOrders.Length);
-            //return regiments;
         }
 
-        private Regiment InstantiateRegiment(int regimentIndex/*, RegimentSpawner spawner*/, Vector3 instancePosition, float offsetPosition)
+        private Regiment InstantiateRegiment(Vector3 instancePosition, float offsetPosition)
         {
             Vector3 position = instancePosition + offsetPosition * Vector3.right;
-            
-            GameObject newRegiment = new($"{regimentIndex}", typeof(Regiment));
+            GameObject newRegiment = new($"DefaultRegiment", typeof(Regiment));
             newRegiment.transform.SetPositionAndRotation(position, Quaternion.identity);
-            Regiment regimentComponent = newRegiment.GetComponent<Regiment>();
-            //regimentComponent.OwnerID = spawner.OwnerID;
-            //regimentComponent.RegimentID = newRegiment.GetInstanceID();
-            //newRegiment.name = $"{regimentIndex}_{regimentComponent.RegimentID}";
-            return regimentComponent;
+            return newRegiment.GetComponent<Regiment>();
         }
 
         private float GetOffset(RegimentSpawner spawner, int index)
         {
             const float spaceBtwUnits = 1.5f;
-            int numRow = spawner.BaseNumUnit / 2;
-            
-            //DISTANCE from regiment to an other IS NOT divide by 2 !!
-            return index == 0 ? 0 : numRow * spaceBtwUnits;
-            /*
-            if (index == 0) return 0;
-            float offset = (numRow * spaceBtwUnits);
-            return offset;
-            */
+            int numRow = (int)(spawner.BaseNumUnit * 0.5f);
+            return index == 0 ? 0 : numRow * spaceBtwUnits; //DISTANCE from regiment to an other IS NOT divide by 2 !!
         }
     }
     

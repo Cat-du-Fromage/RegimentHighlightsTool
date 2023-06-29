@@ -11,8 +11,15 @@ namespace KaizerWald
         protected HighlightRegister[] Registers = new HighlightRegister[2];
         public HighlightController Controller { get; protected set; }
 
-        public abstract void AddRegiment(SelectableRegiment regiment);
-        public abstract void RemoveRegiment(SelectableRegiment regiment);
+        public virtual void AddRegiment(SelectableRegiment regiment)
+        {
+            Array.ForEach(Registers, register => register.RegisterRegiment(regiment));
+        }
+
+        public virtual void RemoveRegiment(SelectableRegiment regiment)
+        {
+            Array.ForEach(Registers, register => register.UnregisterRegiment(regiment));
+        }
         
         public virtual void OnShow(SelectableRegiment selectableRegiment, int registerIndex)
         {

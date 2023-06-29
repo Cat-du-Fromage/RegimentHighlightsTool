@@ -6,12 +6,12 @@ namespace KaizerWald
 {
     public abstract class HighlightController
     {
-        protected HighlightSystem HighlightSystem { get; private set; }
+        //protected HighlightSystem HighlightSystem { get; private set; }
         protected Camera PlayerCamera { get; private set; }
 
-        protected HighlightController(HighlightSystem system)
+        protected HighlightController()
         {
-            HighlightSystem = system;
+            //HighlightSystem = system;
             PlayerCamera = Camera.main;
         }
         

@@ -15,37 +15,42 @@ namespace KaizerWald
         [SerializeField] private LayerMask UnitLayer;
         [SerializeField] private LayerMask PlayerLayer;
         [SerializeField] private LayerMask EnemyLayer;
-        public List<Transform> CreateRegimentsUnit(Regiment regiment, int baseNumUnits, GameObject unitPrefab)
+        
+        private int TerrainLayerIndex => floorlog2(TerrainLayer.value);
+        private int UnitLayerIndex => floorlog2(UnitLayer.value);
+        
+        public List<Unit> CreateRegimentsUnit(Regiment regiment, int baseNumUnits, GameObject unitPrefab)
         {
             Vector3 regimentPosition = regiment.transform.position;
-
             float unitSizeX = 1.5f;//regimentClass.UnitSize.x;
-
-            List<Transform> units = new(baseNumUnits);
+            List<Unit> units = new(baseNumUnits);
             
             for (int i = 0; i < baseNumUnits; i++)
             {
-                int terrainLayer = floorlog2(TerrainLayer.value);
                 Vector3 positionInRegiment = GetPositionInRegiment(i);
-
-                Vector3 origin = positionInRegiment + Vector3.up * 1000;
-                bool hasHit = Raycast(origin, Vector3.down, out RaycastHit hit, 2000, 1<<terrainLayer);
+                Vector3 unitPosition = GetUnitPosition(positionInRegiment);
                 
-                Vector3 unitPosition = hasHit ? hit.point : positionInRegiment;
-                    
                 GameObject newUnit = Instantiate(unitPrefab, unitPosition, regiment.transform.rotation);
+                //newUnit.gameObject.layer = UnitLayerIndex;
                 newUnit.name = $"{unitPrefab.name}_{i}";
 
-                units.Add(InitializeUnitComponent(newUnit, i).transform);
+                units.Add(InitializeUnitComponent(newUnit, i));
             }
             return units;
+
+            Vector3 GetUnitPosition(Vector3 positionInRegiment)
+            {
+                Vector3 origin = positionInRegiment + Vector3.up * 1000;
+                bool hasHit = Raycast(origin, Vector3.down, out RaycastHit hit, 2000, TerrainLayer);
+                return hasHit ? hit.point : positionInRegiment;
+            }
 
             Unit InitializeUnitComponent(GameObject unit, int index)
             {
                 Unit component = unit.GetComponentInChildren<Unit>();
+                component.gameObject.layer = UnitLayerIndex;
+                
                 if (component == null) Debug.Log("Dont have Component: Unit");
-                //Unit component = unit.GetComponent<Unit>();
-                component.SelectableRegimentAttach = regiment.GetComponent<SelectableRegiment>();
                 component.IndexInRegiment = index;
                 return component;
             }
@@ -69,8 +74,8 @@ namespace KaizerWald
 
             float GetOffset(int row)
             {
-                float unitHalfOffset = unitSizeX / 2f;
-                float halfRow = row / 2f;
+                float unitHalfOffset = unitSizeX * 0.5f;
+                float halfRow = row * 0.5f;
                 return halfRow * unitSizeX - unitHalfOffset;
             }
         }

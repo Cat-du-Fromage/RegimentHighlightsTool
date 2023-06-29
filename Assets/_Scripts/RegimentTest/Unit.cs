@@ -5,11 +5,8 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public class Unit : MonoBehaviour, IUnit
+    public class Unit : MonoBehaviour
     {
-        public SelectableRegiment SelectableRegimentAttach { get; set; }
         public int IndexInRegiment { get; set; } = 1;
-
-        public bool IsDead { get; private set; }
     }
 }

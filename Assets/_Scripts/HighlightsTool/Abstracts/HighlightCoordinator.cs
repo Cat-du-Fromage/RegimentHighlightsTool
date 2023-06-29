@@ -9,7 +9,6 @@ using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
-    
     public abstract class HighlightCoordinator : MonoBehaviour
     {
         public ulong PlayerID { get; protected set; }
@@ -23,22 +22,29 @@ namespace KaizerWald
         [field:SerializeField] public GameObject PreselectionDefaultPrefab { get; protected set; }
         [field:SerializeField] public GameObject SelectionDefaultPrefab { get; protected set; }
         
-        public List<SelectableRegiment> SelectableRegiments { get; protected set; }
+        public HashSet<SelectableRegiment> SelectableRegiments { get; protected set; }
         public RegimentHighlightSystem RegimentHighlightSystem { get; protected set; }
 
         // =============================================================================================================
         // -------- Abstract Methods ----------
         // =============================================================================================================
+        public void SetPlayerID(ulong playerID) => PlayerID = playerID;
         
-        public void RegisterRegiment(SelectableRegiment regiment)
+        protected virtual void Awake()
+        {
+            SelectableRegiments = new HashSet<SelectableRegiment>();
+            RegimentHighlightSystem = GetComponent<RegimentHighlightSystem>();
+            HighlightControls = new PlayerControls();
+        }
+        
+        public virtual void RegisterRegiment(SelectableRegiment regiment)
         {
             RegimentHighlightSystem.RegisterRegiment(regiment);
         }
         
-        public void UnRegisterRegiment(SelectableRegiment regiment)
+        public virtual void UnRegisterRegiment(SelectableRegiment regiment)
         {
             RegimentHighlightSystem.UnregisterRegiment(regiment);
         }
     }
-    
 }

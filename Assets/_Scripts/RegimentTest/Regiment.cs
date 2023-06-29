@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KaizerWald
@@ -5,24 +7,16 @@ namespace KaizerWald
     
     public class Regiment : MonoBehaviour
     {
-        //Interface
-        public bool IsPreselected { get; set; }
-        public bool IsSelected { get; set; }
-        
-        //Properties
-        public ulong OwnerID { get; set; }
-        public int RegimentID { get; set; }
-        public Transform[] UnitsTransform { get; set; }
-        
-        public SelectableRegiment SelectableRegimentComponent;
+        public ulong OwnerID { get; private set; }
+        public int RegimentID { get; private set; }
+        public List<Unit> Units { get; private set; }
 
-        public Regiment Initialize(ulong ownerID, UnitFactory unitFactory, RegimentSpawner currentSpawner, string regimentName = default)
+        public void Initialize(ulong ownerID, UnitFactory unitFactory, RegimentSpawner currentSpawner, string regimentName = default)
         {
             OwnerID = ownerID;
             RegimentID = transform.GetInstanceID();
-            UnitsTransform = unitFactory.CreateRegimentsUnit(this, currentSpawner.BaseNumUnit, currentSpawner.UnitPrefab).ToArray();
             name = regimentName ?? $"Player{ownerID}_Regiment{RegimentID}";
-            return this;
+            Units = unitFactory.CreateRegimentsUnit(this, currentSpawner.BaseNumUnit, currentSpawner.UnitPrefab);
         }
     }
     

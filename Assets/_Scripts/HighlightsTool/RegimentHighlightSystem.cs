@@ -1,49 +1,40 @@
 using System;
 using System.Collections;
-using UnityEngine;
+using System.Linq;
+using UnityEditor.Rendering;
 
 namespace KaizerWald
 {
-    public abstract class HighlightSystemBehaviour<T> : MonoBehaviour
-    where T : HighlightCoordinator
-    {
-        public abstract T RegimentManager { get; protected set; }
-        public HighlightCoordinator Coordinator { get; protected set; }
-
-        public abstract void RegisterRegiment(SelectableRegiment regiment);
-        public abstract void UnregisterRegiment(SelectableRegiment regiment);
-        
-        protected virtual void Awake()
-        {
-            Coordinator = (HighlightCoordinator)RegimentManager;
-        }
-    }
-
-    public class RegimentHighlightSystem : HighlightSystemBehaviour<RegimentManager>
+    public sealed class RegimentHighlightSystem : HighlightSystemBehaviour<RegimentManager>
     {
         public override RegimentManager RegimentManager { get; protected set; }
-        //public HighlightCoordinator Coordinator { get; private set; }
         public SelectionSystem Selection { get; private set; }
 
         protected override void Awake()
         {
             base.Awake();
-            Selection = GetComponent<SelectionSystem>();
+            Selection = this.GetOrAddComponent<SelectionSystem>();
         }
-/*
-        public RegimentHighlightSystem(HighlightCoordinator coordinator, GameObject[] prefabs, PlayerControls controls, LayerMask unitLayerMask)
+
+        private void OnEnable()
         {
-            Coordinator = coordinator;
-            Selection = new SelectionSystem(this, prefabs, controls, unitLayerMask);
+            RegimentManager.OnNewRegiment += PopulateHighlights;
         }
-*/
+
+        private void OnDisable()
+        {
+            RegimentManager.OnNewRegiment -= PopulateHighlights;
+        }
+
         public override void RegisterRegiment(SelectableRegiment regiment)
         {
+            base.RegisterRegiment(regiment);
             Selection.AddRegiment(regiment);
         }
         
         public override void UnregisterRegiment(SelectableRegiment regiment)
         {
+            base.UnregisterRegiment(regiment);
             Selection.RemoveRegiment(regiment);
         }
     }

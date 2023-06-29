@@ -17,20 +17,19 @@ namespace KaizerWald
     public sealed class RegimentSelectionController : HighlightController
     {
         private SelectionActions selectionControl;
-
+        
         private readonly LayerMask SelectionLayer;
         private bool ClickDragPerformed;
         private Vector2 StartLMouse, EndLMouse;
         private readonly RaycastHit[] Hits = new RaycastHit[2];
 
         public SelectionSystem SelectionSystem { get; private set; }
-        private List<SelectableRegiment> Regiments => SelectionSystem.Regiments;
         private HighlightRegister PreselectionRegister => SelectionSystem.PreselectionRegister;
         private HighlightRegister SelectionRegister => SelectionSystem.SelectionRegister;
         
         private bool IsCtrlPressed => selectionControl.LockSelection.IsPressed();
         
-        public RegimentSelectionController(HighlightSystem system, PlayerControls controls, LayerMask unitLayer) : base(system)
+        public RegimentSelectionController(HighlightSystem system, PlayerControls controls, LayerMask unitLayer)
         {
             SelectionSystem = (SelectionSystem)system;
             SelectionLayer = unitLayer;
@@ -101,8 +100,8 @@ namespace KaizerWald
         {
             const float sphereRadius = 0.5f;
             Ray singleRay = PlayerCamera.ScreenPointToRay(EndLMouse);
-            int numHits = SphereCastNonAlloc(singleRay, sphereRadius, Hits,INFINITY,SelectionLayer);
-
+            int numHits = SphereCastNonAlloc(singleRay, sphereRadius, Hits,INFINITY, SelectionLayer.value);
+            //Debug.Log($"EndLMouse: {EndLMouse}; Layer: {SelectionLayer.value}");
             if (NoHits(numHits)) return;
             MouseHoverSingleEntity(singleRay, numHits);
             
@@ -115,7 +114,7 @@ namespace KaizerWald
         private void MouseHoverSingleEntity(in Ray singleRay, int numHits)
         {
             if (Hits[0].transform == null) return;
-            if (!Hits[0].transform.TryGetComponent(out IUnit unit))
+            if (!Hits[0].transform.TryGetComponent(out SelectableUnit unit))
             {
                 Debug.Log($"Dont have Component: Unit {Hits[0].transform.name}");
                 return;
@@ -126,20 +125,20 @@ namespace KaizerWald
             AddPreselection(candidate);
         }
 
-        private SelectableRegiment GetPreselectionCandidate(in Ray singleRay, IUnit unit, int numHits)
+        private SelectableRegiment GetPreselectionCandidate(in Ray singleRay, SelectableUnit unit, int numHits)
         {
             SelectableRegiment candidate = unit.SelectableRegimentAttach;
             if (numHits > 1 && !AreUnitsFromSameRegiment(candidate.RegimentID))
             {
-                bool hit = Raycast(singleRay, out RaycastHit unitHit, INFINITY, SelectionLayer);
-                candidate = !hit ? candidate : unitHit.transform.GetComponent<IUnit>().SelectableRegimentAttach;
+                bool hit = Raycast(singleRay, out RaycastHit unitHit, INFINITY, SelectionLayer.value);
+                candidate = !hit ? candidate : unitHit.transform.GetComponent<SelectableUnit>().SelectableRegimentAttach;
             }
             return candidate;
         }
 
         private bool AreUnitsFromSameRegiment(int firstHitRegimentIndex)
         {
-            int regimentId = Hits[1].transform.GetComponent<IUnit>().SelectableRegimentAttach.RegimentID;
+            int regimentId = Hits[1].transform.GetComponent<SelectableUnit>().SelectableRegimentAttach.RegimentID;
             return firstHitRegimentIndex == regimentId;
         }
 
@@ -157,7 +156,7 @@ namespace KaizerWald
         private void PreselectRegiments()
         {
             Bounds selectionBounds = GetViewportBounds(StartLMouse, EndLMouse);
-            foreach (SelectableRegiment regiment in Regiments)
+            foreach (SelectableRegiment regiment in SelectionSystem.Regiments)
             {
                 if (regiment == null) continue;
                 bool isInSelectionRectangle = CheckUnitsInRectangleBounds(regiment);
