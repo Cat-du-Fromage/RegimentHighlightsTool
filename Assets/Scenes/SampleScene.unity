@@ -153,20 +153,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 561c6ce5446f4434ab43406566f0fbb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerUnitLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   <CreationOrders>k__BackingField:
   - OwnerID: 0
     Number: 2
-    BaseNumUnit: 20
-    UnitPrefab: {fileID: 2940238990299337712, guid: cd04b9edde7549542a3c246f61bbf0d7,
-      type: 3}
+    RegimentType: {fileID: 11400000, guid: 1eec153d08be6b34e8cd69439347ebcd, type: 2}
   - OwnerID: 0
     Number: 2
-    BaseNumUnit: 20
-    UnitPrefab: {fileID: 2940238990299337712, guid: cd04b9edde7549542a3c246f61bbf0d7,
-      type: 3}
+    RegimentType: {fileID: 11400000, guid: 1eec153d08be6b34e8cd69439347ebcd, type: 2}
 --- !u!114 &71005788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -185,12 +178,6 @@ MonoBehaviour:
   UnitLayer:
     serializedVersion: 2
     m_Bits: 128
-  PlayerLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  EnemyLayer:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!4 &71005789
 Transform:
   m_ObjectHideFlags: 0
@@ -768,6 +755,8 @@ MonoBehaviour:
   <PreselectionDefaultPrefab>k__BackingField: {fileID: 4612140642301560438, guid: c87b9e4d6a9bd564d84e6024ac479255,
     type: 3}
   <SelectionDefaultPrefab>k__BackingField: {fileID: 5453810541774106665, guid: 4f6746a49ef20b4409c0fb561b86ada3,
+    type: 3}
+  <PlacementDefaultPrefab>k__BackingField: {fileID: 6969508022250319429, guid: 5f28dfd2826d70e408b33fe4d04df0f2,
     type: 3}
 --- !u!4 &1490866060
 Transform:

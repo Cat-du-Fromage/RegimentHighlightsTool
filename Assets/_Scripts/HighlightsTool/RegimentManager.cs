@@ -12,13 +12,20 @@ namespace KaizerWald
     {
         private RegimentFactory factory;
         public List<Regiment> Regiments { get; private set; }
-        public event Action<Regiment, List<Unit>> OnNewRegiment; 
+        public event Action<Regiment> OnNewRegiment; 
 
+        // =============================================================================================================
+        // ----- Unity Events -----
+        // =============================================================================================================
+        
         protected override void Awake()
         {
             base.Awake();
             Regiments = new List<Regiment>();
             factory = FindObjectOfType<RegimentFactory>();
+            
+            //int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(FormationData));
+            //Debug.Log(GameObjectExtension.GetSizeOf<FormationData>());
         }
 
         private void OnEnable()
@@ -30,11 +37,15 @@ namespace KaizerWald
         {
             factory.OnRegimentCreated -= RegisterNewRegiment;
         }
+        
+        // =============================================================================================================
+        // ----- Class Methods -----
+        // =============================================================================================================
 
         private void RegisterNewRegiment(Regiment regiment)
         {
             Regiments.Add(regiment);
-            OnNewRegiment?.Invoke(regiment, regiment.Units);
+            OnNewRegiment?.Invoke(regiment);
         }
     }
 }

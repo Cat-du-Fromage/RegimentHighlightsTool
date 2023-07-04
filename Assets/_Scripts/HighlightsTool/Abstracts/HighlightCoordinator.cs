@@ -21,8 +21,9 @@ namespace KaizerWald
         [field:Header("Default Prefabs")]
         [field:SerializeField] public GameObject PreselectionDefaultPrefab { get; protected set; }
         [field:SerializeField] public GameObject SelectionDefaultPrefab { get; protected set; }
+        [field:SerializeField] public GameObject PlacementDefaultPrefab { get; protected set; }
         
-        public HashSet<SelectableRegiment> SelectableRegiments { get; protected set; }
+        public HashSet<Regiment> SelectableRegiments { get; protected set; }
         public RegimentHighlightSystem RegimentHighlightSystem { get; protected set; }
 
         // =============================================================================================================
@@ -32,17 +33,17 @@ namespace KaizerWald
         
         protected virtual void Awake()
         {
-            SelectableRegiments = new HashSet<SelectableRegiment>();
+            SelectableRegiments = new HashSet<Regiment>();
             RegimentHighlightSystem = GetComponent<RegimentHighlightSystem>();
             HighlightControls = new PlayerControls();
         }
         
-        public virtual void RegisterRegiment(SelectableRegiment regiment)
+        public virtual void RegisterRegiment(Regiment regiment)
         {
             RegimentHighlightSystem.RegisterRegiment(regiment);
         }
         
-        public virtual void UnRegisterRegiment(SelectableRegiment regiment)
+        public virtual void UnRegisterRegiment(Regiment regiment)
         {
             RegimentHighlightSystem.UnregisterRegiment(regiment);
         }

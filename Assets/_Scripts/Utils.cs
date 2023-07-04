@@ -4,6 +4,11 @@ using UnityEngine;
 
 public static class GameObjectExtension
 {
+    public static int GetSizeOf<T>() where T : struct
+    {
+        return System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+    }
+    
     public static List<I> FindObjectsOfInterface<I>() 
     where I : class
     {

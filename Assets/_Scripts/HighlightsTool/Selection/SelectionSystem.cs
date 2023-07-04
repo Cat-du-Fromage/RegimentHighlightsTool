@@ -7,48 +7,54 @@ namespace KaizerWald
 {
     public sealed class SelectionSystem : HighlightSystem
     {
-        public RegimentHighlightSystem MainSystem { get; private set; }
-        public HashSet<SelectableRegiment> Regiments => MainSystem.SelectablesRegiments;
+        public HashSet<Regiment> Regiments => MainSystem.SelectablesRegiments;
         public HighlightRegister PreselectionRegister => Registers[0];
         public HighlightRegister SelectionRegister => Registers[1];
         
-        private void Awake()
+        //public SelectionsInfos SelectionsInfo => 
+        
+        protected override void Awake()
         {
-            MainSystem = GetComponent<RegimentHighlightSystem>();
-            HighlightCoordinator coordinator = FindFirstObjectByType<HighlightCoordinator>();
-            Controller = new RegimentSelectionController(this, coordinator.HighlightControls, coordinator.UnitLayerMask);
-            InitializeRegisters(coordinator);
+            base.Awake();
         }
 
-        private void InitializeRegisters(HighlightCoordinator coordinator)
+        protected override void InitializeController()
         {
-            List<GameObject> prefabs = new() { coordinator.PreselectionDefaultPrefab, coordinator.SelectionDefaultPrefab };
-            //prefabs.ForEach(prefab => Registers.Append(new HighlightRegister(this, prefab)));
-            for (int i = 0; i < Registers.Length; i++)
+            Controller = new RegimentSelectionController(this, Coordinator.HighlightControls, Coordinator.UnitLayerMask);
+        }
+
+        protected override void InitializeRegisters()
+        {
+            GameObject[] prefabs = new[] { Coordinator.PreselectionDefaultPrefab, Coordinator.SelectionDefaultPrefab };
+            for (int i = 0; i < prefabs.Length; i++)
             {
                 Registers[i] = new HighlightRegister(this, prefabs[i]);
             }
         }
-        
-        public override void OnShow(SelectableRegiment selectableRegiment, int registerIndex)
+
+        public override void AddRegiment(Regiment regiment)
         {
-            base.OnShow(selectableRegiment, registerIndex);
+            PreselectionRegister.RegisterRegiment(regiment);
+            if (regiment.OwnerID != Coordinator.PlayerID) return;
+            SelectionRegister.RegisterRegiment(regiment);
+        }
+
+        public override void OnShow(Regiment selectableRegiment, int registerIndex)
+        {
             selectableRegiment.SetSelectableProperties((ESelection)registerIndex, true);
-            Registers[registerIndex].ActiveHighlights.Add(selectableRegiment);
+            base.OnShow(selectableRegiment, registerIndex);
         }
         
-        public override void OnHide(SelectableRegiment selectableRegiment, int registerIndex)
+        public override void OnHide(Regiment selectableRegiment, int registerIndex)
         {
-            base.OnHide(selectableRegiment, registerIndex);
             selectableRegiment.SetSelectableProperties((ESelection)registerIndex, false);
-            Registers[registerIndex].ActiveHighlights.Remove(selectableRegiment);
+            base.OnHide(selectableRegiment, registerIndex);
         }
 
         public override void HideAll(int registerIndex)
         {
-            base.HideAll(registerIndex);
             Registers[registerIndex].ActiveHighlights.ForEach(regiment => regiment.SetSelectableProperties((ESelection)registerIndex, false));
-            Registers[registerIndex].ActiveHighlights.Clear();
+            base.HideAll(registerIndex);
         }
     }
 }

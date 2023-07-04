@@ -54,7 +54,12 @@ namespace KaizerWald
             selectionControl.LeftMouseClickAndMove.canceled  -= OnSelection;
             selectionControl.Disable();
         }
-        
+
+        public override void OnUpdate()
+        {
+            throw new NotImplementedException();
+        }
+
         // =============================================================================================================
         // -------- PRESELECTION ----------
         // =============================================================================================================
@@ -114,31 +119,31 @@ namespace KaizerWald
         private void MouseHoverSingleEntity(in Ray singleRay, int numHits)
         {
             if (Hits[0].transform == null) return;
-            if (!Hits[0].transform.TryGetComponent(out SelectableUnit unit))
+            if (!Hits[0].transform.TryGetComponent(out Unit unit))
             {
                 Debug.Log($"Dont have Component: Unit {Hits[0].transform.name}");
                 return;
             }
-            SelectableRegiment candidate = GetPreselectionCandidate(singleRay, unit, numHits);
+            Regiment candidate = GetPreselectionCandidate(singleRay, unit, numHits);
             if (candidate.IsPreselected) return;
             ClearPreselection();
             AddPreselection(candidate);
         }
 
-        private SelectableRegiment GetPreselectionCandidate(in Ray singleRay, SelectableUnit unit, int numHits)
+        private Regiment GetPreselectionCandidate(in Ray singleRay, Unit unit, int numHits)
         {
-            SelectableRegiment candidate = unit.SelectableRegimentAttach;
+            Regiment candidate = unit.RegimentAttach;
             if (numHits > 1 && !AreUnitsFromSameRegiment(candidate.RegimentID))
             {
                 bool hit = Raycast(singleRay, out RaycastHit unitHit, INFINITY, SelectionLayer.value);
-                candidate = !hit ? candidate : unitHit.transform.GetComponent<SelectableUnit>().SelectableRegimentAttach;
+                candidate = !hit ? candidate : unitHit.transform.GetComponent<Unit>().RegimentAttach;
             }
             return candidate;
         }
 
         private bool AreUnitsFromSameRegiment(int firstHitRegimentIndex)
         {
-            int regimentId = Hits[1].transform.GetComponent<SelectableUnit>().SelectableRegimentAttach.RegimentID;
+            int regimentId = Hits[1].transform.GetComponent<Unit>().RegimentAttach.RegimentID;
             return firstHitRegimentIndex == regimentId;
         }
 
@@ -156,7 +161,7 @@ namespace KaizerWald
         private void PreselectRegiments()
         {
             Bounds selectionBounds = GetViewportBounds(StartLMouse, EndLMouse);
-            foreach (SelectableRegiment regiment in SelectionSystem.Regiments)
+            foreach (Regiment regiment in SelectionSystem.Regiments)
             {
                 if (regiment == null) continue;
                 bool isInSelectionRectangle = CheckUnitsInRectangleBounds(regiment);
@@ -167,7 +172,7 @@ namespace KaizerWald
                     RemovePreselection(regiment);
             }
             
-            bool CheckUnitsInRectangleBounds(SelectableRegiment regiment)
+            bool CheckUnitsInRectangleBounds(Regiment regiment)
             {
                 foreach (Transform unitTransform in regiment.UnitsTransform)
                 {
@@ -196,12 +201,12 @@ namespace KaizerWald
         //--------------------------------------------------------------------------------------------------------------
         //Methods: Preselection
         //--------------------------------------------------------------------------------------------------------------
-        private void AddPreselection(SelectableRegiment selectableRegiment)
+        private void AddPreselection(Regiment selectableRegiment)
         {
             SelectionSystem.OnShow(selectableRegiment, (int)ESelection.Preselection);
         }
 
-        private void RemovePreselection(SelectableRegiment selectableRegiment)
+        private void RemovePreselection(Regiment selectableRegiment)
         {
             SelectionSystem.OnHide(selectableRegiment, (int)ESelection.Preselection);
         }
@@ -231,7 +236,7 @@ namespace KaizerWald
                 // we remove element from list, by iterating reverse we stay inbounds
                 for (int i = SelectionRegister.ActiveHighlights.Count - 1; i > -1; i--)
                 {
-                    SelectableRegiment regiment = SelectionRegister.ActiveHighlights[i];
+                    Regiment regiment = SelectionRegister.ActiveHighlights[i];
                     if (regiment.IsPreselected) continue;
                     SelectionSystem.OnHide(regiment, (int)ESelection.Selection);
                 }
@@ -239,7 +244,7 @@ namespace KaizerWald
             
             void SelectPreselection()
             {
-                foreach (SelectableRegiment selectable in PreselectionRegister.ActiveHighlights)
+                foreach (Regiment selectable in PreselectionRegister.ActiveHighlights)
                 {
                     if (selectable.IsSelected) continue;
                     SelectionSystem.OnShow(selectable, (int)ESelection.Selection);
