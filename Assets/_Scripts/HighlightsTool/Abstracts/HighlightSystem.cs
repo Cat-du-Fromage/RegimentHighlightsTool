@@ -23,17 +23,8 @@ namespace KaizerWald
         }
 
         protected abstract void InitializeController();
-
         protected abstract void InitializeRegisters();
-        /*
-        protected void InitializeRegisters(GameObject[] prefabs)
-        {
-            for (int i = 0; i < prefabs.Length; i++)
-            {
-                Registers[i] = new HighlightRegister(this, prefabs[i]);
-            }
-        }
-*/
+
         public virtual void AddRegiment(Regiment regiment)
         {
             Array.ForEach(Registers, register => register.RegisterRegiment(regiment));
@@ -44,41 +35,36 @@ namespace KaizerWald
             Array.ForEach(Registers, register => register.UnregisterRegiment(regiment));
         }
         
-        public virtual void OnShow(Regiment selectableRegiment, int registerIndex)
+        public virtual void OnShow(Regiment regiment, int registerIndex)
         {
-            if (selectableRegiment == null) return;
-            if (!Registers[registerIndex].Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
+            if (regiment == null) return;
+            if (!Registers[registerIndex].Records.TryGetValue(regiment.RegimentID, out HighlightBehaviour[] highlights)) return;
             foreach (HighlightBehaviour highlight in highlights)
             {
                 if (highlight == null) continue;
                 highlight.Show();
             }
-            Registers[registerIndex].ActiveHighlights.Add(selectableRegiment);
+            Registers[registerIndex].ActiveHighlights.Add(regiment);
         }
         
-        public virtual void OnHide(Regiment selectableRegiment, int registerIndex)
+        public virtual void OnHide(Regiment regiment, int registerIndex)
         {
-            if (selectableRegiment == null) return;
-            if (!Registers[registerIndex].Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
+            if (regiment == null) return;
+            if (!Registers[registerIndex].Records.TryGetValue(regiment.RegimentID, out HighlightBehaviour[] highlights)) return;
             foreach (HighlightBehaviour highlight in highlights)
             {
                 if (highlight == null) continue;
                 highlight.Hide();
             }
-            Registers[registerIndex].ActiveHighlights.Remove(selectableRegiment);
+            Registers[registerIndex].ActiveHighlights.Remove(regiment);
         }
 
         public virtual void HideAll(int registerIndex)
         {
-            foreach (Regiment activeHighlight in Registers[registerIndex].ActiveHighlights)
+            for (int i = Registers[registerIndex].ActiveHighlights.Count - 1; i > -1; i--)
             {
-                foreach (HighlightBehaviour highlight in Registers[registerIndex].Records[activeHighlight.RegimentID])
-                {
-                    if (highlight == null) continue;
-                    highlight.Hide();
-                }
+                OnHide(Registers[registerIndex].ActiveHighlights[i], registerIndex);
             }
-            Registers[registerIndex].ActiveHighlights.Clear();
         }
     }
 }

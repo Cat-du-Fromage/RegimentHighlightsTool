@@ -7,11 +7,12 @@ namespace KaizerWald
 {
     public sealed class SelectionSystem : HighlightSystem
     {
-        public HashSet<Regiment> Regiments => MainSystem.SelectablesRegiments;
-        public HighlightRegister PreselectionRegister => Registers[0];
-        public HighlightRegister SelectionRegister => Registers[1];
+        public static readonly int PreselectionRegisterIndex = 0;
+        public static readonly int SelectionRegisterIndex = 1;
         
-        //public SelectionsInfos SelectionsInfo => 
+        public HashSet<Regiment> Regiments => MainSystem.AllRegiments;
+        public HighlightRegister PreselectionRegister => Registers[PreselectionRegisterIndex];
+        public HighlightRegister SelectionRegister => Registers[SelectionRegisterIndex];
         
         protected override void Awake()
         {
@@ -39,21 +40,21 @@ namespace KaizerWald
             SelectionRegister.RegisterRegiment(regiment);
         }
 
-        public override void OnShow(Regiment selectableRegiment, int registerIndex)
+        public override void OnShow(Regiment regiment, int registerIndex)
         {
-            selectableRegiment.SetSelectableProperties((ESelection)registerIndex, true);
-            base.OnShow(selectableRegiment, registerIndex);
+            ((ISelectable)regiment).SetSelectableProperty(registerIndex, true);
+            base.OnShow(regiment, registerIndex);
         }
         
-        public override void OnHide(Regiment selectableRegiment, int registerIndex)
+        public override void OnHide(Regiment regiment, int registerIndex)
         {
-            selectableRegiment.SetSelectableProperties((ESelection)registerIndex, false);
-            base.OnHide(selectableRegiment, registerIndex);
+            ((ISelectable)regiment).SetSelectableProperty(registerIndex, false);
+            base.OnHide(regiment, registerIndex);
         }
 
         public override void HideAll(int registerIndex)
         {
-            Registers[registerIndex].ActiveHighlights.ForEach(regiment => regiment.SetSelectableProperties((ESelection)registerIndex, false));
+            Registers[registerIndex].ActiveHighlights.ForEach(regiment => ((ISelectable)regiment).SetSelectableProperty(registerIndex, false));
             base.HideAll(registerIndex);
         }
     }

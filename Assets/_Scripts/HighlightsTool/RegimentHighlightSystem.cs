@@ -13,6 +13,8 @@ namespace KaizerWald
         public PlacementSystem Placement { get; private set; }
         public List<Regiment> SelectedRegiment => Selection.SelectionRegister.ActiveHighlights;
 
+        private List<HighlightController> Controllers = new List<HighlightController>();
+
         // =============================================================================================================
         // ----- Unity Events -----
         // =============================================================================================================
@@ -21,16 +23,37 @@ namespace KaizerWald
             base.Awake();
             Selection = this.GetOrAddComponent<SelectionSystem>();
             Placement = this.GetOrAddComponent<PlacementSystem>();
+
+            Controllers = new List<HighlightController>() { Selection.Controller, Placement.Controller };
+        }
+
+        private void Update()
+        {
+            if (Controllers.Count == 0) return;
+            foreach (HighlightController controller in Controllers)
+            {
+                controller.OnUpdate();
+            }
         }
 
         private void OnEnable()
         {
             RegimentManager.OnNewRegiment += RegisterRegiment;
+            if (Controllers.Count == 0) return;
+            foreach (HighlightController controller in Controllers)
+            {
+                controller.OnEnable();
+            }
         }
 
         private void OnDisable()
         {
             RegimentManager.OnNewRegiment -= RegisterRegiment;
+            if (Controllers.Count == 0) return;
+            foreach (HighlightController controller in Controllers)
+            {
+                controller.OnDisable();
+            }
         }
         
         // =============================================================================================================

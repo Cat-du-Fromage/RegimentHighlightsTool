@@ -5,11 +5,11 @@ using UnityEngine;
 namespace KaizerWald
 {
     
-    public class Regiment : MonoBehaviour
+    public class Regiment : MonoBehaviour, ISelectable
     {
-        [field:SerializeField] public bool IsPreselected { get; private set; }
-        [field:SerializeField] public bool IsSelected { get; private set; }
-        
+        [field:SerializeField] public bool IsPreselected { get; set; }
+        [field:SerializeField] public bool IsSelected { get; set; }
+
         [field:SerializeField] public RegimentType RegimentType { get; private set; }
         public ulong OwnerID { get; private set; }
         public int RegimentID { get; private set; }
@@ -40,21 +40,17 @@ namespace KaizerWald
                 UnitsTransform[i] = Units[i].transform;
             }
         }
-        
-        public void SetSelectableProperties(ESelection index, bool value)
+        /*
+        public void SetSelectableProperty(int index, bool value)
         {
-            switch (index)
-            {
-                case ESelection.Preselection:
-                    IsPreselected = value;
-                    return;
-                case ESelection.Selection:
-                    IsSelected = value;
-                    return;
-                default:
-                    return;
-            }
+            if (index is 0)
+                IsPreselected = value;
+            else if (index is 1)
+                IsSelected = value;
+            else
+                return;
         }
+        */
     }
     
 }

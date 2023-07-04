@@ -5,18 +5,15 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public enum EPlacement : int
-    {
-        Static,
-        Dynamic
-    }
-    
     public sealed class PlacementSystem : HighlightSystem
     {
+        public static readonly int StaticRegisterIndex = 0;
+        public static readonly int DynamicRegisterIndex = 1;
+        
         public List<Regiment> SelectedRegiments => MainSystem.Selection.SelectionRegister.ActiveHighlights;
         
-        public HighlightRegister StaticPlacementRegister => Registers[0];
-        public HighlightRegister DynamicPlacementRegister => Registers[1];
+        public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
+        public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
 
         protected override void Awake()
         {
@@ -53,11 +50,6 @@ namespace KaizerWald
                 {
                     Transform dynamicTransform = DynamicPlacementRegister.Records[id][i].transform;
                     StaticPlacementRegister.Records[id][i].transform.SetPositionAndRotation(dynamicTransform.position, dynamicTransform.rotation);
-                    /*
-                    Vector3 dynamicPosition = DynamicPlacementRegister.Records[id][j].transform.position;
-                    Quaternion dynamicRotation = DynamicPlacementRegister.Records[id][j].transform.rotation;
-                    StaticPlacementRegister.Records[id][j].transform.SetPositionAndRotation(dynamicPosition, dynamicRotation);
-                    */
                 }
             }
         }

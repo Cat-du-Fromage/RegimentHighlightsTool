@@ -13,19 +13,15 @@ namespace KaizerWald
         private RegimentFactory factory;
         public List<Regiment> Regiments { get; private set; }
         public event Action<Regiment> OnNewRegiment; 
-
-        // =============================================================================================================
-        // ----- Unity Events -----
-        // =============================================================================================================
         
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Unity Events ◇◇◇◇◇                                                                                   ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         protected override void Awake()
         {
             base.Awake();
             Regiments = new List<Regiment>();
             factory = FindObjectOfType<RegimentFactory>();
-            
-            //int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(FormationData));
-            //Debug.Log(GameObjectExtension.GetSizeOf<FormationData>());
         }
 
         private void OnEnable()
@@ -36,12 +32,15 @@ namespace KaizerWald
         private void OnDisable()
         {
             factory.OnRegimentCreated -= RegisterNewRegiment;
+            foreach (Delegate action in OnNewRegiment?.GetInvocationList()!)
+            {
+                OnNewRegiment -= (Action<Regiment>)action;
+            }
         }
         
-        // =============================================================================================================
-        // ----- Class Methods -----
-        // =============================================================================================================
-
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Class Methods ◇◇◇◇◇                                                                                  ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void RegisterNewRegiment(Regiment regiment)
         {
             Regiments.Add(regiment);

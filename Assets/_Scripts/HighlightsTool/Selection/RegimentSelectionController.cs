@@ -16,13 +16,16 @@ namespace KaizerWald
 {
     public sealed class RegimentSelectionController : HighlightController
     {
-        private SelectionActions selectionControl;
+        private const float SPHERE_RADIUS = 0.5f;
+        private const float RAYCAST_DISTANCE = ushort.MaxValue;
         
         private readonly LayerMask SelectionLayer;
+        private readonly RaycastHit[] Hits = new RaycastHit[2];
+        
+        private SelectionActions selectionControl;
         private bool ClickDragPerformed;
         private Vector2 StartLMouse, EndLMouse;
-        private readonly RaycastHit[] Hits = new RaycastHit[2];
-
+        
         public SelectionSystem SelectionSystem { get; private set; }
         private HighlightRegister PreselectionRegister => SelectionSystem.PreselectionRegister;
         private HighlightRegister SelectionRegister => SelectionSystem.SelectionRegister;
@@ -34,7 +37,7 @@ namespace KaizerWald
             SelectionSystem = (SelectionSystem)system;
             SelectionLayer = unitLayer;
             selectionControl = controls.Selection;
-            OnEnable();
+            //OnEnable();
         }
         
         public override void OnEnable()
@@ -55,26 +58,33 @@ namespace KaizerWald
             selectionControl.Disable();
         }
 
+        private Vector3 LastPositionOnTerrain;
         public override void OnUpdate()
         {
-            
-        }
-
-        // =============================================================================================================
-        // -------- PRESELECTION ----------
-        // =============================================================================================================
-        
-        //------------------------------------------------------------------------------------------------------------------
-        //Single Unit Preselection
-        private void OnMouseHover(CallbackContext context)
-        {
-            EndLMouse = context.ReadValue<Vector2>();
+            //We also need to check when Units Move not only when camera move
             if (ClickDragPerformed) return;
             CheckMouseHoverUnit();
         }
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ PRESELECTION ◇◇◇◇◇                                                                                   ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ EVENT FUNCTIONS ◇◇◇◇◇                                                                                ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆ Single Unit Preselection ◆◆◆◆                                                                        │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        private void OnMouseHover(CallbackContext context)
+        {
+            EndLMouse = context.ReadValue<Vector2>();
+            //if (ClickDragPerformed) return;
+            //CheckMouseHoverUnit();
+        }
         
-        //------------------------------------------------------------------------------------------------------------------
-        //Multiple Unit Preselection
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆ Multiple Unit Preselection ◆◆◆◆                                                                      │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void OnDragSelectionStart(CallbackContext context)
         {
             StartLMouse = EndLMouse = context.ReadValue<Vector2>();
@@ -85,15 +95,15 @@ namespace KaizerWald
         {
             ClickDragPerformed = IsDragSelection();
             if (!ClickDragPerformed) return;
-            PreselectionMethodChoice();
+            GroupPreselectionRegiments();
         }
         
-        private bool IsDragSelection() => lengthsq(EndLMouse - StartLMouse) >= 128;
+        private bool IsDragSelection() => Vector2.SqrMagnitude(EndLMouse - StartLMouse) >= 128;
         
-        //------------------------------------------------------------------------------------------------------------------
-        //Mouse Hover Check
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆ Mouse Hover Check ◆◆◆◆                                                                               │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
-        //Guard Clause : Num Hits
         private bool NoHits(int numHits)
         {
             if (numHits != 0) return false;
@@ -103,25 +113,28 @@ namespace KaizerWald
         
         private void CheckMouseHoverUnit()
         {
-            const float sphereRadius = 0.5f;
             Ray singleRay = PlayerCamera.ScreenPointToRay(EndLMouse);
-            int numHits = SphereCastNonAlloc(singleRay, sphereRadius, Hits,INFINITY, SelectionLayer.value);
-            //Debug.Log($"EndLMouse: {EndLMouse}; Layer: {SelectionLayer.value}");
+            int numHits = SphereCastNonAlloc(singleRay, SPHERE_RADIUS, Hits,RAYCAST_DISTANCE, SelectionLayer.value);
             if (NoHits(numHits)) return;
             MouseHoverSingleEntity(singleRay, numHits);
             
-            if(Hits.Length == 0) return;
+            if(Hits.Length is 0) return;
             Array.Clear(Hits, 0, Hits.Length);
         }
         
-        //------------------------------------------------------------------------------------------------------------------
-        //Mouse Hover : No Drag
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ PRESELECTION METHODS ◇◇◇◇◇                                                                           ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆ Single Preselection ◆◆◆◆                                                                             │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void MouseHoverSingleEntity(in Ray singleRay, int numHits)
         {
-            if (Hits[0].transform == null) return;
+            //if (Hits[0].transform == null) return;
             if (!Hits[0].transform.TryGetComponent(out Unit unit))
             {
-                Debug.Log($"Dont have Component: Unit {Hits[0].transform.name}");
+                Debug.LogError($"Dont have Component: Unit {Hits[0].transform.name}");
                 return;
             }
             Regiment candidate = GetPreselectionCandidate(singleRay, unit, numHits);
@@ -146,19 +159,11 @@ namespace KaizerWald
             int regimentId = Hits[1].transform.GetComponent<Unit>().RegimentAttach.RegimentID;
             return firstHitRegimentIndex == regimentId;
         }
-
-        //------------------------------------------------------------------------------------------------------------------
-        //Preselection
         
-        /// <summary>
-        /// ADD Job system Later
-        /// </summary>
-        private void PreselectionMethodChoice()
-        {
-            PreselectRegiments();
-        }
-        
-        private void PreselectRegiments()
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆ Group Preselection ◆◆◆◆                                                                              │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        private void GroupPreselectionRegiments()
         {
             Bounds selectionBounds = GetViewportBounds(StartLMouse, EndLMouse);
             foreach (Regiment regiment in SelectionSystem.Regiments)
@@ -198,57 +203,54 @@ namespace KaizerWald
             return bounds;
         }
         
-        //--------------------------------------------------------------------------------------------------------------
-        //Methods: Preselection
-        //--------------------------------------------------------------------------------------------------------------
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Method Preselection ◇◇◇◇◇                                                                            ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void AddPreselection(Regiment selectableRegiment)
         {
-            SelectionSystem.OnShow(selectableRegiment, (int)ESelection.Preselection);
+            SelectionSystem.OnShow(selectableRegiment, SelectionSystem.PreselectionRegisterIndex);
         }
 
         private void RemovePreselection(Regiment selectableRegiment)
         {
-            SelectionSystem.OnHide(selectableRegiment, (int)ESelection.Preselection);
+            SelectionSystem.OnHide(selectableRegiment, SelectionSystem.PreselectionRegisterIndex);
         }
 
         private void ClearPreselection()
         {
-            SelectionSystem.HideAll((int)ESelection.Preselection);
+            SelectionSystem.HideAll(SelectionSystem.PreselectionRegisterIndex);
         }
-
-        // =============================================================================================================
-        // -------- SELECTION ----------
-        // =============================================================================================================
         
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ SELECTION ◇◇◇◇◇                                                                                      ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void OnSelection(CallbackContext context)
         {
             DeselectNotPreselected();
             SelectPreselection();
-            //HighlightSystem.Register.OnNewSelection();//Experimental SelectionInfos
-            
             if (!ClickDragPerformed) return;
             CheckMouseHoverUnit();
             ClickDragPerformed = false;
-            
-            void DeselectNotPreselected()
+        }
+        
+        private void SelectPreselection()
+        {
+            foreach (Regiment selectable in PreselectionRegister.ActiveHighlights)
             {
-                if (IsCtrlPressed) return;
-                // we remove element from list, by iterating reverse we stay inbounds
-                for (int i = SelectionRegister.ActiveHighlights.Count - 1; i > -1; i--)
-                {
-                    Regiment regiment = SelectionRegister.ActiveHighlights[i];
-                    if (regiment.IsPreselected) continue;
-                    SelectionSystem.OnHide(regiment, (int)ESelection.Selection);
-                }
+                if (selectable.IsSelected) continue;
+                SelectionSystem.OnShow(selectable, SelectionSystem.SelectionRegisterIndex);
             }
-            
-            void SelectPreselection()
+        }
+        
+        private void DeselectNotPreselected()
+        {
+            if (IsCtrlPressed) return;
+            // we remove element from list, by iterating reverse we stay inbounds
+            for (int i = SelectionRegister.ActiveHighlights.Count - 1; i > -1; i--)
             {
-                foreach (Regiment selectable in PreselectionRegister.ActiveHighlights)
-                {
-                    if (selectable.IsSelected) continue;
-                    SelectionSystem.OnShow(selectable, (int)ESelection.Selection);
-                }
+                Regiment regiment = SelectionRegister.ActiveHighlights[i];
+                if (regiment.IsPreselected) continue;
+                SelectionSystem.OnHide(regiment, SelectionSystem.SelectionRegisterIndex);
             }
         }
     }

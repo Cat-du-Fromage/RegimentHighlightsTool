@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class GameObjectExtension
+public static class Utilities
 {
     public static int GetSizeOf<T>() where T : struct
     {
@@ -19,13 +19,6 @@ public static class GameObjectExtension
             I[] components = behaviour.GetComponents<I>();
             if (components == null || components.Length == 0) continue;
             list.AddRange(components);
-            /*
-            for (int i = 0; i < components.Length; i++)
-            {
-                if (components[i] == null) continue;
-                list.Add(components[i]);
-            }
-            */
         }
         return list;
     }

@@ -7,11 +7,8 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.Interactions;
-using UnityEngine.Jobs;
 
-
+using static KaizerWald.PlacementSystem;
 using static PlayerControls;
 using static UnityEngine.InputSystem.InputAction;
 using static UnityEngine.Mathf;
@@ -24,11 +21,9 @@ using static Unity.Collections.NativeArrayOptions;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 
 using float3 = Unity.Mathematics.float3;
-//using ReadOnly = Unity.Collections.ReadOnlyAttribute;
 
 namespace KaizerWald
 {
-    
     public sealed class PlacementController : HighlightController
     {
         private const float DISTANCE_BETWEEN_REGIMENT = 1f;
@@ -65,13 +60,11 @@ namespace KaizerWald
             PlacementSystem = (PlacementSystem)system;
             PlacementControls = controls.Placement;
             TerrainLayer = terrainLayer;
-            OnEnable();
         }
         
-        // =============================================================================================================
-        // -------- Abstract Methods ----------
-        // =============================================================================================================
-        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Abstract Methods ◇◇◇◇◇                                                                               ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public override void OnEnable()
         {
             PlacementControls.Enable();
@@ -115,11 +108,11 @@ namespace KaizerWald
             mouseDistance = GetDistance();
             PlaceRegiments();
         }
-
-        // =============================================================================================================
-        // -------- Event Based Controls ----------
-        // =============================================================================================================
-
+        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Event Based Controls ◇◇◇◇◇                                                                           ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
         private void OnRightMouseClickAndMoveStart(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0) return;
@@ -150,11 +143,11 @@ namespace KaizerWald
                 PlacementSystem.SwapDynamicToStatic();
             }
         }
-        private void OnSpaceKeyStart(InputAction.CallbackContext context) => EnableAllStatic();
-        private void OnSpaceKeyCancel(InputAction.CallbackContext context) => DisableAllStatic();
+        private void OnSpaceKeyStart(CallbackContext context) => EnableAllStatic();
+        private void OnSpaceKeyCancel(CallbackContext context) => DisableAllStatic();
 
         //Cancel Placement
-        private void CancelPlacement(InputAction.CallbackContext context) => DisablePlacements();
+        private void CancelPlacement(CallbackContext context) => DisablePlacements();
 
         private void DisablePlacements()
         {
@@ -162,17 +155,16 @@ namespace KaizerWald
             mouseDistance = 0;
             PlacementsVisible = false;
         }
-
-        // =============================================================================================================
-        // -------- Placement Logic ----------
-        // =============================================================================================================
-
+        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Placement Logic ◇◇◇◇◇                                                                                ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void PlaceRegiments()
         {
             if (!IsVisibilityTrigger()) return;
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth.x;
             NativeArray<int> newWidths = GetUpdatedFormationWidths(ref unitsToAddLength);
-            NativeArray<float3> starts = GetStartsPosition(unitsToAddLength, newWidths);
+            NativeArray<float2> starts = GetStartsPosition(unitsToAddLength, newWidths);
             NativeList<JobHandle> jhs = GetInitialTokensPosition(starts, newWidths, out NativeArray<float2> initialTokensPositions);
             
             using NativeArray<RaycastHit> results = GetPositionAndRotationOnTerrain(ref initialTokensPositions, jhs);
@@ -185,13 +177,13 @@ namespace KaizerWald
         /// </summary>
         /// <param name="starts">Starts calculated (Y component is incorrect at this point)</param>
         /// <param name="newWidths">Formations size foreach regiment allowed by the distance formed by Start-Mouse to End-Mouse</param>
-        /// <param name="initialTokensPositions"></param>
+        /// <param name="initialTokensPositions">Output: array of position calculated in 2D</param>
         /// <returns></returns>
-        private NativeList<JobHandle> GetInitialTokensPosition(in NativeArray<float3> starts, in NativeArray<int> newWidths, out NativeArray<float2> initialTokensPositions)
+        private NativeList<JobHandle> GetInitialTokensPosition(in NativeArray<float2> starts, in NativeArray<int> newWidths, out NativeArray<float2> initialTokensPositions)
         {
             // PHASE 1 : On récupère OU vont les tokens par rapport à la nouvelle formations
-            half3 lineDirection = half3(LineDirection);
-            half3 depthDirection = half3(DepthDirection);
+            half2 lineDirection2D = half2(LineDirection.xz);
+            half2 depthDirection2D = half2(DepthDirection.xz);
             initialTokensPositions = new (TotalUnitsSelected, TempJob, UninitializedMemory);
             NativeList<JobHandle> jobHandles = new (SelectedRegiments.Count, Temp);
             
@@ -204,8 +196,8 @@ namespace KaizerWald
                     NewWidth           = newWidths[i],
                     NumUnitsAlive      = regimentState.NumUnitsAlive,
                     DistanceUnitToUnit = half2(regimentState.DistanceUnitToUnit),
-                    LineDirection      = lineDirection,
-                    DepthDirection     = depthDirection,
+                    LineDirection      = lineDirection2D,
+                    DepthDirection     = depthDirection2D,
                     Start              = starts[i],
                     TokensPositions    = initialTokensPositions.Slice(numUnitsRegimentsBefore, regimentState.NumUnitsAlive)
                 };
@@ -288,81 +280,78 @@ namespace KaizerWald
             return newWidths;
         }
 
-        private NativeArray<float3> GetStartsPosition(float unitsToAddLength, NativeArray<int> newWidths)
+        private NativeArray<float2> GetStartsPosition(float unitsToAddLength, NativeArray<int> newWidths)
         {
-            float3 lineDirection = LineDirection;
+            float2 lineDirection = LineDirection.xz;
             bool isMaxDistanceReach = mouseDistance < MinMaxSelectionWidth.y;
             float leftOver = isMaxDistanceReach ? unitsToAddLength / (SelectedRegiments.Count - 1) : 0;
             
-            NativeArray<float3> starts = new (SelectedRegiments.Count, Temp, UninitializedMemory);
-            starts[0] = MouseStart;
+            NativeArray<float2> starts = new (SelectedRegiments.Count, Temp, UninitializedMemory);
+            starts[0] = ((float3)MouseStart).xz;
             for (int i = 1; i < SelectedRegiments.Count; i++)
             {
-                float currUnitSpace = SelectedRegiments[i].Formation.DistanceUnitToUnit.x;
-                float prevUnitSpace = SelectedRegiments[i - 1].Formation.DistanceUnitToUnit.x;
+                float currUnitSpace  = SelectedRegiments[i].Formation.DistanceUnitToUnit.x;
+                float prevUnitSpace  = SelectedRegiments[i - 1].Formation.DistanceUnitToUnit.x;
                 float previousLength = (newWidths[i - 1] - 1) * prevUnitSpace; // -1 because we us space, not units
-                previousLength += csum(float2(prevUnitSpace, currUnitSpace) * 0.5f);//arrive at edge of last Unit + 1/2 newUnitSize
-                previousLength += DISTANCE_BETWEEN_REGIMENT + max(0, leftOver); // add regiment space
+                previousLength      += csum(float2(prevUnitSpace, currUnitSpace) * 0.5f);//arrive at edge of last Unit + 1/2 newUnitSize
+                previousLength      += DISTANCE_BETWEEN_REGIMENT + max(0, leftOver); // add regiment space
+                
                 starts[i] = starts[i - 1] + lineDirection * previousLength;
             }
             return starts;
         }
         
-        //==============================================================================================================
-        // ----- Visibility Trigger -----
-        //==============================================================================================================
-
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆ Visibility Trigger ◆◆◆◆                                                                              │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        
         /// <summary>
         /// Is Cursor far enough to trigger event?
         /// </summary>
         /// <returns>condition met to trigger placement visibility</returns>
         private bool IsVisibilityTrigger()
         {
-            //First Guard Clause : mouse goes far enough
             if (PlacementsVisible) return true;
             if (mouseDistance < SelectedRegiments[0].Formation.DistanceUnitToUnit.x) return false;
-            
             EnableAllDynamicSelected();
             PlacementsVisible = true;
             return true;
         }
-
-        //==============================================================================================================
-        // ----- Mouses Positions -----
-        //==============================================================================================================
+        
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◆◆◆◆  Mouses Positions ◆◆◆◆                                                                               │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        
         private bool GetMouseStart(in Vector2 mouseInput)
         {
             Ray singleRay = PlayerCamera.ScreenPointToRay(mouseInput);
-            bool hit = Raycast(singleRay, out RaycastHit singleHit, Infinity, TerrainLayer);
-            MouseStart = hit ? singleHit.point : MouseStart;
-            return hit;
+            bool isHit = Raycast(singleRay, out RaycastHit hit, Infinity, TerrainLayer);
+            MouseStart = isHit ? hit.point : MouseStart;
+            return isHit;
         }
 
         private bool GetMouseEnd(in Vector2 mouseInput)
         {
             Ray singleRay = PlayerCamera.ScreenPointToRay(mouseInput);
-            bool hit = Raycast(singleRay, out RaycastHit singleHit, Infinity, TerrainLayer);
-            MouseEnd = hit ? singleHit.point : MouseEnd;
-            return hit;
+            bool isHit = Raycast(singleRay, out RaycastHit hit, Infinity, TerrainLayer);
+            MouseEnd = isHit ? hit.point : MouseEnd;
+            return isHit;
         }
         
-        //==============================================================================================================
-        // ----- Toggle Methods -----
-        //==============================================================================================================
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Toggle Methods ◇◇◇◇◇                                                                                 ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         
-        // quand clique droit (flanc descendant)
         private void EnableAllDynamicSelected()
         {
-            SelectedRegiments.ForEach(regiment => PlacementSystem.OnShow(regiment, (int)EPlacement.Dynamic));
-        }
-
-        // quand clique droit (flanc montant)
-        private void OnClearDynamicHighlight()
-        {
-            PlacementSystem.HideAll((int)EPlacement.Dynamic);
+            SelectedRegiments.ForEach(regiment => PlacementSystem.OnShow(regiment, PlacementSystem.DynamicRegisterIndex));
         }
         
-        //Static
+        private void OnClearDynamicHighlight()
+        {
+            PlacementSystem.HideAll(PlacementSystem.DynamicRegisterIndex);
+        }
+        
         private void EnableAllStatic()
         {
             foreach ((int _, HighlightBehaviour[] tokens) in StaticRegister.Records)
@@ -381,10 +370,9 @@ namespace KaizerWald
             }
         }
         
-        //==============================================================================================================
-        // ----- JOBS -----
-        //==============================================================================================================
-
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ JOBS ◇◇◇◇◇                                                                                           ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [BurstCompile]
         private struct JRaycastsCommands : IJobFor
         {
@@ -411,9 +399,9 @@ namespace KaizerWald
             [ReadOnly] public int NewWidth;
             [ReadOnly] public int NumUnitsAlive;
             [ReadOnly] public half2 DistanceUnitToUnit;
-            [ReadOnly] public half3 LineDirection;
-            [ReadOnly] public half3 DepthDirection;
-            [ReadOnly] public float3 Start;
+            [ReadOnly] public half2 LineDirection;
+            [ReadOnly] public half2 DepthDirection;
+            [ReadOnly] public float2 Start;
             
             [WriteOnly, NativeDisableParallelForRestriction, NativeDisableContainerSafetyRestriction] 
             public NativeSlice<float2> TokensPositions;
@@ -423,13 +411,13 @@ namespace KaizerWald
                 int y = unitIndex / NewWidth;
                 int x = unitIndex - (y * NewWidth);
 
-                float3 yOffset = y * (float3)DepthDirection * DistanceUnitToUnit.y;
-                float3 xOffset = x * (float3)LineDirection * DistanceUnitToUnit.x;
-                float3 position = Start + GetStartOffset(y) + xOffset + yOffset;
-                TokensPositions[unitIndex] = position.xz;
+                float2 yOffset = y * DistanceUnitToUnit.y * (float2)DepthDirection;
+                float2 xOffset = x * DistanceUnitToUnit.x * (float2)LineDirection;
+                float2 position = Start + GetStartOffset(y) + xOffset + yOffset;
+                TokensPositions[unitIndex] = position;
             }
 
-            private float3 GetStartOffset(int yUnit)
+            private float2 GetStartOffset(int yUnit)
             {
                 int maxDepth = (int)ceil((float)NumUnitsAlive / NewWidth);
                 int numUnitLastLine = NumUnitsAlive - NewWidth * (maxDepth - 1);
@@ -437,7 +425,7 @@ namespace KaizerWald
                 float offset = (diffLastLineWidth * 0.5f) * DistanceUnitToUnit.x;
                 
                 bool isLastLine = yUnit == maxDepth - 1;
-                return select(0, (float3)LineDirection * offset, isLastLine);
+                return select(0, (float2)LineDirection * offset, isLastLine);
             }
         }
     }
