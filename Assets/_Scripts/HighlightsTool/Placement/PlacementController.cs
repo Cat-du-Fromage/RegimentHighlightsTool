@@ -10,8 +10,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.Interactions;
 using UnityEngine.Jobs;
-using UnityEngine.Serialization;
+
+
 using static PlayerControls;
+using static UnityEngine.InputSystem.InputAction;
 using static UnityEngine.Mathf;
 using static UnityEngine.Vector3;
 using static UnityEngine.Physics;
@@ -29,18 +31,17 @@ namespace KaizerWald
     
     public sealed class PlacementController : HighlightController
     {
-        private const float DISTANCE_BETWEEN_REGIMENT = 1;
+        private const float DISTANCE_BETWEEN_REGIMENT = 1f;
         private const int ORIGIN_HEIGHT = 1000;
         private const int RAY_DISTANCE = 2000;
-        
+
         private readonly LayerMask TerrainLayer;
         
         private PlacementActions PlacementControls;
         
-        private bool placementsVisible;
-
-        private bool mouseStartValid;
-        private Vector3 mouseStart, mouseEnd;
+        private bool PlacementsVisible;
+        private bool MouseStartValid;
+        private Vector3 MouseStart, MouseEnd;
         
         private float mouseDistance;
         private int[] tempWidths;
@@ -52,8 +53,8 @@ namespace KaizerWald
         private HighlightRegister DynamicRegister => PlacementSystem.DynamicPlacementRegister;
         private HighlightRegister StaticRegister => PlacementSystem.StaticPlacementRegister;
         
-        private float GetDistance() => Magnitude(mouseEnd - mouseStart);
-        private float3 LineDirection => normalizesafe(mouseEnd - mouseStart);
+        private float GetDistance() => Magnitude(MouseEnd - MouseStart);
+        private float3 LineDirection => normalizesafe(MouseEnd - MouseStart);
         private float3 DepthDirection => normalizesafe(cross(LineDirection, down()));
         private int TotalUnitsSelected => SelectionInfo.GetTotalUnitsSelected(SelectedRegiments);
         private float2 MinMaxSelectionWidth => SelectionInfo.GetMinMaxSelectionWidth(SelectedRegiments) + DISTANCE_BETWEEN_REGIMENT * (NumSelections-1);
@@ -78,7 +79,7 @@ namespace KaizerWald
             PlacementControls.RightMouseClickAndMove.performed += OnRightMouseClickAndMovePerform;
             PlacementControls.RightMouseClickAndMove.canceled  += OnRightMouseClickAndMoveCancel;
 
-            PlacementControls.SpaceKey.started += OnSpaceKeyStart;
+            PlacementControls.SpaceKey.started  += OnSpaceKeyStart;
             PlacementControls.SpaceKey.canceled += OnSpaceKeyCancel;
 
             PlacementControls.LeftMouseCancel.started += CancelPlacement;
@@ -90,7 +91,7 @@ namespace KaizerWald
             PlacementControls.RightMouseClickAndMove.performed -= OnRightMouseClickAndMovePerform;
             PlacementControls.RightMouseClickAndMove.canceled  -= OnRightMouseClickAndMoveCancel;
             
-            PlacementControls.SpaceKey.started -= OnSpaceKeyStart;
+            PlacementControls.SpaceKey.started  -= OnSpaceKeyStart;
             PlacementControls.SpaceKey.canceled -= OnSpaceKeyCancel;
             
             PlacementControls.LeftMouseCancel.started -= CancelPlacement;
@@ -107,10 +108,10 @@ namespace KaizerWald
         /// </summary>
         private void OnCameraMoveFormation()
         {
-            if (!placementsVisible) return;
-            Vector3 lastPosition = mouseEnd;
+            if (!PlacementsVisible) return;
+            Vector3 lastPosition = MouseEnd;
             if (!GetMouseEnd(Mouse.current.position.value)) return;
-            if (mouseEnd == lastPosition) return;
+            if (MouseEnd == lastPosition) return;
             mouseDistance = GetDistance();
             PlaceRegiments();
         }
@@ -119,39 +120,34 @@ namespace KaizerWald
         // -------- Event Based Controls ----------
         // =============================================================================================================
 
-        private void OnRightMouseClickAndMoveStart(InputAction.CallbackContext context)
+        private void OnRightMouseClickAndMoveStart(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0) return;
-            mouseStartValid = GetMouseStart(context.ReadValue<Vector2>());
+            MouseStartValid = GetMouseStart(context.ReadValue<Vector2>());
         }
 
-        private void OnRightMouseClickAndMovePerform(InputAction.CallbackContext context)
+        private void OnRightMouseClickAndMovePerform(CallbackContext context)
         {
-            if (SelectedRegiments.Count is 0 || !mouseStartValid || !GetMouseEnd(context.ReadValue<Vector2>())) return;
+            if (SelectedRegiments.Count is 0 || !MouseStartValid || !GetMouseEnd(context.ReadValue<Vector2>())) return;
             mouseDistance = GetDistance();
             PlaceRegiments();
         }
         
-        private void OnRightMouseClickAndMoveCancel(InputAction.CallbackContext context)
+        private void OnRightMouseClickAndMoveCancel(CallbackContext context)
         {
-            if (SelectedRegiments.Count is 0 || !placementsVisible) return; //Means Left Click is pressed
+            if (SelectedRegiments.Count is 0 || !PlacementsVisible) return; //Means Left Click is pressed
             OnMouseReleased();
             
             void OnMouseReleased()
             {
-                // ------------------------------------------------------------------------
                 // Update Regiments Selected Width
-                for (int i = 0; i < SelectedRegiments.Count; i++)
+                for (int i = 0; i < SelectedRegiments.Count; i++) 
                 {
                     SelectedRegiments[i].Formation.SetWidth(tempWidths[i]);
                 }
-                // ------------------------------------------------------------------------
-            
-                // ------------------------------------------------------------------------
-                // Clear Placements and swap with fixed
+                
                 DisablePlacements();
                 PlacementSystem.SwapDynamicToStatic();
-                // ------------------------------------------------------------------------
             }
         }
         private void OnSpaceKeyStart(InputAction.CallbackContext context) => EnableAllStatic();
@@ -164,7 +160,7 @@ namespace KaizerWald
         {
             OnClearDynamicHighlight();
             mouseDistance = 0;
-            placementsVisible = false;
+            PlacementsVisible = false;
         }
 
         // =============================================================================================================
@@ -299,7 +295,7 @@ namespace KaizerWald
             float leftOver = isMaxDistanceReach ? unitsToAddLength / (SelectedRegiments.Count - 1) : 0;
             
             NativeArray<float3> starts = new (SelectedRegiments.Count, Temp, UninitializedMemory);
-            starts[0] = mouseStart;
+            starts[0] = MouseStart;
             for (int i = 1; i < SelectedRegiments.Count; i++)
             {
                 float currUnitSpace = SelectedRegiments[i].Formation.DistanceUnitToUnit.x;
@@ -323,11 +319,11 @@ namespace KaizerWald
         private bool IsVisibilityTrigger()
         {
             //First Guard Clause : mouse goes far enough
-            if (placementsVisible) return true;
+            if (PlacementsVisible) return true;
             if (mouseDistance < SelectedRegiments[0].Formation.DistanceUnitToUnit.x) return false;
             
             EnableAllDynamicSelected();
-            placementsVisible = true;
+            PlacementsVisible = true;
             return true;
         }
 
@@ -338,7 +334,7 @@ namespace KaizerWald
         {
             Ray singleRay = PlayerCamera.ScreenPointToRay(mouseInput);
             bool hit = Raycast(singleRay, out RaycastHit singleHit, Infinity, TerrainLayer);
-            mouseStart = hit ? singleHit.point : mouseStart;
+            MouseStart = hit ? singleHit.point : MouseStart;
             return hit;
         }
 
@@ -346,7 +342,7 @@ namespace KaizerWald
         {
             Ray singleRay = PlayerCamera.ScreenPointToRay(mouseInput);
             bool hit = Raycast(singleRay, out RaycastHit singleHit, Infinity, TerrainLayer);
-            mouseEnd = hit ? singleHit.point : mouseEnd;
+            MouseEnd = hit ? singleHit.point : MouseEnd;
             return hit;
         }
         

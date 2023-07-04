@@ -57,7 +57,7 @@ namespace KaizerWald
 
         public override void OnUpdate()
         {
-            throw new NotImplementedException();
+            
         }
 
         // =============================================================================================================
