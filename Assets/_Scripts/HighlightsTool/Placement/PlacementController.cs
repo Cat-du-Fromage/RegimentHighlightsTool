@@ -8,7 +8,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-using static KaizerWald.PlacementSystem;
 using static PlayerControls;
 using static UnityEngine.InputSystem.InputAction;
 using static UnityEngine.Mathf;

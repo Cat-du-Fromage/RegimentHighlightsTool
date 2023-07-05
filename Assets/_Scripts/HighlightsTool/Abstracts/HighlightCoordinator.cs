@@ -25,10 +25,10 @@ namespace KaizerWald
         
         public HashSet<Regiment> SelectableRegiments { get; protected set; }
         public RegimentHighlightSystem RegimentHighlightSystem { get; protected set; }
-
-        // =============================================================================================================
-        // -------- Abstract Methods ----------
-        // =============================================================================================================
+        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Abstract Methods ◇◇◇◇◇                                                                               ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public void SetPlayerID(ulong playerID) => PlayerID = playerID;
         
         protected virtual void Awake()

@@ -25,7 +25,7 @@ namespace KaizerWald
         
         private void PopulateRecords(Regiment selectableRegiment, GameObject prefab)
         {
-            Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[selectableRegiment.UnitsTransform.Length];
+            Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[selectableRegiment.UnitsTransform.Count];
             for (int i = 0; i < Records[selectableRegiment.RegimentID].Length; i++)
             {
                 GameObject highlightObj = Object.Instantiate(prefab);
@@ -37,7 +37,7 @@ namespace KaizerWald
         public void RegisterRegiment(Regiment selectableRegiment, GameObject prefabOverride = null)
         {
             GameObject highlightPrefab = prefabOverride == null ? Prefab : prefabOverride;
-            Records.TryAdd(selectableRegiment.RegimentID, new HighlightBehaviour[selectableRegiment.UnitsTransform.Length]);
+            Records.TryAdd(selectableRegiment.RegimentID, new HighlightBehaviour[selectableRegiment.UnitsTransform.Count]);
             PopulateRecords(selectableRegiment, highlightPrefab);
         }
         

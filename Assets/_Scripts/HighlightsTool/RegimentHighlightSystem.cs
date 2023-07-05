@@ -11,25 +11,27 @@ namespace KaizerWald
         public override RegimentManager RegimentManager { get; protected set; }
         public SelectionSystem Selection { get; private set; }
         public PlacementSystem Placement { get; private set; }
-        public List<Regiment> SelectedRegiment => Selection.SelectionRegister.ActiveHighlights;
 
         private List<HighlightController> Controllers = new List<HighlightController>();
+        
+        //OnHoverUpdate
+        //OnSelectionUpdate
+        //OnPlacementUpdate
 
-        // =============================================================================================================
-        // ----- Unity Events -----
-        // =============================================================================================================
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Unity Events ◇◇◇◇◇                                                                                   ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         protected override void Awake()
         {
             base.Awake();
             Selection = this.GetOrAddComponent<SelectionSystem>();
             Placement = this.GetOrAddComponent<PlacementSystem>();
-
             Controllers = new List<HighlightController>() { Selection.Controller, Placement.Controller };
         }
 
         private void Update()
         {
-            if (Controllers.Count == 0) return;
+            if (Controllers.Count is 0) return;
             foreach (HighlightController controller in Controllers)
             {
                 controller.OnUpdate();
@@ -39,26 +41,18 @@ namespace KaizerWald
         private void OnEnable()
         {
             RegimentManager.OnNewRegiment += RegisterRegiment;
-            if (Controllers.Count == 0) return;
-            foreach (HighlightController controller in Controllers)
-            {
-                controller.OnEnable();
-            }
+            Controllers?.ForEach(controller => controller.OnEnable());
         }
 
         private void OnDisable()
         {
             RegimentManager.OnNewRegiment -= RegisterRegiment;
-            if (Controllers.Count == 0) return;
-            foreach (HighlightController controller in Controllers)
-            {
-                controller.OnDisable();
-            }
+            Controllers?.ForEach(controller => controller.OnDisable());
         }
         
-        // =============================================================================================================
-        // ----- Class Methods -----
-        // =============================================================================================================
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║ ◇◇◇◇◇ Class Methods ◇◇◇◇◇                                                                                  ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         public override void RegisterRegiment(Regiment regiment)
         {

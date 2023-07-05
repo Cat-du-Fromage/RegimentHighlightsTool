@@ -22,7 +22,6 @@ namespace KaizerWald
 
         protected override void InitializeController()
         {
-            Debug.Log("Create PlacementController");
             Controller = new PlacementController(this, Coordinator.HighlightControls, Coordinator.TerrainLayerMask);
         }
 
