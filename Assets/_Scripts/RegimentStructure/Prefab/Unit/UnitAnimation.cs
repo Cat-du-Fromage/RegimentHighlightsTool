@@ -13,40 +13,30 @@ namespace KaizerWald
 {
     public class UnitAnimation : MonoBehaviour
     {
-        private Unit unitAttach;
-
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [SerializeField] private ParticleSystem MuzzleFlash;
+        [SerializeField] private float animationsSpeed, speedIdle, speed;
+        
+        private Unit unitAttach;
         private Animator animator;
-
-        public float animationsSpeed;
-        public float speedIdle;
-        public float speed;
-
-        public bool shoot;
-        public bool aim;
-
+        #region animation IDs
+        public bool shoot, aim;
         //trigger
         private int animTriggerIDDeath;
-
         //int
         private int animIDDeathIndex;
-
-        //float
-        private int animIDAnimationsSpeed;
-        private int animIDSpeed;
-
-        private int animIDIdleSpeed;
-
+        //Speeds
+        private int animIDAnimationsSpeed, animIDSpeed, animIDIdleSpeed;
         //bool
-        private int animIDIsAiming;
-        private int animIDIsShooting;
-
+        private int animIDIsAiming, animIDIsShooting;
+        #endregion animation IDs
         private void Awake()
         {
             unitAttach = GetComponent<Unit>();
             animator = GetComponent<Animator>();
             AssignAnimationIDs();
-
             MuzzleFlash = MuzzleFlash == null ? GetComponentInChildren<ParticleSystem>() : MuzzleFlash;
         }
 

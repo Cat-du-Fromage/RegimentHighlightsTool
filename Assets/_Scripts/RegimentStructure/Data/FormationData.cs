@@ -35,6 +35,12 @@ namespace KaizerWald
         public readonly int MaxRow => min((int)maxRow, numUnitsAlive);
         public readonly int2 MinMaxRow => new int2(MinRow, MaxRow);
         
+        //Needed for Rearangemment
+        public readonly int NumCompleteLine => depth * width == numUnitsAlive ? depth : depth - 1;
+        //public readonly int NumCompleteLine => (int)floor(numUnitsAlive / (float)width); //REWORK LATER
+        public readonly int LastLineNumUnit => numUnitsAlive - (NumCompleteLine * width);
+        public readonly int NumUnitsLastLine => select(LastLineNumUnit,width,LastLineNumUnit == 0);
+        
         public FormationData(RegimentType regimentType)
         {
             RegimentClass regimentClass = regimentType.RegimentClass;

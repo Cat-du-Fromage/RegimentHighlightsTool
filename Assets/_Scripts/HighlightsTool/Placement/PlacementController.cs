@@ -135,7 +135,7 @@ namespace KaizerWald
                 // Update Regiments Selected Width
                 for (int i = 0; i < SelectedRegiments.Count; i++) 
                 {
-                    SelectedRegiments[i].Formation.SetWidth(tempWidths[i]);
+                    SelectedRegiments[i].CurrentFormation.SetWidth(tempWidths[i]);
                 }
                 
                 DisablePlacements();
@@ -189,7 +189,7 @@ namespace KaizerWald
             int numUnitsRegimentsBefore = 0;
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
-                FormationData regimentState = SelectedRegiments[i].Formation;
+                FormationData regimentState = SelectedRegiments[i].CurrentFormation;
                 JGetInitialTokensPositions job = new JGetInitialTokensPositions
                 {
                     NewWidth           = newWidths[i],
@@ -219,7 +219,7 @@ namespace KaizerWald
             int numUnitsRegimentBefore = 0;
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
-                int numToken = SelectedRegiments[i].Formation.NumUnitsAlive;
+                int numToken = SelectedRegiments[i].CurrentFormation.NumUnitsAlive;
                 JRaycastsCommands raycastJob = new JRaycastsCommands
                 {
                     OriginHeight = ORIGIN_HEIGHT,
@@ -245,7 +245,7 @@ namespace KaizerWald
             foreach (Regiment regiment in SelectedRegiments)
             {
                 int regimentId = regiment.RegimentID;
-                int numToken = regiment.Formation.NumUnitsAlive;
+                int numToken = regiment.CurrentFormation.NumUnitsAlive;
                 NativeSlice<RaycastHit> raycastHits = results.Slice(numUnitsRegimentBefore, numToken);
                 for (int unitIndex = 0; unitIndex < numToken; unitIndex++)
                 {
@@ -267,7 +267,7 @@ namespace KaizerWald
                 attempts = 0;
                 for (int i = 0; i < newWidths.Length; i++)
                 {
-                    FormationData currentState = SelectedRegiments[i].Formation;
+                    FormationData currentState = SelectedRegiments[i].CurrentFormation;
                     bool notEnoughSpace = unitsToAddLength < currentState.DistanceUnitToUnit.x;
                     bool isWidthAtMax   = newWidths[i] == currentState.MaxRow;
                     bool failAttempt    = notEnoughSpace || isWidthAtMax;
@@ -289,8 +289,8 @@ namespace KaizerWald
             starts[0] = ((float3)MouseStart).xz;
             for (int i = 1; i < SelectedRegiments.Count; i++)
             {
-                float currUnitSpace  = SelectedRegiments[i].Formation.DistanceUnitToUnit.x;
-                float prevUnitSpace  = SelectedRegiments[i - 1].Formation.DistanceUnitToUnit.x;
+                float currUnitSpace  = SelectedRegiments[i].CurrentFormation.DistanceUnitToUnit.x;
+                float prevUnitSpace  = SelectedRegiments[i - 1].CurrentFormation.DistanceUnitToUnit.x;
                 float previousLength = (newWidths[i - 1] - 1) * prevUnitSpace; // -1 because we us space, not units
                 previousLength      += csum(float2(prevUnitSpace, currUnitSpace) * 0.5f);//arrive at edge of last Unit + 1/2 newUnitSize
                 previousLength      += DISTANCE_BETWEEN_REGIMENT + max(0, leftOver); // add regiment space
@@ -311,7 +311,7 @@ namespace KaizerWald
         private bool IsVisibilityTrigger()
         {
             if (PlacementsVisible) return true;
-            if (mouseDistance < SelectedRegiments[0].Formation.DistanceUnitToUnit.x) return false;
+            if (mouseDistance < SelectedRegiments[0].CurrentFormation.DistanceUnitToUnit.x) return false;
             EnableAllDynamicSelected();
             PlacementsVisible = true;
             return true;

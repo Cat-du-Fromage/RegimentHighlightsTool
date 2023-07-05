@@ -4,38 +4,49 @@ using UnityEngine.InputSystem;
 using static UnityEngine.Mathf;
 using static Unity.Mathematics.math;
 
+using Zero = UnityEngine.Vector3;
+
 namespace KaizerWaldCode.RTTCamera
 {
+    [DisallowMultipleComponent]
     public class CameraController : MonoBehaviour, Controls.ICameraControlActions
     {
-        [SerializeField, Min(0)] private float RotationSpeed = 1; 
-        [SerializeField, Min(0)] private float BaseMoveSpeed = 1; 
-        [SerializeField, Min(0)] private float ZoomSpeed = 1;
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                          ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                          ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        [SerializeField, Min(0.1f)] private float BaseMoveSpeed, RotationSpeed, ZoomSpeed = 1;
 
         [Tooltip("How far in degrees can you move the camera Down")]
         [SerializeField] private float MaxClamp = 70.0f;
         [Tooltip("How far in degrees can you move the camera Top")]
         [SerializeField] private float MinClamp = -30.0f;
         
-        public bool DontDestroy;
-        
-        //Cache Data
-        public Controls Controls { get; private set; }
+        [SerializeField] private bool DontDestroy;
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public Controls Controls;
         private Transform cameraTransform;
-
-        //Inputs
-        private bool isMoving;
-        private bool isRotating;
-        private bool isSprinting;
-        private bool isZooming;
-        private float zoom;
-
-        private Vector2 mouseStartPosition, mouseEndPosition;
-        private Vector2 moveAxis;
         
-        //UPDATED MOVE SPEED
+        private bool isMoving, isRotating, isSprinting, isZooming;
+
+        private float zoomValue;
+        private Vector2 mouseStartPosition, mouseEndPosition;
+        private Vector2 moveAxisValue;
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private float SprintSpeed => BaseMoveSpeed * 2;
         private float MoveSpeed => isSprinting ? BaseMoveSpeed * SprintSpeed : BaseMoveSpeed;
+        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Awake | Start ◈◈◈◈◈◈                                                                           ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Awake()
         {
             if (Controls == null)
@@ -51,6 +62,9 @@ namespace KaizerWaldCode.RTTCamera
             if(DontDestroy) DontDestroyOnLoad(gameObject);
         }
         
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Update | Late Update ◈◈◈◈◈◈                                                                    ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Update()
         {
             if (!isRotating && !isMoving && !isZooming) return;
@@ -62,11 +76,14 @@ namespace KaizerWaldCode.RTTCamera
             Vector3 newPosition = isMoving ? GetCameraPosition(cameraTransform.position) : cameraTransform.position;
 
             // isZooming check not needed since we add 0 if zoom == 0
-            newPosition += Vector3.up * (ZoomSpeed * zoom);// Position Up/Down
+            newPosition += ZoomSpeed * zoomValue * Vector3.up;// Position Up/Down
             
             cameraTransform.SetPositionAndRotation(newPosition, newRotation);
         }
 
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                        ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                         ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private Vector3 GetCameraPosition(in Vector3 cameraPosition)
         {
             Vector3 cameraForward = cameraTransform.forward;
@@ -74,8 +91,8 @@ namespace KaizerWaldCode.RTTCamera
             //real forward of the camera (aware of the rotation)
             Vector3 cameraForwardXZ = new (cameraForward.x, 0, cameraForward.z);
             
-            Vector3 xDirection = Approximately(moveAxis.x,0) ? Vector3.zero : (moveAxis.x > 0 ? cameraRight : -cameraRight);
-            Vector3 zDirection = Approximately(moveAxis.y,0) ? Vector3.zero : (moveAxis.y > 0 ? cameraForwardXZ : -cameraForwardXZ);
+            Vector3 xDirection = Approximately(moveAxisValue.x,0) ? Vector3.zero : (moveAxisValue.x > 0 ? cameraRight : -cameraRight);
+            Vector3 zDirection = Approximately(moveAxisValue.y,0) ? Vector3.zero : (moveAxisValue.y > 0 ? cameraForwardXZ : -cameraForwardXZ);
 
             float heightMultiplier = max(1f, cameraPosition.y); //plus la caméra est haute, plus elle est rapide
             float speedMultiplier  = heightMultiplier * MoveSpeed * Time.deltaTime;
@@ -101,13 +118,13 @@ namespace KaizerWaldCode.RTTCamera
             return rotation;
         }
         
-        //==============================================================================================================
-        // INPUTS EVENTS CALLBACK
-        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                   ◆◆◆◆◆◆ INPUTS EVENTS CALLBACK ◆◆◆◆◆◆                                     ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public void OnMouvement(InputAction.CallbackContext context)
         {
             isMoving = !context.canceled;
-            moveAxis = isMoving ? context.ReadValue<Vector2>() : Vector2.zero;
+            moveAxisValue = isMoving ? context.ReadValue<Vector2>() : Vector2.zero;
         }
 
         public void OnRotation(InputAction.CallbackContext context)
@@ -117,13 +134,13 @@ namespace KaizerWaldCode.RTTCamera
                 case InputActionPhase.Started:
                     mouseStartPosition = context.ReadValue<Vector2>();
                     isRotating = true;
-                    break;
+                    return;
                 case InputActionPhase.Performed:
                     mouseEndPosition = context.ReadValue<Vector2>();
-                    break;
+                    return;
                 case InputActionPhase.Canceled:
                     isRotating = false;
-                    break;
+                    return;
                 default:
                     return;
             }
@@ -132,7 +149,7 @@ namespace KaizerWaldCode.RTTCamera
         public void OnZoom(InputAction.CallbackContext context)
         {
             isZooming = !context.canceled;
-            zoom = isZooming ? context.ReadValue<float>() : 0;
+            zoomValue = isZooming ? context.ReadValue<float>() : 0;
         }
 
         public void OnFaster(InputAction.CallbackContext context)

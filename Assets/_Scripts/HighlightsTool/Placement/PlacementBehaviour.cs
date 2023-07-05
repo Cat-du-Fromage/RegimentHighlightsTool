@@ -16,6 +16,8 @@ namespace KaizerWald
 
         public override void InitializeHighlight(Transform unitAttached)
         {
+            Vector3 position = unitAttached.position + Vector3.up * 0.05f;
+            transform.SetPositionAndRotation(position, unitAttached.rotation);
             meshRenderer = GetComponent<MeshRenderer>();
             Hide();
         }

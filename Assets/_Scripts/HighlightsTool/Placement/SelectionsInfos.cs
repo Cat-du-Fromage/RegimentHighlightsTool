@@ -16,14 +16,14 @@ namespace KaizerWald
             float2 minMaxDistance = float2.zero;
             foreach (Regiment selection in selectedRegiments)
             {
-                minMaxDistance += GetMinMaxFormationLength(selection.Formation);
+                minMaxDistance += GetMinMaxFormationLength(selection.CurrentFormation);
             }
             return minMaxDistance;
         }
         
         public static int GetTotalUnitsSelected(List<Regiment> selectedRegiments)
         {
-            return selectedRegiments.Sum(regiment => regiment.Formation.NumUnitsAlive);
+            return selectedRegiments.Sum(regiment => regiment.CurrentFormation.NumUnitsAlive);
         }
 
         private static float2 GetMinMaxFormationLength(in FormationData formation)
@@ -36,7 +36,7 @@ namespace KaizerWald
             NativeArray<int> tmp = new (selectedRegiments.Count, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             for (int i = 0; i < selectedRegiments.Count; i++)
             {
-                tmp[i] = selectedRegiments[i].Formation.MinRow;
+                tmp[i] = selectedRegiments[i].CurrentFormation.MinRow;
             }
             return tmp;
         }

@@ -8,19 +8,30 @@ namespace KaizerWald
 {
     public sealed class RegimentHighlightSystem : HighlightSystemBehaviour<RegimentManager>
     {
+        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private List<HighlightController> Controllers = new List<HighlightController>();
+        
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                          ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                          ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public override RegimentManager RegimentManager { get; protected set; }
         public SelectionSystem Selection { get; private set; }
         public PlacementSystem Placement { get; private set; }
 
-        private List<HighlightController> Controllers = new List<HighlightController>();
-        
         //OnHoverUpdate
         //OnSelectionUpdate
         //OnPlacementUpdate
 
         //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Unity Events ◇◇◇◇◇                                                                                   ║
+        //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
         //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Awake | Start ◈◈◈◈◈◈                                                                           ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         protected override void Awake()
         {
             base.Awake();
@@ -28,7 +39,10 @@ namespace KaizerWald
             Placement = this.GetOrAddComponent<PlacementSystem>();
             Controllers = new List<HighlightController>() { Selection.Controller, Placement.Controller };
         }
-
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Update | Late Update ◈◈◈◈◈◈                                                                    ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Update()
         {
             if (Controllers.Count is 0) return;
@@ -37,7 +51,10 @@ namespace KaizerWald
                 controller.OnUpdate();
             }
         }
-
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Enable | Disable ◈◈◈◈◈◈                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void OnEnable()
         {
             RegimentManager.OnNewRegiment += RegisterRegiment;
@@ -51,7 +68,7 @@ namespace KaizerWald
         }
         
         //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Class Methods ◇◇◇◇◇                                                                                  ║
+        //║                                        ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                         ║
         //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         public override void RegisterRegiment(Regiment regiment)

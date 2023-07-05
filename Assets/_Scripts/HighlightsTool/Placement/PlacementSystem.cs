@@ -7,19 +7,34 @@ namespace KaizerWald
 {
     public sealed class PlacementSystem : HighlightSystem
     {
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public static readonly int StaticRegisterIndex = 0;
         public static readonly int DynamicRegisterIndex = 1;
         
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public List<Regiment> SelectedRegiments => MainSystem.Selection.SelectionRegister.ActiveHighlights;
-        
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
 
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         protected override void Awake()
         {
             base.Awake();
         }
 
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                        ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                         ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         protected override void InitializeController()
         {
             Controller = new PlacementController(this, Coordinator.HighlightControls, Coordinator.TerrainLayerMask);
@@ -40,15 +55,19 @@ namespace KaizerWald
             base.AddRegiment(regiment);
         }
 
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void SwapDynamicToStatic()
         {
             foreach (Regiment regiment in SelectedRegiments)
             {
-                int id = regiment.RegimentID;
-                for (int i = 0; i < DynamicPlacementRegister.Records[id].Length; i++)
+                int regimentID = regiment.RegimentID;
+                for (int i = 0; i < DynamicPlacementRegister.Records[regimentID].Length; i++)
                 {
-                    Transform dynamicTransform = DynamicPlacementRegister.Records[id][i].transform;
-                    StaticPlacementRegister.Records[id][i].transform.SetPositionAndRotation(dynamicTransform.position, dynamicTransform.rotation);
+                    Vector3 position = DynamicPlacementRegister.Records[regimentID][i].transform.position;
+                    Quaternion rotation = DynamicPlacementRegister.Records[regimentID][i].transform.rotation;
+                    StaticPlacementRegister.Records[regimentID][i].transform.SetPositionAndRotation(position, rotation);
                 }
             }
         }
