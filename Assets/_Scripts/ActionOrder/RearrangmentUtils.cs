@@ -18,7 +18,6 @@ namespace KaizerWald
         
         public static int RearrangeInline(HashSet<Unit> unitKilled, Unit[] units, int index)
         {
-            //Debug.Log($"Pass Inline at: {index}");
             if (index == units.Length - 1) return -1;
             int maxIteration = units.Length - index;
             for (int i = 1; i < maxIteration; i++) //Begin at 1, so we start at the next index

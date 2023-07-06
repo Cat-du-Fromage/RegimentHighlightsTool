@@ -344,8 +344,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba0f27f003bfb704682a9ae385b8bc59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RotationSpeed: 1
   BaseMoveSpeed: 1
+  RotationSpeed: 1
   ZoomSpeed: 1
   MaxClamp: 70
   MinClamp: -30
@@ -362,9 +362,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90bb0531b63d6c64180d0f498b7426d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <ClickDragPerformed>k__BackingField: 0
-  <StartLMouse>k__BackingField: {x: 0, y: 0}
-  <EndLMouse>k__BackingField: {x: 0, y: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

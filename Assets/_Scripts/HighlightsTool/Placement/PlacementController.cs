@@ -49,7 +49,8 @@ namespace KaizerWald
         
         private float GetDistance() => Magnitude(MouseEnd - MouseStart);
         private float3 LineDirection => normalizesafe(MouseEnd - MouseStart);
-        private float3 DepthDirection => normalizesafe(cross(LineDirection, down()));
+        //private float3 DepthDirection => normalizesafe(cross(LineDirection, down()));
+        private float3 DepthDirection => normalizesafe(cross(up(), LineDirection));
         private int TotalUnitsSelected => SelectionInfo.GetTotalUnitsSelected(SelectedRegiments);
         private float2 MinMaxSelectionWidth => SelectionInfo.GetMinMaxSelectionWidth(SelectedRegiments) + DISTANCE_BETWEEN_REGIMENT * (NumSelections-1);
         private NativeArray<int> MinWidthsArray => SelectionInfo.GetSelectionsMinWidth(SelectedRegiments);
@@ -61,9 +62,9 @@ namespace KaizerWald
             TerrainLayer = terrainLayer;
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Abstract Methods ◇◇◇◇◇                                                                               ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                       ◆◆◆◆◆◆ ABSTRACT METHODS ◆◆◆◆◆◆                                               ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public override void OnEnable()
         {
             PlacementControls.Enable();
@@ -108,10 +109,9 @@ namespace KaizerWald
             PlaceRegiments();
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Event Based Controls ◇◇◇◇◇                                                                           ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                     ◆◆◆◆◆◆ EVENT BASED CONTROLS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void OnRightMouseClickAndMoveStart(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0) return;
@@ -129,19 +129,22 @@ namespace KaizerWald
         {
             if (SelectedRegiments.Count is 0 || !PlacementsVisible) return; //Means Left Click is pressed
             OnMouseReleased();
+            PlacementSystem.OnPlacementCallback(tempWidths);
             
             void OnMouseReleased()
             {
+                /*
                 // Update Regiments Selected Width
                 for (int i = 0; i < SelectedRegiments.Count; i++) 
                 {
                     SelectedRegiments[i].CurrentFormation.SetWidth(tempWidths[i]);
                 }
-                
+                */
                 DisablePlacements();
                 PlacementSystem.SwapDynamicToStatic();
             }
         }
+
         private void OnSpaceKeyStart(CallbackContext context) => EnableAllStatic();
         private void OnSpaceKeyCancel(CallbackContext context) => DisableAllStatic();
 
@@ -155,9 +158,13 @@ namespace KaizerWald
             PlacementsVisible = false;
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Placement Logic ◇◇◇◇◇                                                                                ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Placement Logic ◈◈◈◈◈◈                                                                         ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void PlaceRegiments()
         {
             if (!IsVisibilityTrigger()) return;
@@ -301,7 +308,7 @@ namespace KaizerWald
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆ Visibility Trigger ◆◆◆◆                                                                              │
+        //│  ◇◇◇◇◇ Visibility Trigger ◇◇◇◇◇                                                                            │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
         /// <summary>
@@ -318,7 +325,7 @@ namespace KaizerWald
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆  Mouses Positions ◆◆◆◆                                                                               │
+        //│  ◇◇◇◇◇ Mouses Positions ◇◇◇◇◇                                                                              │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
         private bool GetMouseStart(in Vector2 mouseInput)
@@ -337,10 +344,9 @@ namespace KaizerWald
             return isHit;
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Toggle Methods ◇◇◇◇◇                                                                                 ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇ Toggle Methods ◇◇◇◇◇                                                                                │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void EnableAllDynamicSelected()
         {
             SelectedRegiments.ForEach(regiment => PlacementSystem.OnShow(regiment, PlacementSystem.DynamicRegisterIndex));
@@ -369,9 +375,9 @@ namespace KaizerWald
             }
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ JOBS ◇◇◇◇◇                                                                                           ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                 ◆◆◆◆◆◆ JOBS ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [BurstCompile]
         private struct JRaycastsCommands : IJobFor
         {

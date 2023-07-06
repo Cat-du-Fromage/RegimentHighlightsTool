@@ -1,21 +1,37 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace KaizerWald
 {
-    public class MoveState : MonoBehaviour
+    //Package sent to create MoveState
+
+    public class MoveState : RegimentState
     {
-        // Start is called before the first frame update
-        void Start()
+        private IRegimentState IdleState;
+        public override void HandleInput()
         {
-        
+            //InputAction: Run/March
         }
 
-        // Update is called once per frame
-        void Update()
+        //End: Move -> Idle
+        public override IRegimentState UpdateState(Regiment regiment)
         {
-        
+            throw new System.NotImplementedException();
+        }
+
+        public override void OnEnter(Regiment regiment)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void OnUpdate()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void OnExit(Regiment regiment)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

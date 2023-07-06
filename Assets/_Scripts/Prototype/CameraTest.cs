@@ -25,18 +25,18 @@ namespace KaizerWald
 
         private void RotationCamera()
         {
-            if (mouse.middleButton.wasPressedThisFrame)
+            if (Mouse.current.middleButton.wasPressedThisFrame)
             {
-                startMouse = mouse.position.value;
+                startMouse = Mouse.current.position.value;
             }
-            if (mouse.middleButton.isPressed)
+            if (Mouse.current.middleButton.isPressed)
             {
-                endMouse = mouse.position.value;
+                endMouse = Mouse.current.position.value;
                 Vector2 delta = (endMouse - startMouse) * (rotationSpeed * Time.deltaTime);
                 transform.Rotate(0,delta.x,0, Space.World);
-                transform.Rotate(Mathf.Abs(delta.y),0,0, Space.Self);
+                transform.Rotate(-delta.y,0,0, Space.Self);
                 startMouse = endMouse;
-            };
+            }
         }
     }
 }

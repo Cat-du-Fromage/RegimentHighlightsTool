@@ -12,56 +12,69 @@ namespace KaizerWaldCode.RTTCamera
     [RequireComponent(typeof(CameraController))]
     public class SelectionRectangle : MonoBehaviour, Controls.ISelectionRectangleActions
     {
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private CameraController cameraController;
-        
-        [field:SerializeField] public bool ClickDragPerformed{ get; private set; }
-        [field:SerializeField] public Vector2 StartLMouse{ get; private set; }
-        [field:SerializeField] public Vector2 EndLMouse{ get; private set; }
+        private Vector2 startLMouse, endLMouse;
+        private bool clickDragPerformed;
 
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Awake | Start ◈◈◈◈◈◈                                                                           ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Awake()
         {
             cameraController = GetComponent<CameraController>();
         }
 
-        private void Start()
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Enable | Disable ◈◈◈◈◈◈                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        private void OnEnable()
         {
             cameraController.Controls.SelectionRectangle.Enable();
             cameraController.Controls.SelectionRectangle.SetCallbacks(this);
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             cameraController.Controls.SelectionRectangle.Disable();
         }
-
-        //==================================================================================================================
-        //Rectangle OnScreen
-        //==================================================================================================================
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ OnGUI: Rectangle OnScreen ◈◈◈◈◈◈                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void OnGUI()
         {
-            if (!ClickDragPerformed) return;
-            // Create a rect from both mouse positions
-            Rect rect = GetScreenRect(StartLMouse, EndLMouse);
-            DrawScreenRect(rect);
-            DrawScreenRectBorder(rect, 1);
+            if (!clickDragPerformed) return;
+            Rect rectangle = GetScreenRect(startLMouse, endLMouse);
+            DrawScreenRect(rectangle);
+            DrawScreenRectBorder(rectangle, 1);
         }
         
-        private bool IsDragSelection() => Vector2.SqrMagnitude(EndLMouse - StartLMouse) >= 128;
+        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        //║                                   ◆◆◆◆◆◆ INPUTS EVENTS CALLBACK ◆◆◆◆◆◆                                     ║
+        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private bool IsDragSelection() => Vector2.SqrMagnitude(endLMouse - startLMouse) >= 128;
         public void OnLeftMouseClickAndMove(InputAction.CallbackContext context)
         {
             if (context.started)
             {
-                StartLMouse = EndLMouse = context.ReadValue<Vector2>();
-                ClickDragPerformed = false;
+                startLMouse = endLMouse = context.ReadValue<Vector2>();
+                clickDragPerformed = false;
             }
             else if(context.performed)
             {
-                EndLMouse = context.ReadValue<Vector2>();
-                ClickDragPerformed = IsDragSelection();
+                endLMouse = context.ReadValue<Vector2>();
+                clickDragPerformed = IsDragSelection();
             }
             else
             {
-                ClickDragPerformed = false;
+                clickDragPerformed = false;
             }
         }
     }

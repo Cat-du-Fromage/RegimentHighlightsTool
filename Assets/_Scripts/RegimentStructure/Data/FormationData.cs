@@ -8,40 +8,44 @@ using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
+    [System.Serializable]
     public struct FormationData
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        // IMMUTABLES FIELDS
         public readonly ushort BaseNumUnits;
-        
-        //Space between Unit
-        private readonly half spaceBetweenUnits;
-        public readonly float SpaceBetweenUnits => spaceBetweenUnits;
-        
-        //Unit Size
+        private readonly byte minRow; 
+        private readonly byte maxRow;
         private readonly half2 unitSize;
-        public readonly float2 UnitSize => unitSize;
+        private readonly half spaceBetweenUnits;
         
-        //Units Alive Counter
-        private ushort numUnitsAlive;
+        //MUTABLES FIELDS
+        [SerializeField] private ushort numUnitsAlive;
+        [SerializeField] private byte width;
+        [SerializeField] private byte depth;
+        [SerializeField] private half2 direction2DForward;
+      //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+      //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+      //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public readonly float SpaceBetweenUnits => spaceBetweenUnits;
+        public readonly float2 UnitSize => unitSize;
         public readonly int NumUnitsAlive => numUnitsAlive;
         
-        //Width/Depth of the formation (Can be updated)
-        private byte width, depth;
         public readonly int Width => width;
         public readonly int Depth => depth;
-
-        //Min/Max Row allowed (Based can't be changed)
-        private readonly byte minRow, maxRow;
+        public readonly int2 WidthDepth => new int2(width, depth);
+        
         public readonly int MinRow => min((int)minRow, numUnitsAlive);
         public readonly int MaxRow => min((int)maxRow, numUnitsAlive);
         public readonly int2 MinMaxRow => new int2(MinRow, MaxRow);
         
-        //Needed for Rearangemment
-        public readonly int NumCompleteLine => depth * width == numUnitsAlive ? depth : depth - 1;
-        //public readonly int NumCompleteLine => (int)floor(numUnitsAlive / (float)width); //REWORK LATER
-        public readonly int LastLineNumUnit => numUnitsAlive - (NumCompleteLine * width);
-        public readonly int NumUnitsLastLine => select(LastLineNumUnit,width,LastLineNumUnit == 0);
-        
-        public FormationData(RegimentType regimentType)
+        private readonly half2 Direction2DForward => direction2DForward;
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public FormationData(RegimentType regimentType, Vector3 direction)
         {
             RegimentClass regimentClass = regimentType.RegimentClass;
             BaseNumUnits = numUnitsAlive = (ushort)regimentClass.BaseNumberUnit;
@@ -53,23 +57,55 @@ namespace KaizerWald
             
             width = maxRow;
             depth = (byte)(numUnitsAlive / width);
-            Debug.Log($"width: {width}; depth: {depth}");
+            
+            direction2DForward = half2(normalizesafe(direction).xz);
         }
         
+        public FormationData(in FormationData otherFormation)
+        {
+            BaseNumUnits = numUnitsAlive = otherFormation.BaseNumUnits;
+            minRow = otherFormation.minRow;
+            maxRow = otherFormation.maxRow;
+            unitSize = otherFormation.unitSize;
+            spaceBetweenUnits = otherFormation.spaceBetweenUnits;
+            
+            width = otherFormation.maxRow;
+            depth = otherFormation.minRow;
+            
+            direction2DForward = otherFormation.Direction2DForward;
+        }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public readonly float2 DistanceUnitToUnit => UnitSize + SpaceBetweenUnits;
-        public readonly int NumUnitLastLine => numUnitsAlive - width * (depth - 1);
         
-        public void OnUnitDeath(int numRemoved)
+        //(Needed for Rearangemment)
+        public readonly int NumCompleteLine => Depth * Width == numUnitsAlive ? depth : depth - 1;
+        private readonly int CountUnitsLastLine => numUnitsAlive - NumCompleteLine * width;
+        public readonly int NumUnitsLastLine => CountUnitsLastLine is 0 ? width : CountUnitsLastLine;
+
+        public void Remove(int numRemoved) => numUnitsAlive = (ushort)max(0, numUnitsAlive - numRemoved);
+        public void Add(int numAdded) => numUnitsAlive = (ushort)min(BaseNumUnits, numUnitsAlive + numAdded);
+
+        public FormationData SetWidth(int newWidth)
         {
-            numUnitsAlive -= (ushort)numRemoved;
-            if (numUnitsAlive > width) return;
-            SetWidth(numUnitsAlive);
+            width = (byte)min(maxRow, newWidth);
+            depth = (byte)(numUnitsAlive / max(1,width));
+            return this;
         }
         
-        public void SetWidth(int newWidth)
+        public FormationData SetDirection(float2 newDirection)
         {
-            width = (byte)min(newWidth, NumUnitsAlive);
-            depth = (byte)(numUnitsAlive / max(1,width));
+            direction2DForward = half2(newDirection);
+            return this;
+        }
+        
+        public FormationData SetDirection(float3 firstUnitFirstRow, float3 lastUnitFirstRow)
+        {
+            float3 direction = cross(down(), normalizesafe(lastUnitFirstRow - firstUnitFirstRow));
+            direction2DForward = half2(direction.xz);
+            return this;
         }
     }
 }

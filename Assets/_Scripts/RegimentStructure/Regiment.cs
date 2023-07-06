@@ -24,7 +24,7 @@ namespace KaizerWald
         [field:SerializeField] public int RegimentID { get; private set; }
         [field:SerializeField] public RegimentType RegimentType { get; private set; }
         
-        public FormationData CurrentFormation { get; private set; }
+        [field:SerializeField] public FormationData CurrentFormation { get; private set; }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
@@ -49,13 +49,13 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void Initialize(ulong ownerID, UnitFactory unitFactory, RegimentSpawner currentSpawner, string regimentName = default)
+        public void Initialize(ulong ownerID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
         {
             name = regimentName ?? $"Player{ownerID}_Regiment{RegimentID}";
             OwnerID = ownerID;
             RegimentID = transform.GetInstanceID();
             RegimentType = currentSpawner.RegimentType;
-            CurrentFormation = new FormationData(currentSpawner.RegimentType);
+            CurrentFormation = new FormationData(currentSpawner.RegimentType, direction);
             CreateAndRegisterUnits(unitFactory);
         }
 

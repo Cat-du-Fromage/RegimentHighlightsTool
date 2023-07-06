@@ -7,9 +7,9 @@ namespace KaizerWald
 {
     public sealed class PlacementSystem : HighlightSystem
     {
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public static readonly int StaticRegisterIndex = 0;
         public static readonly int DynamicRegisterIndex = 1;
         
@@ -20,18 +20,37 @@ namespace KaizerWald
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
 
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         protected override void Awake()
         {
             base.Awake();
         }
 
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                        ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                         ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        //Order Move to selected Regiment -> 
+        public MoveOrder[] OnPlacementCallback(int[] formationsWidth)
+        {
+            MoveOrder[] orders = new MoveOrder[SelectedRegiments.Count];
+            for (int i = 0; i < SelectedRegiments.Count; i++)
+            {
+                Regiment regiment = SelectedRegiments[i];
+                int newWidth = formationsWidth[i];
+                FormationData nextFormation = new FormationData(regiment.CurrentFormation).SetWidth(newWidth);
+                
+                Vector3[] unitsDestination = StaticPlacementRegister.GetHighlightsPositions(regiment.RegimentID);
+                Vector3 regimentDestination = (unitsDestination[0] + unitsDestination[newWidth]) * 0.5f;
+                
+                nextFormation.SetDirection(unitsDestination[0], unitsDestination[newWidth]);
+                orders[i] = new MoveOrder(regiment, regimentDestination, unitsDestination, nextFormation);
+            }
+            return orders;
+        }
+
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜

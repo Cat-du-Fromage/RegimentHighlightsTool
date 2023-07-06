@@ -10,15 +10,14 @@ namespace KaizerWaldCode.RTTCamera
 {
     public static class UGuiUtils
     {
-        //public static readonly Vector2[] defaultCorners = new Vector2[4] {Vector2.down, Vector2.one, Vector2.up ,Vector2.right};
-        private static readonly Color DefaultBackGround = new Color(0.5f, 1f, 0.4f, 0.2f);
-        private static readonly Color DefaultBorder = new Color(0.5f, 1f, 0.4f);
+        private static readonly Color DefaultBackGround    = new Color(0.5f, 1f, 0.4f, 0.2f);
+        private static readonly Color DefaultBorder        = new Color(0.5f, 1f, 0.4f);
         
-        private static readonly Color DefaultUiColor = new Color(0.8f,0.8f,0.95f,0.25f);
+        private static readonly Color DefaultUiColor       = new Color(0.8f,0.8f,0.95f,0.25f);
         private static readonly Color DefaultUiBorderColor = new Color(0.8f, 0.8f, 0.95f);
         
         private static Texture2D whiteTexture;
-        //private static Texture2D WhiteTexture => whiteTexture == null ? GetWhiteTexture() : whiteTexture;
+        
         public static Texture2D WhiteTexture
         {
             get
@@ -29,7 +28,6 @@ namespace KaizerWaldCode.RTTCamera
                     whiteTexture.SetPixel(0, 0, Color.white);
                     whiteTexture.Apply();
                 }
-
                 return whiteTexture;
             }
         }
@@ -80,10 +78,9 @@ namespace KaizerWaldCode.RTTCamera
             startPoint.y = height - startPoint.y;
             endPoint.y = height - endPoint.y;
             // Calculate corners
-            Vector2 topLeft = Vector2.Min(startPoint, endPoint);
-            Vector2 bottomRight = Vector2.Max(startPoint, endPoint);
-            // Create Rect
-            return Rect.MinMaxRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
+            Vector2 topLeftCorner = Vector2.Min(startPoint, endPoint);
+            Vector2 bottomRightCorner = Vector2.Max(startPoint, endPoint);
+            return Rect.MinMaxRect(topLeftCorner.x, topLeftCorner.y, bottomRightCorner.x, bottomRightCorner.y);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -91,12 +88,10 @@ namespace KaizerWaldCode.RTTCamera
         {
             Vector3 start = camera.ScreenToViewportPoint(startPoint);
             Vector3 end = camera.ScreenToViewportPoint(endPoint);
-            
             Vector3 min = Vector3.Min(start, end);
             Vector3 max = Vector3.Max(start, end);
             min.z = camera.nearClipPlane;
             max.z = camera.farClipPlane;
-
             Bounds bounds = new Bounds();
             bounds.SetMinMax(min, max);
             return bounds;
@@ -111,7 +106,6 @@ namespace KaizerWaldCode.RTTCamera
             Vector3 max = Vector3.Max(v1, v2);
             min.z = camera.nearClipPlane;
             max.z = camera.farClipPlane;
-        
             bounds.SetMinMax(min, max);
         }
     }

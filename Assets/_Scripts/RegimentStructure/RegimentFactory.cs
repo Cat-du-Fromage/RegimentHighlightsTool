@@ -49,12 +49,12 @@ namespace KaizerWald
                 float offset = GetOffset(currentSpawner, i) * 0.5f;
                 offset += GetOffset(previousSpawner, i) * 0.5f;
                 offsetPosition += offset;
-
+                
                 for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
                 {
                     offsetPosition += OffsetSameRegiment(j, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
                     Regiment regiment = InstantiateRegiment(instancePosition, offsetPosition);
-                    regiment.Initialize(currentSpawner.OwnerID, unitFactory, currentSpawner);
+                    regiment.Initialize(currentSpawner.OwnerID, unitFactory, currentSpawner, regiment.transform.forward);
                     OnRegimentCreated?.Invoke(regiment);
                 }
             }

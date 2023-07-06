@@ -23,6 +23,8 @@ namespace KaizerWald
             ActiveHighlights = new List<Regiment>();
         }
         
+        public HighlightBehaviour[] this[int regimentIndex] => Records[regimentIndex];
+
         private void PopulateRecords(Regiment selectableRegiment, GameObject prefab)
         {
             Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[selectableRegiment.UnitsTransform.Count];

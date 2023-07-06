@@ -22,11 +22,6 @@ namespace KaizerWald
         public List<Regiment> Regiments { get; private set; }
         public event Action<Regiment> OnNewRegiment;
 
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        
-
         //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
         //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
         //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -41,6 +36,7 @@ namespace KaizerWald
             base.Awake();
             Regiments = new List<Regiment>();
             factory = FindObjectOfType<RegimentFactory>();
+            Debug.Log($"sizeof(FormationData): {Utilities.GetSizeOf<FormationData>()}");
             //RegimentHighlightSystem.OnOrderReceived;
         }
         
@@ -49,7 +45,6 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Update()
         {
-            TestKillUnit();
             foreach (Regiment regiment in Regiments)
             {
                 regiment.OnUpdate();
@@ -106,7 +101,20 @@ namespace KaizerWald
             Regiments.Add(regiment);
             OnNewRegiment?.Invoke(regiment);
         }
-        
+
+        private void OnOrderCallback(HighlightSystem systemSource, BaseOrder[] orders)
+        {
+            switch (systemSource)
+            {
+                case PlacementSystem:
+                    foreach (BaseOrder baseOrder in orders)
+                    {
+                        MoveOrder moveOrder = (MoveOrder)baseOrder;
+                    }
+                    return;
+            }
+        }
+        /*
         private void TestKillUnit()
         {
             if (!Mouse.current.rightButton.wasReleasedThisFrame) return;
@@ -114,5 +122,6 @@ namespace KaizerWald
             if (!Physics.Raycast(singleRay, out RaycastHit hit, 1000, 1 << 7)) return;
             DestroyImmediate(hit.transform.gameObject);
         }
+        */
     }
 }

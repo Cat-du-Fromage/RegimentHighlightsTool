@@ -2,9 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 using static UnityEngine.Mathf;
+using static UnityEngine.Vector3;
 using static Unity.Mathematics.math;
-
-using Zero = UnityEngine.Vector3;
 
 namespace KaizerWaldCode.RTTCamera
 {
@@ -28,7 +27,7 @@ namespace KaizerWaldCode.RTTCamera
         public Controls Controls;
         private Transform cameraTransform;
         
-        private bool isMoving, isRotating, isSprinting, isZooming;
+        private bool isMoving, isRotating, isZooming, isSprinting;
 
         private float zoomValue;
         private Vector2 mouseStartPosition, mouseEndPosition;
@@ -68,16 +67,12 @@ namespace KaizerWaldCode.RTTCamera
         private void Update()
         {
             if (!isRotating && !isMoving && !isZooming) return;
-            
             // Rotation
             Quaternion newRotation = isRotating ? GetCameraRotation() : cameraTransform.rotation;
-
             // Position Left/Right/Front/Back
             Vector3 newPosition = isMoving ? GetCameraPosition(cameraTransform.position) : cameraTransform.position;
-
-            // isZooming check not needed since we add 0 if zoom == 0
-            newPosition += ZoomSpeed * zoomValue * Vector3.up;// Position Up/Down
-            
+            // Position Up/Down
+            newPosition += ZoomSpeed * zoomValue * Vector3.up;// isZooming check not needed since we add 0 if zoom == 0
             cameraTransform.SetPositionAndRotation(newPosition, newRotation);
         }
 
@@ -91,8 +86,8 @@ namespace KaizerWaldCode.RTTCamera
             //real forward of the camera (aware of the rotation)
             Vector3 cameraForwardXZ = new (cameraForward.x, 0, cameraForward.z);
             
-            Vector3 xDirection = Approximately(moveAxisValue.x,0) ? Vector3.zero : (moveAxisValue.x > 0 ? cameraRight : -cameraRight);
-            Vector3 zDirection = Approximately(moveAxisValue.y,0) ? Vector3.zero : (moveAxisValue.y > 0 ? cameraForwardXZ : -cameraForwardXZ);
+            Vector3 xDirection = Approximately(moveAxisValue.x,0) ? zero : (moveAxisValue.x > 0 ? cameraRight : -cameraRight);
+            Vector3 zDirection = Approximately(moveAxisValue.y,0) ? zero : (moveAxisValue.y > 0 ? cameraForwardXZ : -cameraForwardXZ);
 
             float heightMultiplier = max(1f, cameraPosition.y); //plus la caméra est haute, plus elle est rapide
             float speedMultiplier  = heightMultiplier * MoveSpeed * Time.deltaTime;
@@ -105,11 +100,10 @@ namespace KaizerWaldCode.RTTCamera
             //prevent calculation if middle mouse button hold without moving
             Quaternion rotation = cameraTransform.rotation;
             if (mouseEndPosition == mouseStartPosition) return rotation;
-
-            Vector2 distanceXY = (mouseEndPosition - mouseStartPosition) * RotationSpeed;
+            Vector2 distanceXY = (mouseEndPosition - mouseStartPosition) * (RotationSpeed * Time.deltaTime);
             
-            rotation = Utils.RotateFWorld(rotation, 0f, distanceXY.x * Time.deltaTime, 0f);//Rotation Horizontal
-            rotation = Utils.RotateFSelf(rotation, -distanceXY.y * Time.deltaTime, 0f, 0f);//Rotation Vertical
+            rotation = Utils.RotateFWorld(rotation, 0f, distanceXY.x, 0f);//Rotation Horizontal
+            rotation = Utils.RotateFSelf(rotation, -distanceXY.y, 0f, 0f);//Rotation Vertical
             
             float clampedXAxis = Utils.ClampAngle(rotation.eulerAngles.x, MinClamp, MaxClamp);
             rotation.eulerAngles = new Vector3(clampedXAxis, rotation.eulerAngles.y, 0);
