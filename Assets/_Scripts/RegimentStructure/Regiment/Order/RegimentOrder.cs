@@ -7,10 +7,12 @@ namespace KaizerWald
 {
     public class RegimentOrder
     {
+        public readonly EStates StateOrdered;
         public readonly Regiment Regiment;
-        protected RegimentOrder(Regiment regiment)
+        protected RegimentOrder(Regiment regiment,EStates stateOrdered)
         {
             Regiment = regiment;
+            StateOrdered = stateOrdered;
         }
     }
 }

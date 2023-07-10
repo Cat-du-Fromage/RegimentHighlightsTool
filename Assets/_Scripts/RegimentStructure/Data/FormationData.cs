@@ -13,6 +13,7 @@ namespace KaizerWald
     [System.Serializable]
     public struct FormationData
     {
+        //Taille actuelle 18 Bytes/Octets
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -24,10 +25,10 @@ namespace KaizerWald
         private readonly half  spaceBetweenUnits;
         
         // MUTABLES FIELDS
-        [SerializeField] private ushort numUnitsAlive;
-        [SerializeField] private byte   width;
-        [SerializeField] private byte   depth;
-        [SerializeField] private half2  direction2DForward;
+        private ushort numUnitsAlive;
+        private byte   width;
+        private byte   depth;
+        private half2  direction2DForward;
       //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
       //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
       //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -43,7 +44,8 @@ namespace KaizerWald
         public readonly int MaxRow => min((int)maxRow, numUnitsAlive);
         public readonly int2 MinMaxRow => new int2(MinRow, MaxRow);
         
-        public readonly float2 Direction2DForward => direction2DForward;
+        public readonly float2 Direction2DForward() => direction2DForward;
+        public readonly float3 Direction3DForward() => new float3((float)direction2DForward.x,0,(float)direction2DForward.y);
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -123,6 +125,8 @@ namespace KaizerWald
         {
             if (newDirection.Approximately(float2.zero)) return this;
             direction2DForward = half2(newDirection);
+            Debug.Log($"Set Direction Received: {newDirection} converted: {direction2DForward}");
+            Debug.Log($"Set Direction FinalForm: {ToString()}");
             return this;
         }
         public FormationData SetDirection(float3 newDirection)

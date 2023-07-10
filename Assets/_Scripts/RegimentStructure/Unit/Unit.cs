@@ -16,6 +16,10 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private void Start()
+        {
+            InitializeStates();
+        }
 
         private void OnDestroy()
         {
@@ -28,7 +32,7 @@ namespace KaizerWald
 
         public void UpdateUnit()
         {
-            
+            CurrentState?.OnStateUpdate();
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -50,5 +54,39 @@ namespace KaizerWald
             if (RegimentAttach == null) return;
             RegimentAttach.OnDeadUnit(this);
         }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ STATE MACHINE ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        public EStates currentState;
+        public Dictionary<EStates, UnitState> States;
+
+        private UnitState CurrentState => States[currentState];
+
+        public void OnOrderReceived(RegimentOrder order)
+        {
+            CurrentState.OnStateExit();
+            currentState = order.StateOrdered;
+            CurrentState.OnOrderEnter(order);
+        }
+
+        public void TransitionState(EStates newState)
+        {
+            CurrentState.OnStateExit();
+            currentState = newState;
+            CurrentState.OnStateEnter();
+        }
+        
+        private void InitializeStates()
+        {
+            States = new Dictionary<EStates, UnitState>()
+            {
+                {EStates.Idle, new UnitIdleState(this)},
+                {EStates.Move, new UnitMoveState(this)}
+            };
+            currentState = EStates.Idle;
+        }
+        
     }
 }

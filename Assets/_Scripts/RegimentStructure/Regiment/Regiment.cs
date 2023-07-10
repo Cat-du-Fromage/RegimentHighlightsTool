@@ -72,7 +72,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void OnUpdate()
         {
-            currentState?.OnStateUpdate();
+            CurrentState?.OnStateUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
 
@@ -101,24 +101,48 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ STATE MACHINE ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        private RegimentState currentState;
+        public EStates currentState;
+        public Dictionary<EStates, RegimentState> States;
+
+        private RegimentState CurrentState => States[currentState];
 
         private void InitializeStates()
         {
-            currentState = new RegimentIdleState(this);
+            States = new Dictionary<EStates, RegimentState>()
+            {
+                {EStates.Idle, new RegimentIdleState(this)},
+                {EStates.Move, new RegimentMoveState(this)}
+            };
+            currentState = EStates.Idle;
         }
 
-        public void TransitionState(RegimentState newState)
+        public void TransitionState(EStates newState)
         {
-            currentState.OnStateExit();
+            CurrentState.OnStateExit();
             currentState = newState;
-            currentState.OnStateEnter();
+            CurrentState.OnStateEnter();
         }
         
-        public void OnMoveOrderReceived(MoveRegimentOrder order)
+        public void OnMoveOrderReceived(RegimentOrder order)
         {
-            currentState = new RegimentMoveState(this);
-            currentState.OnOrderEnter(order);
+            currentState = order.StateOrdered;
+            switch (currentState)
+            {
+                case EStates.Idle:
+                    return;
+                case EStates.Move:
+                    CurrentState.OnOrderEnter(order);
+                    foreach (Unit unit in Units)
+                    {
+                        unit.OnOrderReceived(order);
+                    }
+                    return;
+                default:
+                    return;
+            }
+            
+            //currentState = new RegimentMoveState(this);
+            //currentState.OnOrderEnter(order);
         }
     }
 }

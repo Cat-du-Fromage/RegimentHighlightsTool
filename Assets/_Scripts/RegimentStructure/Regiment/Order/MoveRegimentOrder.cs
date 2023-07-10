@@ -7,21 +7,24 @@ namespace KaizerWald
     {
         public readonly Vector3 LeaderDestination;
         public FormationData FormationDestination { get; private set; }
-        public MoveRegimentOrder(Regiment regiment, int widthGoal, Vector3 leaderLeaderDestination) : base(regiment)
+        public MoveRegimentOrder(Regiment regiment,EStates stateOrdered,int widthGoal, Vector3 leaderDestination) : base(regiment, stateOrdered)
         {
             FormationDestination = regiment.CurrentFormation;
             FormationDestination.SetWidth(widthGoal);
-            FormationDestination.SetDirection(leaderLeaderDestination - regiment.transform.position);
-            LeaderDestination = leaderLeaderDestination;
+            FormationDestination.SetDirection(math.normalizesafe(leaderDestination - regiment.transform.position));
+            LeaderDestination = leaderDestination;
         }
         
-        public MoveRegimentOrder(Regiment regiment, int widthGoal, Vector3 firstUnitFirstRow, Vector3 lastUnitFirstRow) : base(regiment)
+        //Probleme ICI
+        public MoveRegimentOrder(Regiment regiment,EStates stateOrdered,int widthGoal, Vector3 firstUnitFirstRow, Vector3 lastUnitFirstRow) : base(regiment, stateOrdered)
         {
             FormationDestination = regiment.CurrentFormation;
             FormationDestination.SetWidth(widthGoal);
             Vector3 direction = math.normalizesafe(math.cross(math.down(), lastUnitFirstRow - firstUnitFirstRow));
-            FormationDestination.SetDirection(direction);
-            LeaderDestination = (firstUnitFirstRow + lastUnitFirstRow) * 0.5f + direction * regiment.CurrentFormation.DistanceUnitToUnit.y;
+            Debug.Log($"MoveRegimentOrder Constructor: direction = {direction}");
+            FormationDestination.SetDirection((float3)direction);
+            Debug.Log($"MoveRegimentOrder Constructor: FormationDestination = {FormationDestination.ToString()}");
+            LeaderDestination = (firstUnitFirstRow + lastUnitFirstRow)/2 + direction * regiment.CurrentFormation.DistanceUnitToUnit.y;
         }
     }
 }

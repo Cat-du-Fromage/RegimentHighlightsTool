@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace KaizerWald
 {
     public static class MonoBehaviourExtension
     {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void RemoveComponent<TComponent>(this GameObject obj, bool immediate = false)
             where TComponent : Component
             {
@@ -20,6 +22,7 @@ namespace KaizerWald
                 }
             }
             
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static List<T> FindObjectsWithInterface<T>() 
             where T : class
             {
@@ -34,18 +37,21 @@ namespace KaizerWald
                 return list;
             }
             
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T GetOrAddComponent<T>(this GameObject gameObject)
             where T : Component
             {
                 return gameObject.TryGetComponent(out T component) ? component : gameObject.AddComponent<T>();
             }
             
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T GetOrAddComponent<T>(this Transform transform)
             where T : Component
             {
                 return transform.gameObject.GetOrAddComponent<T>();
             }
             
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T GetOrAddComponent<T>(this MonoBehaviour script)
             where T : Component
             {

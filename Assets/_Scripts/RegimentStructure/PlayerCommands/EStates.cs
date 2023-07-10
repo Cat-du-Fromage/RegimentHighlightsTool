@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public struct OrderPacketData
+    public enum EStates
     {
-        public Vector3 GoalPosition;
-        
+        Idle,
+        Move
     }
 }

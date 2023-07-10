@@ -37,18 +37,32 @@ namespace KaizerWald
         {
             bool keepSameFormation = newFormationsWidth.Length == 0;
             List<RegimentOrder> orders = new (SelectedRegiments.Count);
+            
+            List<MoveRegimentOrder> moveOrders = new (SelectedRegiments.Count);
+            
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 Regiment regiment = SelectedRegiments[i];
                 float dstUnitToUnitY = regiment.CurrentFormation.DistanceUnitToUnit.y;
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
+                /*
                 Vector3 leaderPosition = StaticPlacementRegister.GetRegimentLeaderPosition(regiment.RegimentID, width, dstUnitToUnitY);
-                orders.Add(new MoveRegimentOrder(regiment, width, leaderPosition));
-                //Vector3 firstUnit = StaticPlacementRegister.Records[regiment.RegimentID][0].transform.position;
-                //Vector3 lastUnit = StaticPlacementRegister.Records[regiment.RegimentID][width].transform.position;
-                //orders.Add(new MoveRegimentOrder(regiment, width, firstUnit, lastUnit));
+                MoveRegimentOrder order = new MoveRegimentOrder(regiment, EStates.Move, width, leaderPosition);
+                orders.Add(order);
+                */
+                
+                Vector3 firstUnit = StaticPlacementRegister.Records[regiment.RegimentID][0].transform.position;
+                Vector3 lastUnit = StaticPlacementRegister.Records[regiment.RegimentID][width-1].transform.position;
+                MoveRegimentOrder order = new MoveRegimentOrder(regiment, EStates.Move, width, firstUnit, lastUnit);
+                Debug.Log($"PlacementSystem order(horsList): {order.FormationDestination.ToString()}");
+                orders.Add(order);
+                
+                moveOrders.Add(order);
+                Debug.Log($"PlacementSystem moveOrders[0]: {moveOrders[0].FormationDestination.ToString()}");
             }
+            Debug.Log($"PlacementSystem moveOrders[0]: {moveOrders[0].FormationDestination.ToString()}");
             MainSystem.OnCallback(this, orders);
+            MainSystem.OnMoveCallback(moveOrders);
         }
 
         //Order Move to selected Regiment -> 
