@@ -25,6 +25,9 @@ namespace KaizerWald
 {
     public sealed class PlacementController : HighlightController
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private const float DISTANCE_BETWEEN_REGIMENT = 1f;
         private const int ORIGIN_HEIGHT = 1000;
         private const int RAY_DISTANCE = 2000;
@@ -37,9 +40,14 @@ namespace KaizerWald
         private bool MouseStartValid;
         private Vector3 MouseStart, MouseEnd;
         
+        private bool PlacementCancel;
+        
         private float mouseDistance;
         private int[] tempWidths;
-        
+
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public PlacementSystem PlacementSystem { get; private set; }
         private List<Regiment> SelectedRegiments => PlacementSystem.SelectedRegiments;
         private int NumSelections => PlacementSystem.SelectedRegiments.Count;
@@ -47,14 +55,16 @@ namespace KaizerWald
         private HighlightRegister DynamicRegister => PlacementSystem.DynamicPlacementRegister;
         private HighlightRegister StaticRegister => PlacementSystem.StaticPlacementRegister;
         
-        private float GetDistance() => Magnitude(MouseEnd - MouseStart);
+        private float UpdateMouseDistance() => Magnitude(MouseEnd - MouseStart);
         private float3 LineDirection => normalizesafe(MouseEnd - MouseStart);
-        //private float3 DepthDirection => normalizesafe(cross(LineDirection, down()));
         private float3 DepthDirection => normalizesafe(cross(up(), LineDirection));
         private int TotalUnitsSelected => SelectionInfo.GetTotalUnitsSelected(SelectedRegiments);
         private float2 MinMaxSelectionWidth => SelectionInfo.GetMinMaxSelectionWidth(SelectedRegiments) + DISTANCE_BETWEEN_REGIMENT * (NumSelections-1);
         private NativeArray<int> MinWidthsArray => SelectionInfo.GetSelectionsMinWidth(SelectedRegiments);
-
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public PlacementController(HighlightSystem system, PlayerControls controls, LayerMask terrainLayer) : base()
         {
             PlacementSystem = (PlacementSystem)system;
@@ -105,7 +115,7 @@ namespace KaizerWald
             Vector3 lastPosition = MouseEnd;
             if (!GetMouseEnd(Mouse.current.position.value)) return;
             if (MouseEnd == lastPosition) return;
-            mouseDistance = GetDistance();
+            mouseDistance = UpdateMouseDistance();
             PlaceRegiments();
         }
         
@@ -115,30 +125,28 @@ namespace KaizerWald
         private void OnRightMouseClickAndMoveStart(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0) return;
+            PlacementCancel = false;
             MouseStartValid = GetMouseStart(context.ReadValue<Vector2>());
         }
 
         private void OnRightMouseClickAndMovePerform(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0 || !MouseStartValid || !GetMouseEnd(context.ReadValue<Vector2>())) return;
-            mouseDistance = GetDistance();
-            PlaceRegiments();
+            mouseDistance = UpdateMouseDistance();
+            tempWidths = PlaceRegiments();
         }
         
         private void OnRightMouseClickAndMoveCancel(CallbackContext context)
         {
-            if (SelectedRegiments.Count is 0 || !PlacementsVisible) return; //Means Left Click is pressed
+            if (SelectedRegiments.Count is 0 || PlacementCancel) return; //Means Left Click is pressed
             OnMouseReleased();
-            PlacementSystem.OnPlacementCallback(tempWidths);
-            
+            PlacementSystem.OnMoveOrderEvent(tempWidths);
+
             void OnMouseReleased()
             {
                 /*
-                // Update Regiments Selected Width
-                for (int i = 0; i < SelectedRegiments.Count; i++) 
-                {
-                    SelectedRegiments[i].CurrentFormation.SetWidth(tempWidths[i]);
-                }
+                // Update Regiments Selected Width (remove after rework)
+                for (int i = 0; i < SelectedRegiments.Count; i++) SelectedRegiments[i].CurrentFormation.SetWidth(tempWidths[i]);
                 */
                 DisablePlacements();
                 PlacementSystem.SwapDynamicToStatic();
@@ -155,7 +163,7 @@ namespace KaizerWald
         {
             OnClearDynamicHighlight();
             mouseDistance = 0;
-            PlacementsVisible = false;
+            PlacementCancel = true;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -165,9 +173,9 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Placement Logic ◈◈◈◈◈◈                                                                         ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void PlaceRegiments()
+        private int[] PlaceRegiments()
         {
-            if (!IsVisibilityTrigger()) return;
+            if (!IsVisibilityTrigger()) return Array.Empty<int>(); //Ordre => Garde la formation actuelle
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth.x;
             NativeArray<int> newWidths = GetUpdatedFormationWidths(ref unitsToAddLength);
             NativeArray<float2> starts = GetStartsPosition(unitsToAddLength, newWidths);
@@ -175,7 +183,8 @@ namespace KaizerWald
             
             using NativeArray<RaycastHit> results = GetPositionAndRotationOnTerrain(ref initialTokensPositions, jhs);
             MoveHighlightsTokens(results);
-            tempWidths = newWidths.ToArray();
+            
+            return newWidths.ToArray();
         }
         
         /// <summary>
@@ -320,7 +329,6 @@ namespace KaizerWald
             if (PlacementsVisible) return true;
             if (mouseDistance < SelectedRegiments[0].CurrentFormation.DistanceUnitToUnit.x) return false;
             EnableAllDynamicSelected();
-            PlacementsVisible = true;
             return true;
         }
         
@@ -350,11 +358,13 @@ namespace KaizerWald
         private void EnableAllDynamicSelected()
         {
             SelectedRegiments.ForEach(regiment => PlacementSystem.OnShow(regiment, PlacementSystem.DynamicRegisterIndex));
+            PlacementsVisible = true;
         }
         
         private void OnClearDynamicHighlight()
         {
             PlacementSystem.HideAll(PlacementSystem.DynamicRegisterIndex);
+            PlacementsVisible = false;
         }
         
         private void EnableAllStatic()

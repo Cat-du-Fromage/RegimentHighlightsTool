@@ -32,7 +32,27 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
+        //Callback On RegimentHighlightSystem
+        public void OnMoveOrderEvent(int[] newFormationsWidth)
+        {
+            bool keepSameFormation = newFormationsWidth.Length == 0;
+            List<RegimentOrder> orders = new (SelectedRegiments.Count);
+            for (int i = 0; i < SelectedRegiments.Count; i++)
+            {
+                Regiment regiment = SelectedRegiments[i];
+                float dstUnitToUnitY = regiment.CurrentFormation.DistanceUnitToUnit.y;
+                int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
+                Vector3 leaderPosition = StaticPlacementRegister.GetRegimentLeaderPosition(regiment.RegimentID, width, dstUnitToUnitY);
+                orders.Add(new MoveRegimentOrder(regiment, width, leaderPosition));
+                //Vector3 firstUnit = StaticPlacementRegister.Records[regiment.RegimentID][0].transform.position;
+                //Vector3 lastUnit = StaticPlacementRegister.Records[regiment.RegimentID][width].transform.position;
+                //orders.Add(new MoveRegimentOrder(regiment, width, firstUnit, lastUnit));
+            }
+            MainSystem.OnCallback(this, orders);
+        }
+
         //Order Move to selected Regiment -> 
+        /*
         public MoveOrder[] OnPlacementCallback(int[] formationsWidth)
         {
             MoveOrder[] orders = new MoveOrder[SelectedRegiments.Count];
@@ -50,7 +70,7 @@ namespace KaizerWald
             }
             return orders;
         }
-
+*/
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜

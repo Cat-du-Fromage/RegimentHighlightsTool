@@ -10,21 +10,21 @@ namespace KaizerWald
 {
     public class RegimentManager : HighlightCoordinator
     {
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                            ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                             ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private RegimentFactory factory;
-        
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                          ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                          ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private RegimentHighlightSystem regimentHighlightSystem;
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public static RegimentManager Instance { get; private set; }
         public List<Regiment> Regiments { get; private set; }
         public event Action<Regiment> OnNewRegiment;
 
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                         ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                         ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Awake | Start ◈◈◈◈◈◈                                                                           ║
@@ -32,17 +32,17 @@ namespace KaizerWald
 
         protected override void Awake()
         {
-            InitSingleton();
+            InitializeSingleton();
             base.Awake();
             Regiments = new List<Regiment>();
             factory = FindObjectOfType<RegimentFactory>();
-            Debug.Log($"sizeof(FormationData): {Utilities.GetSizeOf<FormationData>()}");
-            //RegimentHighlightSystem.OnOrderReceived;
+            regimentHighlightSystem = GetComponent<RegimentHighlightSystem>();
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Update | Late Update ◈◈◈◈◈◈                                                                    ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         private void Update()
         {
             foreach (Regiment regiment in Regiments)
@@ -65,25 +65,25 @@ namespace KaizerWald
         private void OnEnable()
         {
             factory.OnRegimentCreated += RegisterNewRegiment;
+            regimentHighlightSystem.OnPlacementEvent += OnMoveOrders;
         }
 
         private void OnDisable()
         {
             factory.OnRegimentCreated -= RegisterNewRegiment;
-            foreach (Delegate action in OnNewRegiment?.GetInvocationList()!)
-            {
-                OnNewRegiment -= (Action<Regiment>)action;
-            }
+            regimentHighlightSystem.OnPlacementEvent -= OnMoveOrders;
+            Array.ForEach(OnNewRegiment?.GetInvocationList()!,action => OnNewRegiment -= (Action<Regiment>)action);
+            //foreach (Delegate action in OnNewRegiment?.GetInvocationList()!) OnNewRegiment -= (Action<Regiment>)action;
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║                                        ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                         ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void InitSingleton()
+        private void InitializeSingleton()
         {
             if (Instance != null && Instance != this)
             {
@@ -93,6 +93,17 @@ namespace KaizerWald
             Instance = this;
         }
         
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Highlight Orders ◈◈◈◈◈◈                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
+        private void OnMoveOrders(MoveRegimentOrder moveOrder)
+        {
+            moveOrder.Regiment.OnMoveOrderReceived(moveOrder);
+        }
+        
+        
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -101,19 +112,7 @@ namespace KaizerWald
             Regiments.Add(regiment);
             OnNewRegiment?.Invoke(regiment);
         }
-
-        private void OnOrderCallback(HighlightSystem systemSource, BaseOrder[] orders)
-        {
-            switch (systemSource)
-            {
-                case PlacementSystem:
-                    foreach (BaseOrder baseOrder in orders)
-                    {
-                        MoveOrder moveOrder = (MoveOrder)baseOrder;
-                    }
-                    return;
-            }
-        }
+        
         /*
         private void TestKillUnit()
         {

@@ -16,10 +16,12 @@ namespace KaizerWald
 
         public TransformAccessWrapper(List<T> datas)
         {
+            Datas = new List<T>(datas.Count);
             Transforms = new List<Transform>(datas.Count);
             DictionaryTransformIndex = new Dictionary<Transform, int>(datas.Count);
             for (int i = 0; i < datas.Count; i++)
             {
+                Datas.Add(datas[i]);
                 Transforms.Add(datas[i].transform);
                 DictionaryTransformIndex.Add(datas[i].transform, i);
             }

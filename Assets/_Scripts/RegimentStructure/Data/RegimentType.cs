@@ -9,5 +9,7 @@ namespace KaizerWald
     {
         public RegimentClass RegimentClass;
         public GameObject UnitPrefab;
+
+        public float Speed = 1;
     }
 }

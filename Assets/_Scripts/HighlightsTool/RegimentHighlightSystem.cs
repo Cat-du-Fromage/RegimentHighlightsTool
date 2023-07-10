@@ -3,12 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Rendering;
+using UnityEngine;
 
 namespace KaizerWald
 {
     public sealed class RegimentHighlightSystem : HighlightSystemBehaviour<RegimentManager>
     {
-        
+        private static RegimentHighlightSystem instance;
+        public static RegimentHighlightSystem Instance
+        {
+            get
+            {
+                if (!instance) instance = FindFirstObjectByType<RegimentHighlightSystem>();
+                return instance;
+            }
+        }
+        //public static RegimentHighlightSystem Instance { get; private set; }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -21,10 +31,8 @@ namespace KaizerWald
         public SelectionSystem Selection { get; private set; }
         public PlacementSystem Placement { get; private set; }
 
-        //OnHoverUpdate
-        //OnSelectionUpdate
-        //OnPlacementUpdate
-        
+        public event Action OnSelectionEvent;
+        public event Action<MoveRegimentOrder> OnPlacementEvent;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
@@ -35,6 +43,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         protected override void Awake()
         {
+            InitializeSingleton();
             base.Awake();
             Selection = this.GetOrAddComponent<SelectionSystem>();
             Placement = this.GetOrAddComponent<PlacementSystem>();
@@ -71,6 +80,53 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public void OnCallback(HighlightSystem system, List<RegimentOrder> orders)
+        {
+            switch (system)
+            {
+                case PlacementSystem: // ORDRE
+                    if (orders.Count == 0) return;
+                    //1) Placement-Drag => MoveOrder
+                    //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
+                    if (orders[0] is MoveRegimentOrder)
+                    {
+                        //orders.ForEach(order => OnPlacementEvent?.Invoke((MoveRegimentOrder)order));
+                        foreach (RegimentOrder order in orders)
+                        {
+                            OnPlacementEvent?.Invoke((MoveRegimentOrder)order);
+                        }
+                    }
+                    //3) Placement-NoDrag + Enemy Preselected => AttackOrder
+                    return;
+                case SelectionSystem: // Indication (UI Regiment Preselected)
+                    OnSelectionEvent?.Invoke();
+                    return;
+                default:
+                    return;
+            }
+        }
+
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        private void InitializeSingleton()
+        {
+            if (instance != null && instance != this)
+            {
+                Destroy(this);
+                return;
+            }
+            instance = this;
+        }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Registry Methods ◈◈◈◈◈◈                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public override void RegisterRegiment(Regiment regiment)
         {
