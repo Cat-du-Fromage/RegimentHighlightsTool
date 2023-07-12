@@ -38,22 +38,24 @@ namespace KaizerWald
             CreateRegiments(transform.position);
         }
 
-        public void CreateRegiments(Vector3 instancePosition)
+        public void CreateRegiments(Vector3 defaultInstancePosition)
         {
             float offsetPosition = 0;
+
             for (int i = 0; i < CreationOrders.Length; i++)
             {
+                (Transform spawnerTransform, Vector3 instancePosition) = GetInstancePosition(CreationOrders[i].OwnerID);
+                
                 RegimentSpawner currentSpawner = CreationOrders[i];
-                RegimentSpawner previousSpawner = i == 0 ? currentSpawner : CreationOrders[i-1];
+                RegimentSpawner previousSpawner = i is 0 ? currentSpawner : CreationOrders[i-1];
 
-                float offset = GetOffset(currentSpawner, i) * 0.5f;
-                offset += GetOffset(previousSpawner, i) * 0.5f;
+                float offset = GetOffset(currentSpawner, i) + GetOffset(previousSpawner, i);
                 offsetPosition += offset;
                 
                 for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
                 {
                     offsetPosition += OffsetSameRegiment(j, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
-                    Regiment regiment = InstantiateRegiment(instancePosition, offsetPosition);
+                    Regiment regiment = InstantiateRegiment(spawnerTransform, instancePosition, offsetPosition);
                     regiment.Initialize(currentSpawner.OwnerID, unitFactory, currentSpawner, regiment.transform.forward);
                     OnRegimentCreated?.Invoke(regiment);
                 }
@@ -61,12 +63,20 @@ namespace KaizerWald
             Array.Clear(CreationOrders, 0, CreationOrders.Length);
         }
 
-        private Regiment InstantiateRegiment(Vector3 instancePosition, float offsetPosition)
+        private (Transform, Vector3) GetInstancePosition(ulong ownerID)
         {
-            Vector3 position = instancePosition + offsetPosition * Vector3.right;
+            int playerIndex = (int)ownerID;
+            if (playerIndex is < 0 or > 1) return (transform, transform.position);
+            Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(playerIndex);
+            return (TerrainManager.Instance.GetSpawnerTransform(playerIndex), instancePosition);
+        }
+
+        private Regiment InstantiateRegiment(Transform spawnerTransform, Vector3 instancePosition, float offsetPosition)
+        {
+            Vector3 position = instancePosition + offsetPosition * spawnerTransform.right;
             GameObject newRegiment = new($"DefaultRegiment", typeof(Regiment));
             Regiment regiment = newRegiment.GetComponent<Regiment>();
-            regiment.transform.SetPositionAndRotation(position, Quaternion.identity);
+            regiment.transform.SetPositionAndRotation(position, spawnerTransform.localRotation);
             return regiment;
         }
 
@@ -75,14 +85,14 @@ namespace KaizerWald
             if (index == 0) return 0;
             RegimentClass regimentClass = spawner.RegimentType.RegimentClass;
             float spaceBtwUnits = regimentClass.SpaceBetweenUnits + regimentClass.Category.UnitSize.x;
-            return regimentClass.MaxRow * spaceBtwUnits; //DISTANCE from regiment to an other IS NOT divide by 2 !!
+            return regimentClass.MaxRow * spaceBtwUnits  * 0.5f;
         }
 
         private float OffsetSameRegiment(int index, RegimentClass regimentClass)
         {
             if (index == 0) return 0;
             float spaceBtwUnits = regimentClass.SpaceBetweenUnits + regimentClass.Category.UnitSize.x;
-            return regimentClass.MaxRow * spaceBtwUnits; //DISTANCE from regiment to an other IS NOT divide by 2 !!
+            return regimentClass.MaxRow * spaceBtwUnits; //DISTANCE from same regiment to an other IS NOT divide by 2 !!
         }
     }
     
