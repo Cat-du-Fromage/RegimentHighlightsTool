@@ -1,74 +1,73 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace KaizerWald
 {
-    public class Unit : MonoBehaviour
+    public partial class RegimentStateMachine : StateMachine<Regiment>
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        [field: SerializeField] public Regiment RegimentAttach { get; private set; }
-        [field: SerializeField] public int IndexInRegiment { get; private set; }
-
-        [field: SerializeField] public UnitStateMachine StateMachine { get; private set; }
-        
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        private void Awake()
-        {
-            StateMachine = this.GetOrAddComponent<UnitStateMachine>();
-        }
-
-        private void OnDestroy()
-        {
-            OnDeath();
-        }
+        public List<UnitStateMachine> UnitsStateMachine { get; private set; }
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
-        public void SetIndexInRegiment(int index) => IndexInRegiment = index;
-
-        public void UpdateUnit()
-        {
-            StateMachine.OnUpdate();
-        }
-
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public Unit Initialize(Regiment regiment, int indexInRegiment, int unitLayerIndex)
+        public override void Initialize()
         {
-            InitializeProperties(regiment, indexInRegiment, unitLayerIndex);
-            InitializeStateMachine();
-            return this;
+            base.Initialize();
+            UnitsStateMachine = new List<UnitStateMachine>(ObjectAttach.Units.Count);
+            ObjectAttach.Units.ForEach(unit => UnitsStateMachine.Add(unit.StateMachine));
         }
 
-        private void InitializeProperties(Regiment regiment, int indexInRegiment, int unitLayerIndex)
+        protected override void InitializeStates()
         {
-            RegimentAttach = regiment;
-            IndexInRegiment = indexInRegiment;
-            gameObject.layer = unitLayerIndex;
-        }
-
-        private void InitializeStateMachine()
-        {
-            StateMachine = this.GetOrAddComponent<UnitStateMachine>();
-            StateMachine.Initialize();
+            States = new Dictionary<EStates, State<Regiment>>()
+            {
+                {EStates.Idle, new RegimentIdleState(ObjectAttach)},
+                {EStates.Move, new RegimentMoveState(ObjectAttach)}
+            };
+            State = EStates.Idle;
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Unit Update Event ◈◈◈◈◈◈                                                                       ║
+        //║ ◈◈◈◈◈◈ Player Orders ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void OnDeath()
+        public void OnAbilityTrigger(EStates state)
         {
-            if (RegimentAttach == null) return;
-            RegimentAttach.OnDeadUnit(this);
+            States[state].OnAbilityTrigger();
+            foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
+            {
+                unitStateMachine.States[state].OnAbilityTrigger();
+            }
+        }
+        
+        public void OnMoveOrderReceived(RegimentOrder order)
+        {
+            State = order.StateOrdered;
+            switch (State)
+            {
+                case EStates.Idle:
+                    return;
+                case EStates.Move:
+                    CurrentState.OnOrderEnter(order);
+                    foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
+                    {
+                        unitStateMachine.OnOrderReceived(order);
+                    }
+                    //foreach (Unit unit in ObjectAttach.Units) unit.StateMachine.OnOrderReceived(order);
+                    return;
+                default:
+                    return;
+            }
         }
     }
 }

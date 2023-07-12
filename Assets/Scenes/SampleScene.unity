@@ -724,6 +724,7 @@ GameObject:
   - component: {fileID: 1490866060}
   - component: {fileID: 1490866059}
   - component: {fileID: 1490866061}
+  - component: {fileID: 1490866062}
   m_Layer: 0
   m_Name: RegimentManagerV2Test
   m_TagString: Untagged
@@ -780,6 +781,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 257ba050014f7b74abfc470969a42749, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1490866062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1490866058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b877bcc735c13c842b8ea993edfa5a1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1939307578

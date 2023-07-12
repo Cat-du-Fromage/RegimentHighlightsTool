@@ -336,6 +336,34 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""RegimentAbility"",
+            ""id"": ""f53388a7-3b8c-4c25-8fa4-64da1ca060b7"",
+            ""actions"": [
+                {
+                    ""name"": ""MarchRun"",
+                    ""type"": ""Button"",
+                    ""id"": ""7c66b5b7-a5bd-4ee5-be55-71e9566a5bef"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""cb4db4d2-835a-484e-9d58-d86707869bf6"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MarchRun"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -355,6 +383,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Selection_MouseMove = m_Selection.FindAction("MouseMove", throwIfNotFound: true);
         m_Selection_LeftMouseClickAndMove = m_Selection.FindAction("LeftMouseClickAndMove", throwIfNotFound: true);
         m_Selection_LockSelection = m_Selection.FindAction("LockSelection", throwIfNotFound: true);
+        // RegimentAbility
+        m_RegimentAbility = asset.FindActionMap("RegimentAbility", throwIfNotFound: true);
+        m_RegimentAbility_MarchRun = m_RegimentAbility.FindAction("MarchRun", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -598,6 +629,52 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         }
     }
     public SelectionActions @Selection => new SelectionActions(this);
+
+    // RegimentAbility
+    private readonly InputActionMap m_RegimentAbility;
+    private List<IRegimentAbilityActions> m_RegimentAbilityActionsCallbackInterfaces = new List<IRegimentAbilityActions>();
+    private readonly InputAction m_RegimentAbility_MarchRun;
+    public struct RegimentAbilityActions
+    {
+        private @PlayerControls m_Wrapper;
+        public RegimentAbilityActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @MarchRun => m_Wrapper.m_RegimentAbility_MarchRun;
+        public InputActionMap Get() { return m_Wrapper.m_RegimentAbility; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(RegimentAbilityActions set) { return set.Get(); }
+        public void AddCallbacks(IRegimentAbilityActions instance)
+        {
+            if (instance == null || m_Wrapper.m_RegimentAbilityActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_RegimentAbilityActionsCallbackInterfaces.Add(instance);
+            @MarchRun.started += instance.OnMarchRun;
+            @MarchRun.performed += instance.OnMarchRun;
+            @MarchRun.canceled += instance.OnMarchRun;
+        }
+
+        private void UnregisterCallbacks(IRegimentAbilityActions instance)
+        {
+            @MarchRun.started -= instance.OnMarchRun;
+            @MarchRun.performed -= instance.OnMarchRun;
+            @MarchRun.canceled -= instance.OnMarchRun;
+        }
+
+        public void RemoveCallbacks(IRegimentAbilityActions instance)
+        {
+            if (m_Wrapper.m_RegimentAbilityActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IRegimentAbilityActions instance)
+        {
+            foreach (var item in m_Wrapper.m_RegimentAbilityActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_RegimentAbilityActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public RegimentAbilityActions @RegimentAbility => new RegimentAbilityActions(this);
     public interface IPlayerActions
     {
         void OnMouseMove(InputAction.CallbackContext context);
@@ -615,5 +692,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnMouseMove(InputAction.CallbackContext context);
         void OnLeftMouseClickAndMove(InputAction.CallbackContext context);
         void OnLockSelection(InputAction.CallbackContext context);
+    }
+    public interface IRegimentAbilityActions
+    {
+        void OnMarchRun(InputAction.CallbackContext context);
     }
 }

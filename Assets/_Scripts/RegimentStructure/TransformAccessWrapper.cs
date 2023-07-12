@@ -12,7 +12,9 @@ namespace KaizerWald
         public List<T> Datas{ get; private set; }
         public List<Transform> Transforms{ get; private set; }
         public Dictionary<Transform, int> DictionaryTransformIndex{ get; private set; }
-        public TransformAccessArray UnitsTransformAccessArray { get; private set; }
+        
+        //POSSIBILITEE DE CHANGER l'INTERNE AVEC : UnitsListWrapper.UnitsTransformAccessArray[0] = transform;
+        public TransformAccessArray UnitsTransformAccessArray;
 
         public TransformAccessWrapper(List<T> datas)
         {

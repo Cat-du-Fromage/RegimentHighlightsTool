@@ -17,18 +17,16 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        // IMMUTABLES FIELDS
-        public readonly ushort BaseNumUnits;
+        //public readonly ushort BaseNumUnits;
         private readonly byte  minRow; 
         private readonly byte  maxRow;
         private readonly half2 unitSize;
         private readonly half  spaceBetweenUnits;
-        
-        // MUTABLES FIELDS
-        private ushort numUnitsAlive;
-        private byte   width;
-        private byte   depth;
-        private half2  direction2DForward;
+
+        private readonly ushort numUnitsAlive;
+        private readonly byte   width;
+        private readonly byte   depth;
+        private readonly half2  direction2DForward;
       //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
       //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
       //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -44,8 +42,8 @@ namespace KaizerWald
         public readonly int MaxRow => min((int)maxRow, numUnitsAlive);
         public readonly int2 MinMaxRow => new int2(MinRow, MaxRow);
         
-        public readonly float2 Direction2DForward() => direction2DForward;
-        public readonly float3 Direction3DForward() => new float3((float)direction2DForward.x,0,(float)direction2DForward.y);
+        public readonly float2 Direction2DForward => direction2DForward;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -53,7 +51,8 @@ namespace KaizerWald
         public FormationData(int numUnits, int2 minMaxRow = default, float spaceBetweenUnit = 1f, float2 unitSize = default, float3 direction = default)
         {
             int numberUnits = max(1,numUnits);
-            BaseNumUnits = numUnitsAlive = (ushort)numberUnits;
+            //BaseNumUnits = numUnitsAlive = (ushort)numberUnits;
+            numUnitsAlive = (ushort)numberUnits;
             
             int2 minMax = minMaxRow.Equals(default) ? new int2(1, max(1, numberUnits / 2)) : minMaxRow;
             minRow = (byte)min(byte.MaxValue, minMax.x);
@@ -71,7 +70,9 @@ namespace KaizerWald
         public FormationData(RegimentType regimentType, Vector3 direction)
         {
             RegimentClass regimentClass = regimentType.RegimentClass;
-            BaseNumUnits = numUnitsAlive = (ushort)regimentClass.BaseNumberUnit;
+            //BaseNumUnits = numUnitsAlive = (ushort)regimentClass.BaseNumberUnit;
+            numUnitsAlive = (ushort)regimentClass.BaseNumberUnit;
+            
             minRow = (byte)min(byte.MaxValue, regimentClass.MinRow);
             maxRow = (byte)min(byte.MaxValue,regimentClass.MaxRow);
             
@@ -86,7 +87,9 @@ namespace KaizerWald
         
         public FormationData(in FormationData otherFormation)
         {
-            BaseNumUnits = numUnitsAlive = otherFormation.BaseNumUnits;
+            //BaseNumUnits = numUnitsAlive = otherFormation.BaseNumUnits;
+            numUnitsAlive = otherFormation.numUnitsAlive;
+            
             minRow =  (byte)min(byte.MaxValue, (int)otherFormation.minRow);
             maxRow = (byte)min(byte.MaxValue, (int)otherFormation.maxRow);
             unitSize = otherFormation.unitSize;
@@ -98,9 +101,26 @@ namespace KaizerWald
             direction2DForward = otherFormation.direction2DForward;
         }
         
+        public FormationData(in Formation formation)
+        {
+            //BaseNumUnits = numUnitsAlive = (ushort)formation.BaseNumUnits;
+            numUnitsAlive = (ushort)formation.NumUnitsAlive;
+            
+            minRow =  (byte)min(byte.MaxValue, formation.MinRow);
+            maxRow = (byte)min(byte.MaxValue, formation.MaxRow);
+            unitSize = half2(formation.UnitSize);
+            spaceBetweenUnits = half(formation.SpaceBetweenUnits);
+            
+            width = (byte)formation.Width;
+            depth = (byte)formation.Depth;
+            
+            direction2DForward = half2(formation.Direction2DForward);
+        }
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public readonly float3 Direction3DForward => new float3(direction2DForward.x,0,direction2DForward.y);
         public readonly float2 DistanceUnitToUnit => UnitSize + SpaceBetweenUnits;
         
         // Needed for Rearrangement
@@ -109,39 +129,14 @@ namespace KaizerWald
         public readonly int NumUnitsLastLine => CountUnitsLastLine is 0 ? width : CountUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                 ║
+        //║ ◈◈◈◈◈◈ Setters!! IMPOSSIBLE CAR LES STRUCT SONT PAR COPIES!! ◈◈◈◈◈◈                                   ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void Add(int numAdded) => numUnitsAlive = (ushort)min(BaseNumUnits, numUnitsAlive + numAdded);
-        public void Remove(int numRemoved) => numUnitsAlive = (ushort)max(0, numUnitsAlive - numRemoved);
-        
-        public FormationData SetWidth(int newWidth)
-        {
-            width = (byte)min(maxRow, newWidth);
-            depth = (byte)ceil(numUnitsAlive / max(1f,width));
-            return this;
-        }
-        
-        public FormationData SetDirection(float2 newDirection)
-        {
-            if (newDirection.Approximately(float2.zero)) return this;
-            direction2DForward = half2(newDirection);
-            Debug.Log($"Set Direction Received: {newDirection} converted: {direction2DForward}");
-            Debug.Log($"Set Direction FinalForm: {ToString()}");
-            return this;
-        }
-        public FormationData SetDirection(float3 newDirection)
-        {
-            return SetDirection(newDirection.xz);
-        }
-        public FormationData SetDirection(float3 firstUnitFirstRow, float3 lastUnitFirstRow)
-        {
-            return SetDirection(cross(down(), normalizesafe(lastUnitFirstRow - firstUnitFirstRow)).xz);
-        }
+        public static implicit operator FormationData(Formation rhs) => new FormationData(rhs);
 
         public override string ToString()
         {
             return $"Current formation:\r\n" +
-                   $"BaseNumUnits:{BaseNumUnits}\r\n" +
+                   //$"BaseNumUnits:{BaseNumUnits}\r\n" +
                    $"minRow {minRow}\r\n" +
                    $"maxRow {maxRow}\r\n" +
                    $"unitSize {unitSize}\r\n" +

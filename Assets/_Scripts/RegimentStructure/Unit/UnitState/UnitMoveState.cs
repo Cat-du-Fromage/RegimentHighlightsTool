@@ -1,23 +1,37 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.Controls;
 
 namespace KaizerWald
 {
-    public class UnitMoveState : UnitState
+    
+    public sealed class UnitMoveState : MoveState<Unit>
     {
-        private float speed;
-        private Transform unitTransform;
-        public Vector3 Destination { get; private set; }
-        public Vector3 Position => unitTransform.position;
-        //public Vector2 position2D => new Vector2(unitTransform.position.x, unitTransform.position.z);
-        public UnitMoveState(Unit unit) : base(unit)
+        private readonly UnitAnimation unitAnimation;
+        
+        public UnitMoveState(Unit unit) : base(unit, unit.RegimentAttach.RegimentType.Speed)
         {
-            speed = unit.RegimentAttach.RegimentType.Speed;
-            unitTransform = unit.transform;
-            Destination = unitTransform.position;
+            Destination = ObjTransform.position;
+
+            if (!unit.TryGetComponent(out unitAnimation))
+            {
+                Debug.LogError($"Unit: {unit.name} don't have 'UnitAnimation' Component");
+            }
         }
 
+        public override void SetMarching()
+        {
+            base.SetMarching();
+            unitAnimation.SetMarching();
+        }
+
+        public override void SetRunning()
+        {
+            base.SetRunning();
+            unitAnimation.SetRunning();
+        }
+        
         public override void OnStateEnter()
         {
             return;
@@ -25,17 +39,22 @@ namespace KaizerWald
 
         public override void OnOrderEnter(RegimentOrder order)
         {
+            SetMarching();
             MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
-            Destination = moveOrder.FormationDestination.GetUnitRelativePositionToRegiment3D(UnitAttach.IndexInRegiment, moveOrder.LeaderDestination);
+            FormationData formationData = moveOrder.FormationDestination;
+            Direction = formationData.Direction3DForward;
+            Destination = formationData.GetUnitRelativePositionToRegiment3D(ObjectAttach.IndexInRegiment, moveOrder.LeaderDestination);
+            unitAnimation.SetMarching();
         }
 
         public override void OnStateUpdate()
         {
+            ObjTransform.LookAt(Position + Direction);
             Vector3 direction = (Destination - Position).normalized;
-            unitTransform.Translate(Time.deltaTime * speed * direction);
-
+            ObjTransform.Translate(Time.deltaTime * MoveSpeed * direction, Space.World);
             if (!OnTransitionCheck()) return;
-            UnitAttach.TransitionState(EStates.Idle);
+            
+            ObjectAttach.StateMachine.TransitionState(EStates.Idle);
         }
 
         public override bool OnTransitionCheck()
@@ -50,4 +69,5 @@ namespace KaizerWald
             return;
         }
     }
+    
 }

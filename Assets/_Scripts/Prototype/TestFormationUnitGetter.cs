@@ -10,7 +10,7 @@ namespace KaizerWald
         [SerializeField] private int NumUnits = 20;
         [SerializeField] private int FormationWidth = 4;
         private const float RADIUS = 0.5f;
-        private FormationData formation;
+        private Formation formation;
         public bool DebugTest = false;
 
         private bool formationAssigned = false;
@@ -55,11 +55,10 @@ namespace KaizerWald
 */
         private void InitFormation()
         {
-            formation = new FormationData(NumUnits);
+            formation = new Formation(NumUnits);
             formation.SetWidth(FormationWidth);
             formation.SetDirection(((float3)regTransform.forward).xz);
             formationAssigned = true;
-            //Debug.Log(formation.ToString());
         }
 
         private void CheckFormation()
@@ -84,7 +83,7 @@ namespace KaizerWald
             if (!DebugTest || !formationAssigned) return;
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(transform.position, RADIUS);
-            float2[] positions = formation.GetUnitsPositionRelativeToRegiment((float3)regTransform.position);
+            float2[] positions = ((FormationData)formation).GetUnitsPositionRelativeToRegiment((float3)regTransform.position);
 
             Gizmos.color = Color.green;
             foreach (float2 unitPos2D in positions)

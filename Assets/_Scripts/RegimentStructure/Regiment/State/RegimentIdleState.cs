@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public class RegimentIdleState : RegimentState
+    public class RegimentIdleState : IdleState<Regiment>
     {
         private bool autoFire = false;
         

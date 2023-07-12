@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 
@@ -24,7 +25,8 @@ namespace KaizerWald
         [field:SerializeField] public int RegimentID { get; private set; }
         [field:SerializeField] public RegimentType RegimentType { get; private set; }
         
-        [field:SerializeField] public FormationData CurrentFormation { get; private set; }
+        public Formation CurrentFormation { get; private set; }
+        public RegimentStateMachine StateMachine { get; private set; }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
@@ -50,14 +52,18 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void Initialize(ulong ownerID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
         {
+            InitializeProperties(ownerID, currentSpawner.RegimentType, direction, regimentName);
+            CreateAndRegisterUnits(unitFactory);
+            InitializeStateMachine();
+        }
+
+        private void InitializeProperties(ulong ownerID, RegimentType regimentType, Vector3 direction, string regimentName = default)
+        {
             name = regimentName ?? $"Player{ownerID}_Regiment{RegimentID}";
             OwnerID = ownerID;
             RegimentID = transform.GetInstanceID();
-            RegimentType = currentSpawner.RegimentType;
-            CurrentFormation = new FormationData(currentSpawner.RegimentType, direction);
-            CreateAndRegisterUnits(unitFactory);
-
-            InitializeStates();
+            RegimentType = regimentType;
+            CurrentFormation = new Formation(regimentType, direction);
         }
 
         private void CreateAndRegisterUnits(UnitFactory unitFactory)
@@ -66,13 +72,19 @@ namespace KaizerWald
             UnitsListWrapper = new TransformAccessWrapper<Unit>(units);
             DeadUnits = new HashSet<Transform>((int)(units.Count * 0.2f)); //almost impossible a regiment loose more than 20% of it's member during a frame
         }
+
+        private void InitializeStateMachine()
+        {
+            StateMachine = this.GetOrAddComponent<RegimentStateMachine>();
+            StateMachine.Initialize();
+        }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void OnUpdate()
         {
-            CurrentState?.OnStateUpdate();
+            StateMachine.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
 
@@ -97,52 +109,6 @@ namespace KaizerWald
                 UnitsListWrapper.Remove(deadUnit);
             }
             DeadUnits.Clear();
-        }
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                            ◆◆◆◆◆◆ STATE MACHINE ◆◆◆◆◆◆                                             ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public EStates currentState;
-        public Dictionary<EStates, RegimentState> States;
-
-        private RegimentState CurrentState => States[currentState];
-
-        private void InitializeStates()
-        {
-            States = new Dictionary<EStates, RegimentState>()
-            {
-                {EStates.Idle, new RegimentIdleState(this)},
-                {EStates.Move, new RegimentMoveState(this)}
-            };
-            currentState = EStates.Idle;
-        }
-
-        public void TransitionState(EStates newState)
-        {
-            CurrentState.OnStateExit();
-            currentState = newState;
-            CurrentState.OnStateEnter();
-        }
-        
-        public void OnMoveOrderReceived(RegimentOrder order)
-        {
-            currentState = order.StateOrdered;
-            switch (currentState)
-            {
-                case EStates.Idle:
-                    return;
-                case EStates.Move:
-                    CurrentState.OnOrderEnter(order);
-                    foreach (Unit unit in Units)
-                    {
-                        unit.OnOrderReceived(order);
-                    }
-                    return;
-                default:
-                    return;
-            }
-            
-            //currentState = new RegimentMoveState(this);
-            //currentState.OnOrderEnter(order);
         }
     }
 }

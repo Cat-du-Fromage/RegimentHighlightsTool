@@ -16,7 +16,7 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public List<Regiment> SelectedRegiments => MainSystem.Selection.SelectionRegister.ActiveHighlights;
+        public List<Regiment> SelectedRegiments => MainSystem.SelectedRegiments;
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
 
@@ -54,15 +54,10 @@ namespace KaizerWald
                 Vector3 firstUnit = StaticPlacementRegister.Records[regiment.RegimentID][0].transform.position;
                 Vector3 lastUnit = StaticPlacementRegister.Records[regiment.RegimentID][width-1].transform.position;
                 MoveRegimentOrder order = new MoveRegimentOrder(regiment, EStates.Move, width, firstUnit, lastUnit);
-                Debug.Log($"PlacementSystem order(horsList): {order.FormationDestination.ToString()}");
                 orders.Add(order);
-                
                 moveOrders.Add(order);
-                Debug.Log($"PlacementSystem moveOrders[0]: {moveOrders[0].FormationDestination.ToString()}");
             }
-            Debug.Log($"PlacementSystem moveOrders[0]: {moveOrders[0].FormationDestination.ToString()}");
             MainSystem.OnCallback(this, orders);
-            MainSystem.OnMoveCallback(moveOrders);
         }
 
         //Order Move to selected Regiment -> 

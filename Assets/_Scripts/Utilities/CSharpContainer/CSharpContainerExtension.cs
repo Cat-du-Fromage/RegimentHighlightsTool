@@ -18,14 +18,12 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ForEach<T>(this T[] array, Action<T> action)
-        where T : struct
         {
             Array.ForEach(array, action);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Reverse<T>(this T[] array)
-        where T : struct
         {
             Array.Reverse(array);
         }
@@ -44,10 +42,9 @@ namespace KaizerWald
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] Concat<T>(this T[] x, T[] y)
-        where T : struct
         {
             int oldLen = x.Length;
-            Array.Resize<T>(ref x, x.Length + y.Length);
+            Array.Resize(ref x, x.Length + y.Length);
             Array.Copy(y, 0, x, oldLen, y.Length);
             return x;
         }
@@ -57,7 +54,6 @@ namespace KaizerWald
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddIf<T>(this List<T> list, T obj, bool flag)
-        where T : unmanaged
         {
             if (!flag) return;
             list.Add(obj);

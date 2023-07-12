@@ -80,20 +80,13 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
+        public List<Regiment> SelectedRegiments => Selection.SelectionRegister.ActiveHighlights;
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        public void OnMoveCallback(List<MoveRegimentOrder> orders)
-        {
-            Debug.Log($"RegimentHighlightSystem OnMoveCallback: {orders[0].FormationDestination.ToString()}");
-            
-        }
-
         public void OnCallback(HighlightSystem system, List<RegimentOrder> orders)
         {
-            
             switch (system)
             {
                 case PlacementSystem: // ORDRE
@@ -102,7 +95,6 @@ namespace KaizerWald
                     //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
                     if (orders[0] is MoveRegimentOrder)
                     {
-                        Debug.Log($"RegimentHighlightSystem OnCallback: {((MoveRegimentOrder)orders[0]).FormationDestination.ToString()}");
                         foreach (RegimentOrder order in orders)
                         {
                             OnPlacementEvent?.Invoke((MoveRegimentOrder)order);

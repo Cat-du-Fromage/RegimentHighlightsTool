@@ -1,0 +1,34 @@
+{
+    "name": "RegimentAbilityControls",
+    "maps": [
+        {
+            "name": "GeneralAbility",
+            "id": "d67d120a-af5f-4939-8c55-d6653fda2fe5",
+            "actions": [
+                {
+                    "name": "MarchRun",
+                    "type": "Button",
+                    "id": "7a38a249-e81a-4db7-9d75-eca1d3d07c0b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "451084a1-7db8-46bb-9c4c-511d765c1ec1",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MarchRun",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

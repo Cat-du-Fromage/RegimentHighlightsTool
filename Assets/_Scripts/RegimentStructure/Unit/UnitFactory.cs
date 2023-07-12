@@ -48,7 +48,7 @@ namespace KaizerWald
                 child.gameObject.AddComponent<Unit>();
                 break;
             }
-            return component.InitializeUnit(regiment, index, UnitLayerIndex);
+            return component.Initialize(regiment, index, UnitLayerIndex);
         }
         
         private Vector3 GetUnitPosition(in Vector2 positionInRegiment)
@@ -59,7 +59,7 @@ namespace KaizerWald
             return hasHit ? hit.point : position3D;
         }
         
-        private Vector2 GetPositionInRegiment(int index, in float2 regimentPosition, in FormationData formation)
+        private Vector2 GetPositionInRegiment(int index, in float2 regimentPosition, Formation formation)
         {
             //Coord according to index
             int y = index / formation.Width;

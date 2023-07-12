@@ -10,6 +10,10 @@ namespace KaizerWald
         public RegimentClass RegimentClass;
         public GameObject UnitPrefab;
 
-        public float Speed = 1;
+        public int Range = 0;
+        public int Accuracy = 0;
+        public int ReloadingSkill = 0;
+        public int Speed = 1;
+        public int Moral = 1;
     }
 }

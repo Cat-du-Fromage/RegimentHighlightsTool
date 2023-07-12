@@ -18,7 +18,7 @@ namespace KaizerWald
             int x = unitIndex - y * formation.Width;
             int widthRow = y == formation.Depth - 1 ? formation.NumUnitsLastLine : formation.Width;
             
-            Vector2 regimentBackDirection = -(float2)formation.Direction2DForward();
+            Vector2 regimentBackDirection = -(float2)formation.Direction2DForward;
             Vector2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
             Vector2 yOffset = yBaseOffset + y * dstUnitToUnit.y * regimentBackDirection;
             
@@ -42,7 +42,7 @@ namespace KaizerWald
             int x = unitIndex - y * formation.Width;
             int widthRow = y == formation.Depth - 1 ? formation.NumUnitsLastLine : formation.Width;
             
-            Vector2 regimentBackDirection = -(float2)formation.Direction2DForward();
+            Vector2 regimentBackDirection = -(float2)formation.Direction2DForward;
             Vector2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
             Vector2 yOffset = yBaseOffset + y * dstUnitToUnit.y * regimentBackDirection;
             
@@ -66,7 +66,7 @@ namespace KaizerWald
             int widthRow = select(formation.Width, formation.NumUnitsLastLine, y == formation.Depth - 1);
             //YOffset
             //On prend simplement la direction "back" du régiment à laquelle on ajoute l'espace Y d'une unité
-            float2 regimentBackDirection = -(float2)formation.Direction2DForward();
+            float2 regimentBackDirection = -(float2)formation.Direction2DForward;
             float2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
             float2 yOffset = yBaseOffset + y * dstUnitToUnit.y * regimentBackDirection;
             

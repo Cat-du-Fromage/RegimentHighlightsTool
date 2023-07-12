@@ -71,6 +71,12 @@ namespace KaizerWald
         {
             return coord.y * width + coord.x;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetIndex(int x, int y, int width)
+        {
+            return y * width + x;
+        }
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
         /// <summary>

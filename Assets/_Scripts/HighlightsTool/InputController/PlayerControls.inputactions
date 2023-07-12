@@ -314,6 +314,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "RegimentAbility",
+            "id": "f53388a7-3b8c-4c25-8fa4-64da1ca060b7",
+            "actions": [
+                {
+                    "name": "MarchRun",
+                    "type": "Button",
+                    "id": "7c66b5b7-a5bd-4ee5-be55-71e9566a5bef",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "cb4db4d2-835a-484e-9d58-d86707869bf6",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MarchRun",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

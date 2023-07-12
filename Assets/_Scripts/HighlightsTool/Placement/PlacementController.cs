@@ -206,7 +206,7 @@ namespace KaizerWald
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 FormationData regimentState = SelectedRegiments[i].CurrentFormation;
-                JGetInitialTokensPositions job = new JGetInitialTokensPositions
+                JGetInitialTokensPositions job = new()
                 {
                     NewWidth           = newWidths[i],
                     NumUnitsAlive      = regimentState.NumUnitsAlive,
@@ -230,13 +230,13 @@ namespace KaizerWald
             // ---------------------------------------------------------------------------------------------------------
             // RAY CASTS
             NativeList<JobHandle> jobHandles = new (NumSelections, Temp);
-            QueryParameters queryParams = new QueryParameters(TerrainLayer.value);
+            QueryParameters queryParams = new (TerrainLayer.value);
             
             int numUnitsRegimentBefore = 0;
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 int numToken = SelectedRegiments[i].CurrentFormation.NumUnitsAlive;
-                JRaycastsCommands raycastJob = new JRaycastsCommands
+                JRaycastsCommands raycastJob = new()
                 {
                     OriginHeight = ORIGIN_HEIGHT,
                     RayDistance  = RAY_DISTANCE,
@@ -266,7 +266,7 @@ namespace KaizerWald
                 for (int unitIndex = 0; unitIndex < numToken; unitIndex++)
                 {
                     RaycastHit currentHit = raycastHits[unitIndex];
-                    float3 hitPoint = currentHit.point + currentHit.normal * 0.05f;
+                    Vector3 hitPoint = currentHit.point + currentHit.normal * 0.05f;
                     Quaternion newRotation = LookRotationSafe(-depthDirection, currentHit.normal);
                     DynamicRegister.Records[regimentId][unitIndex].transform.SetPositionAndRotation(hitPoint, newRotation);
                 }
@@ -372,7 +372,8 @@ namespace KaizerWald
             foreach ((int _, HighlightBehaviour[] tokens) in StaticRegister.Records)
             {
                 if (tokens[0].IsShown()) continue;
-                Array.ForEach(tokens, token => token.Show());
+                tokens.ForEach(token => token.Show());
+                //Array.ForEach(tokens, token => token.Show());
             }
         }
         
@@ -381,7 +382,8 @@ namespace KaizerWald
             foreach ((int _, HighlightBehaviour[] tokens) in StaticRegister.Records)
             {
                 if (tokens[0].IsHidden()) continue;
-                Array.ForEach(tokens, token => token.Hide());
+                tokens.ForEach(token => token.Hide());
+                //Array.ForEach(tokens, token => token.Hide());
             }
         }
         
@@ -425,7 +427,6 @@ namespace KaizerWald
             {
                 int y = unitIndex / NewWidth;
                 int x = unitIndex - (y * NewWidth);
-
                 float2 yOffset = y * DistanceUnitToUnit.y * (float2)DepthDirection;
                 float2 xOffset = x * DistanceUnitToUnit.x * (float2)LineDirection;
                 float2 position = Start + GetStartOffset(y) + xOffset + yOffset;
@@ -438,7 +439,6 @@ namespace KaizerWald
                 int numUnitLastLine = NumUnitsAlive - NewWidth * (maxDepth - 1);
                 int diffLastLineWidth = NewWidth - numUnitLastLine;
                 float offset = (diffLastLineWidth * 0.5f) * DistanceUnitToUnit.x;
-                
                 bool isLastLine = yUnit == maxDepth - 1;
                 return select(0, (float2)LineDirection * offset, isLastLine);
             }
