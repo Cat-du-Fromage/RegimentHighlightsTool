@@ -12,10 +12,10 @@ namespace KaizerWald
     [Serializable]
     public struct RegimentSpawner
     {
+        public int TeamID;
         public ulong OwnerID;
         public int Number;
         public RegimentType RegimentType;
-        //public GameObject UnitPrefab;
     }
 
     [RequireComponent(typeof(UnitFactory))]
@@ -35,37 +35,58 @@ namespace KaizerWald
 
         private void Start()
         {
-            CreateRegiments(transform.position);
+            CreateRegiments();
         }
 
-        public void CreateRegiments(Vector3 defaultInstancePosition)
+
+        private void CreateRegiments()
         {
-            float offsetPosition = 0;
-
-            for (int i = 0; i < CreationOrders.Length; i++)
+            Dictionary<int, List<RegimentSpawner>> spawnerByTeam = DivideSpawnOrdersByTeam();
+            foreach ((int teamId, List<RegimentSpawner> spawners) in spawnerByTeam)
             {
-                (Transform spawnerTransform, Vector3 instancePosition) = GetInstancePosition(CreationOrders[i].OwnerID);
-                
-                RegimentSpawner currentSpawner = CreationOrders[i];
-                RegimentSpawner previousSpawner = i is 0 ? currentSpawner : CreationOrders[i-1];
+                float offsetPosition = 0;
 
-                float offset = GetOffset(currentSpawner, i) + GetOffset(previousSpawner, i);
-                offsetPosition += offset;
-                
-                for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
+                for (int i = 0; i < spawners.Count; i++)
                 {
-                    offsetPosition += OffsetSameRegiment(j, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
-                    Regiment regiment = InstantiateRegiment(spawnerTransform, instancePosition, offsetPosition);
-                    regiment.Initialize(currentSpawner.OwnerID, unitFactory, currentSpawner, regiment.transform.forward);
-                    OnRegimentCreated?.Invoke(regiment);
+                    (Transform spawnerTransform, Vector3 instancePosition) = GetInstancePosition(teamId);
+                
+                    RegimentSpawner currentSpawner = spawners[i];
+                    RegimentSpawner previousSpawner = i is 0 ? currentSpawner : spawners[i-1];
+
+                    float offset = GetOffset(currentSpawner, i) + GetOffset(previousSpawner, i);
+                    offsetPosition += offset;
+                
+                    for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
+                    {
+                        offsetPosition += OffsetSameRegiment(j, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
+                        Regiment regiment = InstantiateRegiment(spawnerTransform, instancePosition, offsetPosition);
+                        regiment.Initialize(currentSpawner.OwnerID, currentSpawner.TeamID, unitFactory, currentSpawner, regiment.transform.forward);
+                        OnRegimentCreated?.Invoke(regiment);
+                    }
                 }
             }
-            Array.Clear(CreationOrders, 0, CreationOrders.Length);
         }
 
-        private (Transform, Vector3) GetInstancePosition(ulong ownerID)
+        private Dictionary<int, List<RegimentSpawner>> DivideSpawnOrdersByTeam()
         {
-            int playerIndex = (int)ownerID;
+            Dictionary<int, List<RegimentSpawner>> spawnerByTeam = new (4);
+            for (int i = 0; i < CreationOrders.Length; i++)
+            {
+                spawnerByTeam.AddSafe(CreationOrders[i].TeamID, CreationOrders[i]);
+            }
+            return spawnerByTeam;
+        }
+
+        private (Transform, Vector3) GetInstancePosition(int teamId)
+        {
+            if (teamId is < 0 or > 1) return (transform, transform.position);
+            Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(teamId);
+            return (TerrainManager.Instance.GetSpawnerTransform(teamId), instancePosition);
+        }
+        
+        private (Transform, Vector3) GetInstancePosition(ulong ownerId)
+        {
+            int playerIndex = (int)ownerId;
             if (playerIndex is < 0 or > 1) return (transform, transform.position);
             Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(playerIndex);
             return (TerrainManager.Instance.GetSpawnerTransform(playerIndex), instancePosition);
@@ -97,3 +118,32 @@ namespace KaizerWald
     }
     
 }
+
+/*
+//ISSUE! we introduce team BUT offset still apply to each regiment as if they were all from the same team
+//Need to separate creations by team OR find a way to store different offset(1 by team)
+public void CreateRegiments()
+{
+    float offsetPosition = 0;
+
+    for (int i = 0; i < CreationOrders.Length; i++)
+    {
+        (Transform spawnerTransform, Vector3 instancePosition) = GetInstancePosition(CreationOrders[i].OwnerID);
+        
+        RegimentSpawner currentSpawner = CreationOrders[i];
+        RegimentSpawner previousSpawner = i is 0 ? currentSpawner : CreationOrders[i-1];
+
+        float offset = GetOffset(currentSpawner, i) + GetOffset(previousSpawner, i);
+        offsetPosition += offset;
+        
+        for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
+        {
+            offsetPosition += OffsetSameRegiment(j, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
+            Regiment regiment = InstantiateRegiment(spawnerTransform, instancePosition, offsetPosition);
+            regiment.Initialize(currentSpawner.OwnerID, currentSpawner.TeamID, unitFactory, currentSpawner, regiment.transform.forward);
+            OnRegimentCreated?.Invoke(regiment);
+        }
+    }
+    Array.Clear(CreationOrders, 0, CreationOrders.Length);
+}
+*/

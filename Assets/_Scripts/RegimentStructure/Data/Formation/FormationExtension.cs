@@ -10,6 +10,11 @@ namespace KaizerWald
 {
     public static class FormationExtension
     {
+        public static Vector3 GetUnitRelativePositionToRegiment3D(this Formation formation, int unitIndex, Vector3 regimentPosition)
+        {
+            return ((FormationData)formation).GetUnitRelativePositionToRegiment3D(unitIndex, regimentPosition);
+        }
+
         public static Vector3 GetUnitRelativePositionToRegiment3D(this in FormationData formation, int unitIndex, Vector3 regimentPosition)
         {
             Vector2 dstUnitToUnit = formation.DistanceUnitToUnit;
@@ -19,8 +24,8 @@ namespace KaizerWald
             int widthRow = y == formation.Depth - 1 ? formation.NumUnitsLastLine : formation.Width;
             
             Vector2 regimentBackDirection = -(float2)formation.Direction2DForward;
-            Vector2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
-            Vector2 yOffset = yBaseOffset + y * dstUnitToUnit.y * regimentBackDirection;
+            //Vector2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
+            Vector2 yOffset = /*yBaseOffset + */y * dstUnitToUnit.y * regimentBackDirection;
             
             //Attention! si Width Pair: 
             int midWidth = widthRow / 2;
@@ -43,8 +48,8 @@ namespace KaizerWald
             int widthRow = y == formation.Depth - 1 ? formation.NumUnitsLastLine : formation.Width;
             
             Vector2 regimentBackDirection = -(float2)formation.Direction2DForward;
-            Vector2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
-            Vector2 yOffset = yBaseOffset + y * dstUnitToUnit.y * regimentBackDirection;
+            //Vector2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
+            Vector2 yOffset = /*yBaseOffset + */y * dstUnitToUnit.y * regimentBackDirection;
             
             //Attention! si Width Pair: 
             int midWidth = widthRow / 2;
@@ -64,11 +69,13 @@ namespace KaizerWald
             int y = unitIndex / formation.Width;
             int x = unitIndex - y * formation.Width;
             int widthRow = select(formation.Width, formation.NumUnitsLastLine, y == formation.Depth - 1);
+            
             //YOffset
             //On prend simplement la direction "back" du régiment à laquelle on ajoute l'espace Y d'une unité
             float2 regimentBackDirection = -(float2)formation.Direction2DForward;
-            float2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y;
-            float2 yOffset = yBaseOffset + y * dstUnitToUnit.y * regimentBackDirection;
+            //uncomment if you want leader to be in front of regiment instead of in the middle of the first row
+            //float2 yBaseOffset = regimentBackDirection * dstUnitToUnit.y; 
+            float2 yOffset = /*yBaseOffset + */y * dstUnitToUnit.y * regimentBackDirection;
             
             //XOffset
             int midWidth = widthRow / 2;

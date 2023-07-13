@@ -10,7 +10,6 @@ namespace KaizerWald
         public IdleState(T objectAttach) : base(objectAttach)
         {
         }
-
         public override void OnAbilityTrigger() { return; }
 
         public override void OnStateEnter() { return; }

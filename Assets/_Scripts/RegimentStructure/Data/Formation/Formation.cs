@@ -41,11 +41,11 @@ namespace KaizerWald
             int2 minMax = minMaxRow.Equals(default) ? new int2(1, max(1, numberUnits / 2)) : minMaxRow;
             MinRow = (byte)min(byte.MaxValue, minMax.x);
             MaxRow = (byte)min(byte.MaxValue, minMax.y);
-            UnitSize = unitSize.Approximately(default) ? float2(1) : unitSize;
+            UnitSize = unitSize.approximately(default) ? float2(1) : unitSize;
             SpaceBetweenUnits = spaceBetweenUnit;
             Width = MaxRow;
             Depth = (int)ceil(numberUnits / max(1f,Width));
-            DirectionForward = direction.Approximately(default) ? forward() : normalizesafe(direction);
+            DirectionForward = direction.approximately(default) ? forward() : normalizesafe(direction);
         }
 
 
@@ -87,7 +87,7 @@ namespace KaizerWald
         
         public void SetDirection(float3 newDirection)
         {
-            if (newDirection.Approximately(float3.zero)) return;
+            if (newDirection.approximately(float3.zero)) return;
             DirectionForward = newDirection;
         }
         

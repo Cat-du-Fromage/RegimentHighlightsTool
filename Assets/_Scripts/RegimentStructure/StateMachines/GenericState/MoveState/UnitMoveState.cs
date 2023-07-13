@@ -34,12 +34,12 @@ namespace KaizerWald
         
         public override void OnStateEnter()
         {
-            return;
+            ResetDefaultValues();
         }
 
         public override void OnOrderEnter(RegimentOrder order)
         {
-            SetMarching();
+            ResetDefaultValues();
             MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
             FormationData formationData = moveOrder.FormationDestination;
             Direction = formationData.Direction3DForward;
@@ -66,7 +66,12 @@ namespace KaizerWald
 
         public override void OnStateExit()
         {
-            return;
+            ResetDefaultValues();
+        }
+        
+        private void ResetDefaultValues()
+        {
+            SetMarching();
         }
     }
     

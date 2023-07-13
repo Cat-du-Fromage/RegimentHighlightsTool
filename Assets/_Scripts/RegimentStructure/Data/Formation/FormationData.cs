@@ -64,7 +64,7 @@ namespace KaizerWald
             width = maxRow;
             depth = (byte)ceil(numberUnits / max(1f,width));
             
-            direction2DForward = direction.Approximately(default) ? new half2(half.zero,half(1)) : half2(normalizesafe(direction).xz);
+            direction2DForward = direction.approximately(default) ? new half2(half.zero,half(1)) : half2(normalizesafe(direction).xz);
         }
 
         public FormationData(RegimentType regimentType, Vector3 direction)

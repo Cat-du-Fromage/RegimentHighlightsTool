@@ -15,7 +15,7 @@ MonoBehaviour:
   RegimentClass: {fileID: 11400000, guid: 487439540106b5e4c9775e45c0bb347d, type: 2}
   UnitPrefab: {fileID: 4546918022380904158, guid: 7c9aae2c3e4e5bf4cb00cced0f678fbd,
     type: 3}
-  Range: 80
+  Range: 20
   Accuracy: 40
   ReloadingSkill: 40
   Speed: 1

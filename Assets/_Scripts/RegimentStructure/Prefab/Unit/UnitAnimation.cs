@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.VFX;
@@ -24,42 +23,52 @@ namespace KaizerWald
         private Unit unitAttach;
         private Animator animator;
         
+        //can aim but stay Idle!
         public bool shoot, aim;
         //trigger
         private int animTriggerIDDeath;
-        //int
+        //int: choose which animation to play based on Id
         private int animIDDeathIndex;
         //Speeds
         private int animIDAnimationsSpeed, animIDSpeed, animIDIdleSpeed;
-        //bool
+        //bool: enable/disable animation
         private int animIDIsAiming, animIDIsShooting;
+
+        public bool IsAiming => aim;
+        public bool IsFiring => aim && shoot;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            MuzzleFlash = MuzzleFlash == null ? GetComponentInChildren<ParticleSystem>() : MuzzleFlash;
+        }
+#endif
+        
         private void Awake()
         {
             InitializeComponents();
             AssignAnimationIDs();
-        }
-
-        private void Start()
-        {
-            //PROTOTYPE
             int regIndex = unitAttach.RegimentAttach == null ? 1 : unitAttach.RegimentAttach.GetInstanceID();
             InitializeIdleRandom(abs(GetInstanceID() + regIndex));
         }
-        
+
         private void Update()
         {
-            if (!Keyboard.current.eKey.wasPressedThisFrame) return;
-            aim = !aim;
-            animator.SetBool(animIDIsAiming, aim);
-            shoot = !shoot;
-            animator.SetBool(animIDIsShooting, shoot);
+            ToggleFireAnimation();
         }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private void ToggleFireAnimation()
+        {
+            if (!Keyboard.current.eKey.wasPressedThisFrame) return;
+            SetFire(!IsFiring);
+            //FIRST: change value of shoot/aim THEN: use the newly changed value to SetBool
+            //animator.SetBool(animIDIsAiming, aim = !aim); //aim = !aim;
+            //animator.SetBool(animIDIsShooting, shoot = !shoot); //shoot = !shoot;
+        }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
@@ -106,10 +115,8 @@ namespace KaizerWald
 
         public void SetFire(bool state)
         {
-            aim = state;
-            animator.SetBool(animIDIsAiming, aim);
-            shoot = state;
-            animator.SetBool(animIDIsShooting, shoot);
+            animator.SetBool(animIDIsAiming, aim = state);//aim = state;
+            animator.SetBool(animIDIsShooting, shoot = state);//shoot = state;
         }
 
         public void SetDead()

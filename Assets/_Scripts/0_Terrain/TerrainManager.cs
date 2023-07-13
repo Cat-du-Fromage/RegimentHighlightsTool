@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace KaizerWald
@@ -42,8 +43,9 @@ namespace KaizerWald
             if (spawnIndex is < 0 or > 1) return Vector3.zero;
             Transform spawnerTransform = spawnIndex is 0 ? PlayerOneSpawn.transform : PlayerTwoSpawn.transform;
             Vector3 spawnerCenter = spawnerTransform.position;
-            float spawnHorizontalSize = spawnerTransform.localScale.x;
-            return spawnerCenter - spawnerTransform.right * (spawnHorizontalSize / 2);
+            float spawnHorizontalSize = spawnerTransform.parent.localScale.x;
+            Vector3 firstSpawnPoint = spawnerCenter - spawnerTransform.right * (spawnHorizontalSize / 2);
+            return firstSpawnPoint;
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖

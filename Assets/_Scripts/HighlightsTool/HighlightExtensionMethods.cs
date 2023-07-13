@@ -18,17 +18,11 @@ namespace KaizerWald
             return positions;
         }
 
-        public static Vector3 GetRegimentLeaderPosition(this HighlightRegister register, int regimentIndex, int width, float distanceUnitToUnitY)
+        public static Vector3 GetRegimentLeaderPosition(this HighlightRegister register, int regimentIndex, int width)
         {
             Vector3 firstUnitFirstRow = register.Records[regimentIndex][0].transform.position;
             Vector3 lastUnitFirstRow = register.Records[regimentIndex][width-1].transform.position;
-            
-            float3 direction = normalizesafe(cross(down(), lastUnitFirstRow - firstUnitFirstRow));
-            
-            //float2 direction = ((float3)(lastUnitFirstRow - firstUnitFirstRow)).xz.CrossCounterClockWise();
-            //Vector3 direction3D = new Vector3(direction.x, 0, direction.y);
-
-            return (firstUnitFirstRow + lastUnitFirstRow) * 0.5f + (Vector3)(direction * distanceUnitToUnitY);
+            return (firstUnitFirstRow + lastUnitFirstRow) / 2f;
         }
     }
 }

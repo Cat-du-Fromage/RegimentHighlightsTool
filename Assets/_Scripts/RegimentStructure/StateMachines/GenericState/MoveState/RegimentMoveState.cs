@@ -25,13 +25,13 @@ namespace KaizerWald
 
         public override void OnStateEnter()
         {
-            LeaderReachDestination = false;
-            SpeedModifier = 1;
+            ResetDefaultValues();
             ObjectAttach.CurrentFormation.SetWidth(FormationDestination.Width);
         }
         
         public override void OnOrderEnter(RegimentOrder order)
         {
+            ResetDefaultValues();
             MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
             Destination = moveOrder.LeaderDestination;
             FormationDestination = moveOrder.FormationDestination;
@@ -77,9 +77,15 @@ namespace KaizerWald
 
         public override void OnStateExit()
         {
-            
+            ResetDefaultValues();
         }
-        
+
+        private void ResetDefaultValues()
+        {
+            LeaderReachDestination = false;
+            SetMarching();
+        }
+
         public void AssignIndexToUnits(FormationData formation)
         {
             Vector2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);

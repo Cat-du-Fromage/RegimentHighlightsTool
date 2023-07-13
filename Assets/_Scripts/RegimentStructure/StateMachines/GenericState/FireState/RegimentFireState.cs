@@ -4,29 +4,31 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public class RegimentIdleState : IdleState<Regiment>
+    public class RegimentFireState : FireState<Regiment>
     {
-        private bool autoFire = false;
-        
-        public RegimentIdleState(Regiment regiment) : base(regiment)
+        public RegimentFireState(Regiment objectAttach) : base(objectAttach)
         {
-            
+            Target = null;
+        }
+
+        public override void OnAbilityTrigger()
+        {
+            return;
+        }
+
+        public override void OnStateEnter()
+        {
+            return;
         }
 
         public override void OnOrderEnter(RegimentOrder order)
         {
-            
-        }
-        
-        public override void OnStateEnter()
-        {
-            
+            return;
         }
 
         public override void OnStateUpdate()
         {
-            if(!autoFire) return;
-            //Sinon Check Si Ennemis à portés
+            return;
         }
 
         public override bool OnTransitionCheck()
@@ -36,7 +38,7 @@ namespace KaizerWald
 
         public override void OnStateExit()
         {
-            
+            return;
         }
     }
 }

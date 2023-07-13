@@ -20,7 +20,9 @@ namespace KaizerWald
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public static RegimentManager Instance { get; private set; }
-        public List<Regiment> Regiments { get; private set; }
+        public List<Regiment> Regiments { get; private set; } = new ();
+        public Dictionary<ulong, List<Regiment>> RegimentsByPlayerID { get; private set; } = new ();
+        public Dictionary<int, List<Regiment>> RegimentsByTeamID { get; private set; } = new ();
         public event Action<Regiment> OnNewRegiment;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -35,7 +37,6 @@ namespace KaizerWald
         {
             InitializeSingleton();
             base.Awake();
-            Regiments = new List<Regiment>();
             factory = FindObjectOfType<RegimentFactory>();
             regimentHighlightSystem = GetComponent<RegimentHighlightSystem>();
         }
@@ -81,6 +82,28 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
+        public int GetEnemiesTeamNumUnits(int friendlyTeamID)
+        {
+            int numUnits = 0;
+            foreach ((int teamID, List<Regiment> regiments) in RegimentsByTeamID)
+            {
+                if (teamID == friendlyTeamID) continue;
+                numUnits += regiments.Count;
+            }
+            return numUnits;
+        }
+
+        public int GetTeamNumUnits(int searchedTeamID)
+        {
+            int numUnits = 0;
+            foreach ((int teamId, List<Regiment> regiments) in RegimentsByTeamID)
+            {
+                if (teamId != searchedTeamID) continue;
+                numUnits += regiments.Count;
+            }
+            return numUnits;
+        }
+
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -111,6 +134,10 @@ namespace KaizerWald
         private void RegisterNewRegiment(Regiment regiment)
         {
             Regiments.Add(regiment);
+            
+            RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
+            RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
+            
             OnNewRegiment?.Invoke(regiment);
         }
         

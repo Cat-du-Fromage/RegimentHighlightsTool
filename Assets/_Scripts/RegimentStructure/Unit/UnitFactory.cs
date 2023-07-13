@@ -28,9 +28,10 @@ namespace KaizerWald
             
             for (int i = 0; i < baseNumUnits; i++)
             {
-                Vector2 positionInRegiment = GetPositionInRegiment(i, regimentPosition.xz, regiment.CurrentFormation);
-                Vector3 unitPosition = GetUnitPosition(positionInRegiment);
-                GameObject unitGameObject = Instantiate(unitPrefab, unitPosition, regiment.transform.rotation);
+                //Vector2 positionInRegiment = GetPositionInRegiment(i, regimentPosition.xz, regiment.CurrentFormation);
+                //Vector3 unitPosition = GetUnitPosition(positionInRegiment);
+                Vector3 unitPosition = regiment.CurrentFormation.GetUnitRelativePositionToRegiment3D(i, regimentPosition);
+                GameObject unitGameObject = Instantiate(unitPrefab, unitPosition, regiment.transform.localRotation);
                 units.Add(InitializeUnitComponent(regiment, unitGameObject, i));
             }
             return units;

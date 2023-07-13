@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace KaizerWald
@@ -43,14 +44,7 @@ namespace KaizerWald
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 Regiment regiment = SelectedRegiments[i];
-                float dstUnitToUnitY = regiment.CurrentFormation.DistanceUnitToUnit.y;
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
-                /*
-                Vector3 leaderPosition = StaticPlacementRegister.GetRegimentLeaderPosition(regiment.RegimentID, width, dstUnitToUnitY);
-                MoveRegimentOrder order = new MoveRegimentOrder(regiment, EStates.Move, width, leaderPosition);
-                orders.Add(order);
-                */
-                
                 Vector3 firstUnit = StaticPlacementRegister.Records[regiment.RegimentID][0].transform.position;
                 Vector3 lastUnit = StaticPlacementRegister.Records[regiment.RegimentID][width-1].transform.position;
                 MoveRegimentOrder order = new MoveRegimentOrder(regiment, EStates.Move, width, firstUnit, lastUnit);
@@ -59,27 +53,7 @@ namespace KaizerWald
             }
             MainSystem.OnCallback(this, orders);
         }
-
-        //Order Move to selected Regiment -> 
-        /*
-        public MoveOrder[] OnPlacementCallback(int[] formationsWidth)
-        {
-            MoveOrder[] orders = new MoveOrder[SelectedRegiments.Count];
-            for (int i = 0; i < SelectedRegiments.Count; i++)
-            {
-                Regiment regiment = SelectedRegiments[i];
-                int newWidth = formationsWidth[i];
-                FormationData nextFormation = new FormationData(regiment.CurrentFormation).SetWidth(newWidth);
-                
-                Vector3[] unitsDestination = StaticPlacementRegister.GetHighlightsPositions(regiment.RegimentID);
-                Vector3 regimentDestination = (unitsDestination[0] + unitsDestination[newWidth]) * 0.5f;
-                
-                nextFormation.SetDirection(unitsDestination[0], unitsDestination[newWidth]);
-                orders[i] = new MoveOrder(regiment, regimentDestination, unitsDestination, nextFormation);
-            }
-            return orders;
-        }
-*/
+        
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜

@@ -2,13 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Jobs;
 
+using static UnityEngine.Quaternion;
+
+
 namespace KaizerWald
 {
-    public class Regiment : MonoBehaviour, ISelectable
+    public partial class Regiment : MonoBehaviour, ISelectable
     {
+        public static readonly float FovAngleInDegrees = 30f;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -22,6 +27,7 @@ namespace KaizerWald
         [field:SerializeField] public bool IsSelected { get; set; }
         
         [field:SerializeField] public ulong OwnerID { get; private set; }
+        [field: SerializeField] public int TeamID { get; private set; }
         [field:SerializeField] public int RegimentID { get; private set; }
         [field:SerializeField] public RegimentType RegimentType { get; private set; }
         
@@ -42,7 +48,6 @@ namespace KaizerWald
         {
             UnitsListWrapper.Dispose();
         }
-
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -50,17 +55,18 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void Initialize(ulong ownerID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
+        public void Initialize(ulong ownerID, int teamID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
         {
-            InitializeProperties(ownerID, currentSpawner.RegimentType, direction, regimentName);
+            InitializeProperties(ownerID, teamID, currentSpawner.RegimentType, direction, regimentName);
             CreateAndRegisterUnits(unitFactory);
             InitializeStateMachine();
         }
 
-        private void InitializeProperties(ulong ownerID, RegimentType regimentType, Vector3 direction, string regimentName = default)
+        private void InitializeProperties(ulong ownerID, int teamID, RegimentType regimentType, Vector3 direction, string regimentName = default)
         {
             name = regimentName ?? $"Player{ownerID}_Regiment{RegimentID}";
             OwnerID = ownerID;
+            TeamID = teamID;
             RegimentID = transform.GetInstanceID();
             RegimentType = regimentType;
             CurrentFormation = new Formation(regimentType, direction);

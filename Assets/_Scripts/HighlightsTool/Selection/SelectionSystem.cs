@@ -54,7 +54,11 @@ namespace KaizerWald
 
         public override void HideAll(int registerIndex)
         {
-            Registers[registerIndex].ActiveHighlights.ForEach(regiment => ((ISelectable)regiment).SetSelectableProperty(registerIndex, false));
+            foreach (Regiment regiment in Registers[registerIndex].ActiveHighlights)
+            {
+                ((ISelectable)regiment).SetSelectableProperty(registerIndex, false);
+            }
+            //Registers[registerIndex].ActiveHighlights.ForEach(regiment => ((ISelectable)regiment).SetSelectableProperty(registerIndex, false));
             base.HideAll(registerIndex);
         }
     }

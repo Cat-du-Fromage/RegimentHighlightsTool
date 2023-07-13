@@ -58,5 +58,30 @@ namespace KaizerWald
             if (!flag) return;
             list.Add(obj);
         }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                           ◆◆◆◆◆◆ DICTIONARY ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddSafe<TKey, TValue>(this Dictionary<TKey, List<TValue>> dictionary, TKey key, TValue value)
+        {
+            if (dictionary.TryGetValue(key, out List<TValue> listOutput))
+            {
+                listOutput.Add(value);
+            }
+            else
+            {
+                dictionary.Add(key, new List<TValue>(2));
+                dictionary[key].Add(value);
+            }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddIf<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value, bool flag)
+        {
+            if (!flag) return;
+            dictionary[key] = value;
+        }
     }
 }
