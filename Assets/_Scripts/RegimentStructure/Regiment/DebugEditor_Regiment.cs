@@ -21,30 +21,28 @@ namespace KaizerWald
         {
             Debug_FiringStateTargetDetection();
             if (!FieldOfViewDebug) return;
-            float3 regimentPosition = transform.position.x1y();
+            float2 regimentPosition = transform.position.xz();
             
             Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(regimentPosition, 0.2f);
-            
-            float3 regimentForward = transform.forward.xOy();
-            
-            float3 midWidthDistance = transform.right.xOy() * (CurrentFormation.Width / 2f);
-            float3 unit0 = regimentPosition - midWidthDistance;
-            float3 unitWidth = regimentPosition + midWidthDistance;
+            Gizmos.DrawSphere(regimentPosition.x1y(), 0.2f);
+
+            float2 midWidthDistance = transform.right.xz() * (CurrentFormation.Width / 2f);
+            float2 unit0 = regimentPosition - midWidthDistance;
+            float2 unitWidth = regimentPosition + midWidthDistance;
 
             DrawStartingFOV(unit0, unitWidth);
-            DrawFieldOfView(regimentPosition.xz, regimentForward, unit0.xz, unitWidth.xz);
+            DrawFieldOfView(regimentPosition, unit0, unitWidth);
         }
 
-        private void DrawFieldOfView(float2 regimentPosition, float3 regimentForward, float2 unit0, float2 unitWidth)
+        private void DrawFieldOfView(float2 regimentPosition, float2 unit0, float2 unitWidth)
         {
             Gizmos.color = Color.white;
-
-            float3 directionLeft3D = AngleAxis(-FovAngleInDegrees, Vector3.up) * regimentForward;
-            float3 directionRight3D = AngleAxis(FovAngleInDegrees, Vector3.up) * regimentForward;
+            float3 regimentForward = transform.forward;
+            float2 directionLeft3D = (AngleAxis(-FovAngleInDegrees, Vector3.up) * regimentForward).xz();
+            float2 directionRight3D = (AngleAxis(FovAngleInDegrees, Vector3.up) * regimentForward).xz();
             
-            float2 directionLeft = directionLeft3D.xz;
-            float2 directionRight = directionRight3D.xz;
+            float2 directionLeft = directionLeft3D;
+            float2 directionRight = directionRight3D;
 
             float2 intersection = GetIntersection(unit0, unitWidth, directionLeft, directionRight);
             float distanceIntersection = distance(intersection, unit0);
@@ -114,12 +112,12 @@ namespace KaizerWald
             }
         }
 
-        private void DrawStartingFOV(in Vector3 unit0, in Vector3 unitWidth)
+        private void DrawStartingFOV(in float2 unit0, in float2 unitWidth)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawSphere(unit0, 0.2f);
+            Gizmos.DrawSphere(unit0.x1y(), 0.2f);
             Gizmos.color = Color.red;
-            Gizmos.DrawSphere(unitWidth, 0.2f);
+            Gizmos.DrawSphere(unitWidth.x1y(), 0.2f);
         }
         
         private void Debug_FiringStateTargetDetection()
