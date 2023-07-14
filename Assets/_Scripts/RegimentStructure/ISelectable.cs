@@ -11,12 +11,11 @@ namespace KaizerWald
         
         public void SetSelectableProperty(int index, bool value)
         {
+            if (index is < 0 or > 1) return;
             if (index is 0)
                 IsPreselected = value;
-            else if (index is 1)
-                IsSelected = value;
             else
-                return;
+                IsSelected = value;
         }
     }
 }

@@ -1,6 +1,22 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
+using UnityEngine;
+
+
+using static KaizerWald.KzwMath;
+using static UnityEngine.Quaternion;
+
+using static Unity.Mathematics.math;
+
+using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
+using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
+using static Unity.Collections.Allocator;
+using static Unity.Collections.NativeArrayOptions;
+using float2 = Unity.Mathematics.float2;
 
 namespace KaizerWald
 {

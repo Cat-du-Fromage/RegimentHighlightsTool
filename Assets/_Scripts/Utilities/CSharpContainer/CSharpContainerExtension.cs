@@ -16,6 +16,13 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ ARRAY ◆◆◆◆◆◆                                                    ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        /*[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ForEachWithIndex<T>(this T[] array, Func<int, T> action)
+        {
+            for (int i = 0; i < array.Length; i++)action(i);
+        }*/
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ForEach<T>(this T[] array, Action<T> action)
         {

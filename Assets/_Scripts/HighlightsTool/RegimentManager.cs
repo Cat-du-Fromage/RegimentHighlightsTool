@@ -12,6 +12,11 @@ namespace KaizerWald
     public class RegimentManager : HighlightCoordinator
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                          ◆◆◆◆◆◆ STATIC PROPERTIES ◆◆◆◆◆◆                                           ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public static RegimentManager Instance { get; private set; }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private RegimentFactory factory;
@@ -19,10 +24,18 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public static RegimentManager Instance { get; private set; }
+        
         public List<Regiment> Regiments { get; private set; } = new ();
+        
+        //Allow to retrieve regiment By it's Instance ID
+        public Dictionary<int, Regiment> RegimentsByID { get; private set; } = new ();
+        
+        //Allow to retrieve regiments of a player
         public Dictionary<ulong, List<Regiment>> RegimentsByPlayerID { get; private set; } = new ();
+        
+        //Allow to retrieve regiments of a team
         public Dictionary<int, List<Regiment>> RegimentsByTeamID { get; private set; } = new ();
+        
         public event Action<Regiment> OnNewRegiment;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -135,6 +148,7 @@ namespace KaizerWald
         {
             Regiments.Add(regiment);
             
+            RegimentsByID.Add(regiment.RegimentID, regiment);
             RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
             RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
             

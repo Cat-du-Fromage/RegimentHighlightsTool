@@ -169,6 +169,12 @@ namespace KaizerWald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float2 GetIntersection(in float2x2 leftStartDir, in float2x2 rightStartDir)
+        {
+            return GetIntersection(leftStartDir.c0, rightStartDir.c0, leftStartDir.c1, rightStartDir.c1);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 GetIntersection3DFlat(float3 originX, float3 originY, float3 dirX, float3 dirY)
         {
             float2 intersectPoint = GetIntersection(originX.xz, originY.xz, dirX.xz, dirY.xz);

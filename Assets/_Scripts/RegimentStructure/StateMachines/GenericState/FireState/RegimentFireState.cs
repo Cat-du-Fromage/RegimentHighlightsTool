@@ -10,35 +10,7 @@ namespace KaizerWald
         {
             Target = null;
         }
-
-        public override void OnAbilityTrigger()
-        {
-            return;
-        }
-
-        public override void OnStateEnter()
-        {
-            return;
-        }
-
-        public override void OnOrderEnter(RegimentOrder order)
-        {
-            return;
-        }
-
-        public override void OnStateUpdate()
-        {
-            return;
-        }
-
-        public override bool OnTransitionCheck()
-        {
-            return false;
-        }
-
-        public override void OnStateExit()
-        {
-            return;
-        }
+        
+        
     }
 }

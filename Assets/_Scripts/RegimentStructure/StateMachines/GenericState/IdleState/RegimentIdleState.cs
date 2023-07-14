@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -24,30 +25,15 @@ namespace KaizerWald
     {
         public bool AutoFire { get; private set; }
         private int AttackRange;
-        private readonly Transform regimentTransform;
-        
+
         private ulong PlayerID => ObjectAttach.OwnerID;
         private int PlayerTeamID => ObjectAttach.TeamID;
         private Formation CurrentFormation => ObjectAttach.CurrentFormation;
         public RegimentIdleState(Regiment regiment) : base(regiment)
         {
-            regimentTransform = ObjectAttach.transform;
             AttackRange = regiment.RegimentType.Range;
         }
         
-        public void AutoFireOn() => AutoFire = true;
-        public void AutoFireOff() => AutoFire = false;
-
-        public override void OnOrderEnter(RegimentOrder order)
-        {
-            
-        }
-        
-        public override void OnStateEnter()
-        {
-            
-        }
-
         public override void OnStateUpdate()
         {
             if(!AutoFire) return;
@@ -58,138 +44,128 @@ namespace KaizerWald
 
         public override bool OnTransitionCheck()
         {
-            //Check whether or not there is a target at range
-
-            
             bool hasTarget = CheckEnemiesAtRange(out int targetId);
-            Debug.Log($"hasTarget: {hasTarget} : target is regiment Id: {targetId}");
-            return false;
-
-
-
+            bool regimentExist = RegimentManager.Instance.RegimentsByID.TryGetValue(targetId, out Regiment target);
+            if (!hasTarget || !regimentExist) return false;
+            //On obtient l'ID du régiment.. il faut pouvoir récupérer le régiment en question
+            
+            Debug.Log($"{ObjectAttach.name} hasTarget: {hasTarget} : target is regiment Id: {targetId}");
+            return true;
         }
         
-        bool CheckEnemiesAtRange(out int regimentTargeted)
+        
+        public override void OnStateExit()
         {
-            NativeList<KeyValuePair<int, float3>> enemyUnitsPositions = GetEnemiesPositions();
+            
+        }
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public void AutoFireOn() => AutoFire = true;
+        public void AutoFireOff() => AutoFire = false;
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Check Enemies at Range ◈◈◈◈◈◈                                                                  ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        //TODO: (TESTER AVANT)Changer la façOn de délimiter la Portée
+        //TODO: Total war semble ne pas avoir de notion d'angle de vue, mais celle-ci semble être calculé selon la porté et la taille des lignes
+        //TODO: 1) Utilise le Leader comme point de référence et faire "Range"/2 * regiment.back() pour trouver le centre du cercle
+        //TODO: 2) Calculer les angles gauche/droite depuis le centre (ex:45°) ou utiliser les Unités
+        private bool CheckEnemiesAtRange(out int regimentTargeted)
+        {
             regimentTargeted = -1;
-            float3 regimentForward = regimentTransform.forward;
-            float2 regimentPosition = ((float3)regimentTransform.position).xz;
+            float3 regimentForward = ObjectTransform.forward;
+            float2 regimentPosition = ObjectTransform.position.xz();
 
             //from center of the first Row : direction * midWidth length(Left and Right)
-            float2 midWidthDistance = ((float3)regimentTransform.right).xz * CurrentFormation.Width / 2f;
+            float2 midWidthDistance = ObjectTransform.right.xz() * CurrentFormation.Width / 2f;
             float2 unit0 = regimentPosition - midWidthDistance; //unit most left
             float2 unitWidth = regimentPosition + midWidthDistance; //unit most Right
-            
             //Rotation of the direction the regiment is facing (around Vector3.up) to get both direction of the vision cone
             float2 directionLeft  = (AngleAxis(-Regiment.FovAngleInDegrees, Vector3.up) * regimentForward).xz();
             float2 directionRight = (AngleAxis(Regiment.FovAngleInDegrees, Vector3.up) * regimentForward).xz();
-
-            //Get tip of the cone formed by the intersection made by the 2 previous directions calculated
-            float2 intersection = GetIntersection(unit0, unitWidth, directionLeft, directionRight);
-            float radius = AttackRange + distance(intersection, unit0);// Vector3.Distance(intersection, unit0);
-            
-            NativeHashMap<int, float> enemyRegimentDistances = new (2, Temp);
-
+            //wrapper for more readable value passed
             float2x2 leftStartDir = float2x2(unit0, directionLeft);
             float2x2 rightStartDir = float2x2(unitWidth, directionRight);
             
-            foreach ((int unitsRegimentId, Vector3 unitPosition) in enemyUnitsPositions)
-            {
-                //Behind Regiment Check
-                float2 unitPosition2D = new (unitPosition.x, unitPosition.z);
-                bool isBehindRegiment = dot(regimentPosition, unitPosition2D) < 0;
-                if (isBehindRegiment) continue;
-                //Out Of Range Check
-                float distanceFromEnemy = distancesq(intersection, unitPosition2D);
-                bool isOutOfRange = distanceFromEnemy > Square(radius);
-                if (isOutOfRange) continue;
-
-                NativeArray<float2> triangle = GetTrianglePoints(intersection, leftStartDir, rightStartDir, radius);
-                //NativeArray<float2> triangle = GetTrianglePoints(intersection, unit0, directionLeft, unitWidth, directionRight, radius);
-                if (!unitPosition2D.IsPointInTriangle(triangle)) continue; //2) est-ce que l'unité est dans le triangle!
-                
-                bool invalidKey = !enemyRegimentDistances.TryGetValue(unitsRegimentId, out float currentMinDistance);
-                bool updateMinDistance = invalidKey || distanceFromEnemy < currentMinDistance;
-                enemyRegimentDistances.AddIf(unitsRegimentId, distanceFromEnemy, updateMinDistance);
-            }
-
+            //Get tip of the cone formed by the intersection made by the 2 previous directions calculated
+            float2 intersection = GetIntersection(leftStartDir, rightStartDir);
+            float radius = AttackRange + distance(intersection, unit0);
+            //Get regiments units and sort their positions taking only the closest one to choose the target
+            NativeHashMap<int, float> enemyRegimentDistances = 
+                GetEnemiesDistancesSorted(regimentPosition, intersection, leftStartDir, rightStartDir, radius);
+            
             if (enemyRegimentDistances.IsEmpty) return false;
-
             regimentTargeted = enemyRegimentDistances.GetKeyMinValue();
             return true;
         }
-
-        private NativeArray<float2> GetTrianglePoints(float2 tipPoint, float2 leftStart, float2 leftDir, float2 rightStart, float2 rightDir, float radius)
-        {
-            NativeArray<float2> points = new(3, Temp, UninitializedMemory);
-            points[0] = tipPoint;
-            float2 topForwardDirection = normalizesafe(((float2)regimentTransform.position.xz()) - tipPoint);
-            float2 topForwardFov = tipPoint + topForwardDirection * radius;
-            float2 leftCrossDir = topForwardDirection.CrossCounterClockWise();
-            points[1] = GetIntersection(topForwardFov, leftStart, leftCrossDir, leftDir);
-            float2 rightCrossDir = topForwardDirection.CrossClockWise();
-            points[2] = GetIntersection(topForwardFov, rightStart, rightCrossDir, rightDir);
-            return points;
-        }
         
+        private NativeHashMap<int, float> GetEnemiesDistancesSorted(float2 regimentPosition, float2 triangleTip, 
+            in float2x2 leftStartDir, in float2x2 rightStartDir, float radius)
+        {
+            float radiusSq = Square(radius);
+            using NativeParallelMultiHashMap<int, float3> enemyUnitsPositions = GetEnemiesPositions();
+            
+            NativeHashMap<int, float> enemyRegimentDistances = new (8, Temp);
+            foreach (KeyValue<int, float3> unitRegIdPosition in enemyUnitsPositions)
+            {
+                float2 unitPosition2D = unitRegIdPosition.Value.xz;
+                //1) Behind Regiment Check
+                bool isEnemyBehind = dot(regimentPosition, unitPosition2D) < 0;
+                if (isEnemyBehind) continue;
+                
+                //2) Is Inside The Circle (Range)
+                float distanceFromEnemy = distancesq(triangleTip, unitPosition2D);
+                bool isOutOfRange = distanceFromEnemy > radiusSq;
+                if (isOutOfRange) continue;
+                
+                //3) Is Inside the Triangle of vision (by checking inside both circle and triangle we get the Cone)
+                using NativeArray<float2> triangle = GetTrianglePoints(triangleTip, leftStartDir, rightStartDir, radius);
+                if (!unitPosition2D.IsPointInTriangle(triangle)) continue; //2) est-ce que l'unité est dans le triangle!
+                
+                bool invalidKey = !enemyRegimentDistances.TryGetValue(unitRegIdPosition.Key, out float currentMinDistance);
+                bool updateMinDistance = invalidKey || distanceFromEnemy < currentMinDistance;
+                enemyRegimentDistances.AddIf(unitRegIdPosition.Key, distanceFromEnemy, updateMinDistance);
+            }
+            return enemyRegimentDistances;
+        }
+
         private NativeArray<float2> GetTrianglePoints(in float2 tipPoint, in float2x2 leftStartDir, in float2x2 rightStartDir, float radius)
         {
             NativeArray<float2> points = new(3, Temp, UninitializedMemory);
             points[0] = tipPoint;
-            float2 topForwardDirection = normalizesafe(((float2)regimentTransform.position.xz()) - tipPoint);
+            float2 topForwardDirection = normalizesafe((float2)ObjectTransform.position.xz() - tipPoint);
             float2 topForwardFov = tipPoint + topForwardDirection * radius;
+            
             float2 leftCrossDir = topForwardDirection.CrossCounterClockWise();
-            points[1] = GetIntersection(topForwardFov, leftStartDir.c0, leftCrossDir, leftStartDir.c1);
+            points[1] = GetIntersection(float2x2(topForwardFov, leftCrossDir), leftStartDir);
             float2 rightCrossDir = topForwardDirection.CrossClockWise();
-            points[2] = GetIntersection(topForwardFov, rightStartDir.c0, rightCrossDir, rightStartDir.c1);
+            points[2] = GetIntersection(float2x2(topForwardFov, rightCrossDir), rightStartDir);
             return points;
         }
-
-        private NativeList<KeyValuePair<int, float3>> GetEnemiesPositions()
+        
+        private NativeParallelMultiHashMap<int, float3> GetEnemiesPositions()
         {
             int numEnemyUnits = RegimentManager.Instance.GetEnemiesTeamNumUnits(PlayerTeamID);
-            NativeList<KeyValuePair<int, float3>> tmp = new(numEnemyUnits, Temp);
+            NativeParallelMultiHashMap<int, float3> temp = new(numEnemyUnits, Temp);
             foreach ((int teamID, List<Regiment> regiments) in RegimentManager.Instance.RegimentsByTeamID)
             {
                 if (teamID == PlayerTeamID) continue;
                 foreach (Regiment regiment in regiments)
                 {
-                    foreach (Unit unit in regiment.Units)
+                    foreach (Transform unit in regiment.UnitsTransform)
                     {
-                        KeyValuePair<int, float3> keyValuePair = new (regiment.RegimentID, unit.transform.position);
-                        tmp.Add(keyValuePair);
+                        temp.Add(regiment.RegimentID, unit.position);
                     }
                 }
             }
-            return tmp;
+            return temp;
         }
 
-        public override void OnStateExit()
-        {
-            
-        }
     }
 }
 
 /*
-     NativeParallelMultiHashMap<int, float3> GetEnemiesPositions2()
-    {
-        int numEnemyUnits = RegimentManager.Instance.GetEnemiesTeamNumUnits(PlayerTeamID);
-        NativeParallelMultiHashMap<int, float3> temp = new(numEnemyUnits, Temp);
-        foreach ((int teamID, List<Regiment> regiments) in RegimentManager.Instance.RegimentsByTeamID)
-        {
-            if (teamID == PlayerTeamID) continue;
-            foreach (Regiment regiment in regiments)
-            {
-                foreach (Transform unit in regiment.UnitsTransform)
-                {
-                    temp.Add(regiment.RegimentID, unit.position);
-                }
-            }
-        }
-        return temp;
-    }
     bool CheckEnemiesAtRange2(out int regimentTargeted)
     {
         regimentTargeted = -1;

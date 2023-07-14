@@ -15,11 +15,12 @@ namespace KaizerWald
     {
         private bool LeaderReachDestination;
         public Formation FormationDestination { get; private set; }
-        private float2 Destination2D => ((float3)Destination).xz;
         
+        private float2 Destination2D => ((float3)Destination).xz;
+
         public RegimentMoveState(Regiment regiment) : base(regiment, regiment.RegimentType.Speed)
         {
-            Destination = ObjTransform.position;
+            Destination = ObjectTransform.position;
             FormationDestination = regiment.CurrentFormation;
         }
 
@@ -43,15 +44,15 @@ namespace KaizerWald
         public override void OnStateUpdate()
         {
             //Update Leader
-            //TODO: Update formation one by one
+            //TODO: Update formation one by one (test: 1 second per Width difference)
 
             //SET Position and Rotation
             if (!LeaderReachDestination) // Units may still be on their way
             {
                 Vector3 direction = (Destination - Position).normalized;
                 Vector3 translation = Time.deltaTime * MoveSpeed * direction;
-                ObjTransform.Translate(translation, Space.World);
-                ObjTransform.LookAt(Position + (Vector3)FormationDestination.DirectionForward);
+                ObjectTransform.Translate(translation, Space.World);
+                ObjectTransform.LookAt(Position + (Vector3)FormationDestination.DirectionForward);
             }
             
             if (!OnTransitionCheck()) return;
@@ -80,21 +81,23 @@ namespace KaizerWald
             ResetDefaultValues();
         }
 
-        private void ResetDefaultValues()
+        public override void ResetDefaultValues()
         {
             LeaderReachDestination = false;
             SetMarching();
         }
-
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public void AssignIndexToUnits(FormationData formation)
         {
             Vector2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);
             
-            List<Unit> tempUnitList = new (ObjectAttach.Units.Count);
-            tempUnitList.AddRange(ObjectAttach.Units);
-            
-            var comparer = Comparer<KeyValuePair<int, float>>.Create((a, b) => a.Value.CompareTo(b.Value));
-            SortedSet<KeyValuePair<int, float>> distances = new(comparer);
+            IList<Unit> tempUnitList = new List<Unit>(ObjectAttach.Units);
+            //List<Unit> tempUnitList = new (ObjectAttach.Units.Count);
+            //tempUnitList.AddRange(ObjectAttach.Units);
+
+            SortedSet<KeyValuePair<int, float>> distances = new(CSharpContainerUtils.GetKeyValuePairComparer<int, float>());
             
             for(int i = 0; i < destinations.Length; i++)
             {

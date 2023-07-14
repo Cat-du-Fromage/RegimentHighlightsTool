@@ -12,8 +12,7 @@ namespace KaizerWald
         
         public UnitMoveState(Unit unit) : base(unit, unit.RegimentAttach.RegimentType.Speed)
         {
-            Destination = ObjTransform.position;
-
+            Destination = ObjectTransform.position;
             if (!unit.TryGetComponent(out unitAnimation))
             {
                 Debug.LogError($"Unit: {unit.name} don't have 'UnitAnimation' Component");
@@ -49,9 +48,9 @@ namespace KaizerWald
 
         public override void OnStateUpdate()
         {
-            ObjTransform.LookAt(Position + Direction);
+            ObjectTransform.LookAt(Position + Direction);
             Vector3 direction = (Destination - Position).normalized;
-            ObjTransform.Translate(Time.deltaTime * MoveSpeed * direction, Space.World);
+            ObjectTransform.Translate(Time.deltaTime * MoveSpeed * direction, Space.World);
             if (!OnTransitionCheck()) return;
             
             ObjectAttach.StateMachine.TransitionState(EStates.Idle);
@@ -69,7 +68,7 @@ namespace KaizerWald
             ResetDefaultValues();
         }
         
-        private void ResetDefaultValues()
+        public override void ResetDefaultValues()
         {
             SetMarching();
         }

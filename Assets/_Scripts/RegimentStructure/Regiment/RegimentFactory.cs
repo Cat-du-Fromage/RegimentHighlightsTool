@@ -22,13 +22,16 @@ namespace KaizerWald
     public sealed class RegimentFactory : MonoBehaviourSingleton<RegimentFactory>
     {
         private const float SPACE_BETWEEN_REGIMENT = 2.5f;
+        
         private UnitFactory unitFactory;
+        private Transform factoryTransform;
         [field: SerializeField] public RegimentSpawner[] CreationOrders { get; private set; }
 
         public event Action<Regiment> OnRegimentCreated; 
 
         protected override void Awake()
         {
+            factoryTransform = transform;
             base.Awake();
             unitFactory = GetComponent<UnitFactory>();
         }
@@ -79,7 +82,7 @@ namespace KaizerWald
 
         private (Transform, Vector3) GetInstancePosition(int teamId)
         {
-            if (teamId is < 0 or > 1) return (transform, transform.position);
+            if (teamId is < 0 or > 1) return (factoryTransform, factoryTransform.position);
             Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(teamId);
             return (TerrainManager.Instance.GetSpawnerTransform(teamId), instancePosition);
         }
@@ -87,7 +90,7 @@ namespace KaizerWald
         private (Transform, Vector3) GetInstancePosition(ulong ownerId)
         {
             int playerIndex = (int)ownerId;
-            if (playerIndex is < 0 or > 1) return (transform, transform.position);
+            if (playerIndex is < 0 or > 1) return (factoryTransform, factoryTransform.position);
             Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(playerIndex);
             return (TerrainManager.Instance.GetSpawnerTransform(playerIndex), instancePosition);
         }

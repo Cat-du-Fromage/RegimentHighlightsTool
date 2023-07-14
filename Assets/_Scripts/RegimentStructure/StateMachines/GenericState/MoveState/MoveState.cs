@@ -11,21 +11,18 @@ namespace KaizerWald
     {
         protected readonly float Speed;
         protected int SpeedModifier;
-        
-        protected readonly Transform ObjTransform;
         public Vector3 Destination { get; protected set; }
         public Vector3 Direction { get; protected set; }
         public bool IsRunning { get; private set; }
 
         public MoveState(T objectAttach, float speed = 1f) : base(objectAttach)
         {
-            ObjTransform = objectAttach.transform;
             Speed = speed;
             SpeedModifier = 1;
         }
 
         public float MoveSpeed => Speed * SpeedModifier;
-        protected Vector3 Position => ObjTransform.position;
+        protected Vector3 Position => ObjectTransform.position;
 
         public virtual void SetRunning()
         {
