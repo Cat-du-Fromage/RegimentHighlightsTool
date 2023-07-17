@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -11,18 +12,18 @@ namespace KaizerWald
     {
         protected readonly float Speed;
         protected int SpeedModifier;
-        public Vector3 Destination { get; protected set; }
-        public Vector3 Direction { get; protected set; }
+        public float3 Destination { get; protected set; }
+        public float3 Direction { get; protected set; }
         public bool IsRunning { get; private set; }
 
-        public MoveState(T objectAttach, float speed = 1f) : base(objectAttach)
+        public MoveState(T objectAttach, float speed = 1f) : base(objectAttach, EStates.Idle)
         {
             Speed = speed;
             SpeedModifier = 1;
         }
 
-        public float MoveSpeed => Speed * SpeedModifier;
-        protected Vector3 Position => ObjectTransform.position;
+        protected float MoveSpeed => Speed * SpeedModifier;
+        protected float3 Position => ObjectTransform.position;
 
         public virtual void SetRunning()
         {
@@ -45,11 +46,6 @@ namespace KaizerWald
             }
             SetRunning();
         }
-        
-        public override void OnStateEnter() { return; }
-        public override void OnOrderEnter(RegimentOrder order) { return; }
-        public override void OnStateUpdate() { return; }
-        public override bool OnTransitionCheck() { return false; }
-        public override void OnStateExit() { return; }
+        // fonction similaire pour le moment mais le final rendra le comportement de Regiment et Unit très différent
     }
 }

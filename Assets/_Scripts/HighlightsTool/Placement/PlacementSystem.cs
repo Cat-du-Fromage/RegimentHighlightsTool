@@ -93,5 +93,46 @@ namespace KaizerWald
                 }
             }
         }
+        
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        public void ReplaceStaticPlacements(Regiment regiment)
+        {
+            FormationData formation = regiment.CurrentFormation;
+            if (formation.Depth == 1 || formation.IsLastLineComplete) return;
+            
+            int regimentId = regiment.RegimentID;
+            float3 direction3DLine = formation.Direction3DLine;
+            float distanceUnitToUnitX = formation.DistanceUnitToUnitX;
+            
+            float3 offset = formation.GetLastLineOffset(distanceUnitToUnitX);//0 If line complete
+            
+            int startIndex = (formation.NumCompleteLine - 1) * formation.Width;
+            int indexFirstEntityLastLine = startIndex/* + formation.Width*/; // + formation.Width.... seems wrong
+            
+            //from first Unit in last Line
+            float3 staticPosition = StaticPlacementRegister.Records[regimentId][startIndex].transform.position;
+            //Add offset if Line is not complete
+            staticPosition -= formation.Direction3DForward * formation.DistanceUnitToUnitY + offset;
+            
+            for (int i = 0; i < formation.NumUnitsLastLine; i++)
+            {
+                int index = indexFirstEntityLastLine + i;
+                float3 linePosition = staticPosition + direction3DLine * (distanceUnitToUnitX * i) ;
+                StaticPlacementRegister.Records[regimentId][index].transform.position = linePosition;
+            }
+        }
+        
+        //==============================================================================================================
+        // MISSING FEATURE: DYNAMIC PLACEMENT REPLACEMENT
+        //==============================================================================================================
+        public void ReplaceDynamicPlacements(Regiment regiment)
+        {
+            if (DynamicPlacementRegister.ActiveHighlights.Count == 0) return;
+            if (!DynamicPlacementRegister.ActiveHighlights.Contains(regiment)) return;
+            
+            //TODO: ADD TEMPORARY FORMATION IN CONTROLLER (we have no clue how dynamic formation currently look like)
+        }
     }
 }

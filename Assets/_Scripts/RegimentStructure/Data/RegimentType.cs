@@ -9,7 +9,8 @@ namespace KaizerWald
     {
         public RegimentClass RegimentClass;
         public GameObject UnitPrefab;
-
+        public GameObject BulletPrefab;
+        
         public int Range = 0;
         public int Accuracy = 0;
         public int ReloadingSkill = 0;

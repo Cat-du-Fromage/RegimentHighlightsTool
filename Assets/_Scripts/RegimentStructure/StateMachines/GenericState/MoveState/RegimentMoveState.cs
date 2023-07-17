@@ -5,7 +5,6 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Analytics;
 using UnityEngine.InputSystem.Controls;
 using static Unity.Mathematics.math;
 
@@ -15,8 +14,6 @@ namespace KaizerWald
     {
         private bool LeaderReachDestination;
         public Formation FormationDestination { get; private set; }
-        
-        private float2 Destination2D => ((float3)Destination).xz;
 
         public RegimentMoveState(Regiment regiment) : base(regiment, regiment.RegimentType.Speed)
         {
@@ -24,21 +21,13 @@ namespace KaizerWald
             FormationDestination = regiment.CurrentFormation;
         }
 
-        public override void OnStateEnter()
-        {
-            ResetDefaultValues();
-            ObjectAttach.CurrentFormation.SetWidth(FormationDestination.Width);
-        }
-        
-        public override void OnOrderEnter(RegimentOrder order)
+        public override void OnStateEnter(Order<Regiment> order)
         {
             ResetDefaultValues();
             MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
             Destination = moveOrder.LeaderDestination;
             FormationDestination = moveOrder.FormationDestination;
-            
-            AssignIndexToUnits(moveOrder.FormationDestination);
-            //ICI on va donner aux unité leur index d'assignation
+            AssignIndexToUnits(moveOrder.FormationDestination);//ICI on va donner aux unité leur index d'assignation
         }
 
         public override void OnStateUpdate()
@@ -49,21 +38,21 @@ namespace KaizerWald
             //SET Position and Rotation
             if (!LeaderReachDestination) // Units may still be on their way
             {
-                Vector3 direction = (Destination - Position).normalized;
-                Vector3 translation = Time.deltaTime * MoveSpeed * direction;
+                float3 direction = normalizesafe(Destination - Position);
+                float3 translation = Time.deltaTime * MoveSpeed * direction;
                 ObjectTransform.Translate(translation, Space.World);
-                ObjectTransform.LookAt(Position + (Vector3)FormationDestination.DirectionForward);
+                ObjectTransform.LookAt(Position + FormationDestination.DirectionForward);
             }
             
             if (!OnTransitionCheck()) return;
-            ObjectAttach.StateMachine.TransitionState(EStates.Idle);
+            LinkedStateMachine.TransitionState(EStates.Idle, RegimentOrder.Null);
         }
 
         public override bool OnTransitionCheck()
         {
             if (!LeaderReachDestination)
             {
-                LeaderReachDestination = (Destination - Position).magnitude <= 0.01f;
+                LeaderReachDestination = distance(Position, Destination) <= 0.01f;
             }
             
             bool allUnitsReachDestination = true;
@@ -91,41 +80,30 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public void AssignIndexToUnits(FormationData formation)
         {
-            Vector2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);
-            
-            IList<Unit> tempUnitList = new List<Unit>(ObjectAttach.Units);
-            //List<Unit> tempUnitList = new (ObjectAttach.Units.Count);
-            //tempUnitList.AddRange(ObjectAttach.Units);
-
+            float2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);
+            List<Unit> tempUnitList = new List<Unit>(ObjectAttach.Units);
             SortedSet<KeyValuePair<int, float>> distances = new(CSharpContainerUtils.GetKeyValuePairComparer<int, float>());
-            
             for(int i = 0; i < destinations.Length; i++)
             {
                 float2 currentDestinationCheck = destinations[i];
-                GatherUnitsDistance();
-                SetUnitIndex();
+                GatherUnitsDistance(distances, tempUnitList, currentDestinationCheck);
+                Unit unitToRemove = tempUnitList[distances.Min.Key];
+                unitToRemove.SetIndexInRegiment(i);
+                tempUnitList.Remove(unitToRemove);
                 distances.Clear();
-
-                void GatherUnitsDistance()
-                {
-                    for(int unitIndex = 0; unitIndex < tempUnitList.Count; unitIndex++)
-                    {
-                        float3 unitPosition = tempUnitList[unitIndex].transform.position;
-                        float distanceWithDst = distancesq(unitPosition.xz, currentDestinationCheck);
-                        KeyValuePair<int, float> pair = new KeyValuePair<int, float>(unitIndex, distanceWithDst);
-                        distances.Add(pair);
-                    }
-                }
-                
-                void SetUnitIndex()
-                {
-                    Unit unitToRemove = tempUnitList[distances.Min.Key];
-                    unitToRemove.SetIndexInRegiment(i);
-                    tempUnitList.Remove(unitToRemove);
-                }
             }
         }
-
+        
+        private void GatherUnitsDistance(ISet<KeyValuePair<int, float>> distances, IReadOnlyList<Unit> unitList, float2 destination)
+        {
+            for(int unitIndex = 0; unitIndex < unitList.Count; unitIndex++)
+            {
+                float3 unitPosition = unitList[unitIndex].transform.position;
+                float distanceWithDst = distancesq(unitPosition.xz, destination);
+                KeyValuePair<int, float> pair = new (unitIndex, distanceWithDst);
+                distances.Add(pair);
+            }
+        }
     }
 }
 
@@ -152,4 +130,40 @@ public int[] GetIndicesOrderedByFurthestLineThenMiddle(FormationData formation)
     }
     return orderedIndices; 
 }
+
+public void AssignIndexToUnits(FormationData formation)
+{
+    Vector2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);
+    List<Unit> tempUnitList = new List<Unit>(ObjectAttach.Units);
+    //List<Unit> tempUnitList = new (ObjectAttach.Units.Count);
+    //tempUnitList.AddRange(ObjectAttach.Units);
+
+    SortedSet<KeyValuePair<int, float>> distances = new(CSharpContainerUtils.GetKeyValuePairComparer<int, float>());
+    for(int i = 0; i < destinations.Length; i++)
+    {
+        float2 currentDestinationCheck = destinations[i];
+        GatherUnitsDistance();
+        SetUnitIndex();
+        distances.Clear();
+        
+        void GatherUnitsDistance()
+        {
+            for(int unitIndex = 0; unitIndex < tempUnitList.Count; unitIndex++)
+            {
+                float3 unitPosition = tempUnitList[unitIndex].transform.position;
+                float distanceWithDst = distancesq(unitPosition.xz, currentDestinationCheck);
+                KeyValuePair<int, float> pair = new (unitIndex, distanceWithDst);
+                distances.Add(pair);
+            }
+        }
+        
+        void SetUnitIndex()
+        {
+            Unit unitToRemove = tempUnitList[distances.Min.Key];
+            unitToRemove.SetIndexInRegiment(i);
+            tempUnitList.Remove(unitToRemove);
+        }  
+    }
+}
+
 */

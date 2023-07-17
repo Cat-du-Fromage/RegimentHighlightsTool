@@ -11,21 +11,47 @@ namespace KaizerWald
 {
     public static class Vector3Extension
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
         /// <summary>
-        /// flatten the coordinate by setting y to 0
+        /// Sizzling Vector3
         /// </summary>
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 xOy(this Vector3 coordToFlat)
+        public static Vector3 xOz(this Vector3 coordToFlat)
         {
             return new Vector3(coordToFlat.x, 0, coordToFlat.z);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 x1y(this Vector3 coordToFlat)
+        public static Vector3 x1z(this Vector3 coordToFlat)
         {
             return new Vector3(coordToFlat.x, 1f, coordToFlat.z);
         }
         
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        /// <summary>
+        /// Sizzling From Vector3 To Vector2
+        /// </summary>
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 xy(this Vector3 source)
+        {
+            return new Vector2(source.x, source.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 xz(this Vector3 source)
+        {
+            return new Vector2(source.x, source.z);
+        }
+        
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//
+//  VECTOR3 BEHAVIOUR
+//
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         /// <summary>
         /// Set Axis to a given destination using XZ axis only
         /// </summary>
@@ -71,16 +97,5 @@ namespace KaizerWald
             return Vector3.Magnitude(destination - source);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 xy(this Vector3 source)
-        {
-            return new Vector2(source.x, source.y);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 xz(this Vector3 source)
-        {
-            return new Vector2(source.x, source.z);
-        }
     }
 }

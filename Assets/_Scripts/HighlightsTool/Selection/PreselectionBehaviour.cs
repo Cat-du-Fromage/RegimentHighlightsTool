@@ -14,16 +14,42 @@ namespace KaizerWald
             projector = GetComponent<DecalProjector>();
         }
 
-        public override void InitializeHighlight(Transform unitAttached)
+        public override void InitializeHighlight(Unit unitAttached)
         {
-            UnitAttach = unitAttached;
             positionConstraint = GetComponent<PositionConstraint>();
-            transform.position = unitAttached.position + Vector3.up;
-            positionConstraint.AddSource(new ConstraintSource { sourceTransform = unitAttached , weight = 1});
+            AttachToUnit(unitAttached);
+            Hide();
+        }
+
+        public override void AttachToUnit(Unit unit)
+        {
+            base.AttachToUnit(unit);
+            UnlockConstraint();
+            transform.position = UnitTransform.position + Vector3.up;
+            ConstraintSource source = new ConstraintSource { sourceTransform = UnitTransform, weight = 1 };
+            if (positionConstraint.sourceCount == 0)
+            {
+                positionConstraint.AddSource(source);
+            }
+            else
+            {
+                positionConstraint.SetSource(0, source);
+            }
+            //positionConstraint.AddSource(new ConstraintSource { sourceTransform = UnitTransform , weight = 1});
             positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
+            LockConstraint();
+        }
+
+        private void LockConstraint()
+        {
             positionConstraint.constraintActive = true;
             positionConstraint.locked = true;
-            Hide();
+        }
+        
+        private void UnlockConstraint()
+        {
+            positionConstraint.constraintActive = false;
+            positionConstraint.locked = false;
         }
 
         public override bool IsShown() => projector.enabled == true;
@@ -33,7 +59,7 @@ namespace KaizerWald
         public override void Show()
         {
             positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
-            transform.position = UnitAttach.position + Vector3.up;
+            transform.position = UnitTransform.position + Vector3.up;
             positionConstraint.locked = true;
             projector.enabled = true;
         }

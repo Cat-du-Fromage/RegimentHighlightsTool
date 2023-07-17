@@ -66,5 +66,13 @@ namespace KaizerWald
                 OnHide(Registers[registerIndex].ActiveHighlights[i], registerIndex);
             }
         }
+
+        public virtual void ResizeBuffer(int regimentID, int numDead)
+        {
+            for (int i = 0; i < Registers.Length; i++)
+            {
+                Registers[i].ResizeBuffer(regimentID, numDead);
+            }
+        }
     }
 }

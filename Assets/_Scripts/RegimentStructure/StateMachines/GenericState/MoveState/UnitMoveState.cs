@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
+using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
@@ -30,37 +32,32 @@ namespace KaizerWald
             base.SetRunning();
             unitAnimation.SetRunning();
         }
-        
-        public override void OnStateEnter()
-        {
-            ResetDefaultValues();
-        }
 
-        public override void OnOrderEnter(RegimentOrder order)
+        public override void OnStateEnter(Order<Unit> order)
         {
             ResetDefaultValues();
-            MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
-            FormationData formationData = moveOrder.FormationDestination;
-            Direction = formationData.Direction3DForward;
-            Destination = formationData.GetUnitRelativePositionToRegiment3D(ObjectAttach.IndexInRegiment, moveOrder.LeaderDestination);
+            UnitMoveOrder moveOrder = (UnitMoveOrder)order;
+            Direction = moveOrder.Direction;
+            Destination = moveOrder.Destination;
             unitAnimation.SetMarching();
         }
 
         public override void OnStateUpdate()
         {
+            float3 direction = normalizesafe(Destination - Position);
+            float3 translation = Time.deltaTime * MoveSpeed * direction;
+            ObjectTransform.Translate(translation, Space.World);
             ObjectTransform.LookAt(Position + Direction);
-            Vector3 direction = (Destination - Position).normalized;
-            ObjectTransform.Translate(Time.deltaTime * MoveSpeed * direction, Space.World);
-            if (!OnTransitionCheck()) return;
             
-            ObjectAttach.StateMachine.TransitionState(EStates.Idle);
+            if (!OnTransitionCheck()) return;
+            LinkedStateMachine.TransitionState(EStates.Idle, UnitOrder.Null);
         }
 
         public override bool OnTransitionCheck()
         {
             //Pour le cas ou la vitesse nous ferait "dépasser" le point d'arriver
             //Penser a "cache" la dernière distance et comparer, Si magnitude calculer > dernière valeur => forcer la position
-            return (Destination - Position).magnitude <= 0.01f;
+            return distancesq(Position,Destination) <= 0.01f;
         }
 
         public override void OnStateExit()

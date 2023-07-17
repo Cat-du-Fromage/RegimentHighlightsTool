@@ -38,6 +38,7 @@ namespace KaizerWald
         
         public event Action<Regiment> OnNewRegiment;
 
+        public event Action<Regiment> OnDeadRegiment;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -79,13 +80,13 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void OnEnable()
         {
-            factory.OnRegimentCreated += RegisterNewRegiment;
+            factory.OnRegimentCreated += RegisterRegiment;
             regimentHighlightSystem.OnPlacementEvent += OnMoveOrders;
         }
 
         private void OnDisable()
         {
-            factory.OnRegimentCreated -= RegisterNewRegiment;
+            factory.OnRegimentCreated -= RegisterRegiment;
             regimentHighlightSystem.OnPlacementEvent -= OnMoveOrders;
             Array.ForEach(OnNewRegiment?.GetInvocationList()!,action => OnNewRegiment -= (Action<Regiment>)action);
             //foreach (Delegate action in OnNewRegiment?.GetInvocationList()!) OnNewRegiment -= (Action<Regiment>)action;
@@ -137,9 +138,8 @@ namespace KaizerWald
         //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
         private void OnMoveOrders(MoveRegimentOrder moveOrder)
         {
-            moveOrder.Regiment.StateMachine.OnMoveOrderReceived(moveOrder);
+            moveOrder.Receiver.StateMachine.OnMoveOrderReceived(moveOrder);
         }
-        
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
@@ -147,12 +147,35 @@ namespace KaizerWald
         private void RegisterNewRegiment(Regiment regiment)
         {
             Regiments.Add(regiment);
-            
             RegimentsByID.Add(regiment.RegimentID, regiment);
             RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
             RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
             
             OnNewRegiment?.Invoke(regiment);
+        }
+
+        public void UnRegisterDeadRegiment(Regiment regiment)
+        {
+            
+            OnDeadRegiment?.Invoke(regiment);
+        }
+        
+        public override void RegisterRegiment(Regiment regiment)
+        {
+            Regiments.Add(regiment);
+            RegimentsByID.Add(regiment.RegimentID, regiment);
+            RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
+            RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
+            RegimentHighlightSystem.RegisterRegiment(regiment);
+        }
+        
+        public override void UnRegisterRegiment(Regiment regiment)
+        {
+            RegimentHighlightSystem.UnregisterRegiment(regiment);
+            Regiments.Remove(regiment);
+            RegimentsByID.Remove(regiment.RegimentID);
+            RegimentsByPlayerID[regiment.OwnerID].Remove(regiment);
+            RegimentsByTeamID[regiment.TeamID].Remove(regiment);
         }
         
         /*

@@ -6,6 +6,7 @@ namespace KaizerWald
 {
     /// <summary>
     /// Idle Means: Stop Moving, Stop Firing(can be forced)
+    /// During Idle: will rearrange, respond to melee attack
     /// </summary>
     public class UnitIdleState : IdleState<Unit>
     {
@@ -19,15 +20,9 @@ namespace KaizerWald
             }
         }
 
-        public override void OnStateEnter()
+        public override void OnStateEnter(Order<Unit> order)
         {
-            unitAnimation.SetSpeed(0);
-            return;
-        }
-
-        public override void OnOrderEnter(RegimentOrder order)
-        {
-            
+            unitAnimation.SetIdle();
             return;
         }
 

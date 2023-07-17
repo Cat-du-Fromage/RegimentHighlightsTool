@@ -7,16 +7,6 @@
       "dependencies": {},
       "hash": "f2773f585e762480c835ac718b82b87cb111e500"
     },
-    "com.projectdawn.dotsplus": {
-      "version": "file:com.projectdawn.dotsplus",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.mathematics": "1.2.6",
-        "com.unity.collections": "1.4.0",
-        "com.unity.burst": "1.6.6"
-      }
-    },
     "com.unity.addressables": {
       "version": "1.21.14",
       "depth": 0,

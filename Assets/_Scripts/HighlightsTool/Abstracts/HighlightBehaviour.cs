@@ -6,8 +6,12 @@ namespace KaizerWald
 {
     public abstract class HighlightBehaviour : MonoBehaviour
     {
-        protected Transform UnitAttach;
-        public abstract void InitializeHighlight(Transform unitAttached);
+        public Unit UnitAttach { get; protected set; }
+        protected Transform UnitTransform => UnitAttach.transform;
+
+        public abstract void InitializeHighlight(Unit unitAttached);
+
+        public virtual void AttachToUnit(Unit unit) => UnitAttach = unit;
 
         public abstract void Show();
 

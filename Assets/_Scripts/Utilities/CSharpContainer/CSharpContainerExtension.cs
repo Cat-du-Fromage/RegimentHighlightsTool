@@ -34,6 +34,12 @@ namespace KaizerWald
         {
             Array.Reverse(array);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Resize<T>(this T[] array, int newSize)
+        {
+            Array.Resize(ref array, newSize);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Clear<T>(this T[] array)
@@ -58,6 +64,17 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ LIST ◆◆◆◆◆◆                                                    ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        /// <summary>
+        /// Add Element if not already present on the list return if the element as been added
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool AddUnique<T>(this List<T> list, T obj)
+        {
+            if (list.Contains(obj)) return false;
+            list.Add(obj);
+            return true;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddIf<T>(this List<T> list, T obj, bool flag)

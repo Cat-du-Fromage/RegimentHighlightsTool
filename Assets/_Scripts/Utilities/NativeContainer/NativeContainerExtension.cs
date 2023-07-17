@@ -23,6 +23,7 @@ namespace KaizerWald
             if (!flag || map.TryAdd(key, value)) return;
             map[key] = value;
         }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TKey GetKeyMinValue<TKey>(this NativeHashMap<TKey, float> map)
         where TKey : unmanaged, IEquatable<TKey>

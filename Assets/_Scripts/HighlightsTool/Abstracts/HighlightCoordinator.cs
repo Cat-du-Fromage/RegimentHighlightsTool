@@ -47,5 +47,7 @@ namespace KaizerWald
         {
             RegimentHighlightSystem.UnregisterRegiment(regiment);
         }
+        
+        
     }
 }

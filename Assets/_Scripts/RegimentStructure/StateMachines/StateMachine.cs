@@ -11,7 +11,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        protected T ObjectAttach;
+        [field: SerializeField] public T ObjectAttach { get; protected set; }
         [field: SerializeField] public EStates State { get; protected set; }
         public Dictionary<EStates, State<T>> States { get; protected set; }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -28,6 +28,7 @@ namespace KaizerWald
         public State<T> CurrentState => States[State];
         public bool IsIdle => State == EStates.Idle;
         public bool IsMoving => State == EStates.Move;
+        public bool IsFiring => State == EStates.Fire;
 
         public virtual void Initialize()
         {
@@ -39,26 +40,31 @@ namespace KaizerWald
             CurrentState?.OnStateUpdate();
         }
 
-        public virtual void OnOrderReceived(RegimentOrder order)
+        public virtual void OnOrderReceived<TOrder>(TOrder order)
+        where TOrder : Order<T>
         {
             CurrentState.OnStateExit();
             State = order.StateOrdered;
-            CurrentState.OnOrderEnter(order);
+            CurrentState.OnStateEnter(order);
         }
 
-        public virtual void TransitionState(EStates newState)
+        public virtual void TransitionState(EStates newState, Order<T> transitionInfo)
         {
             CurrentState.OnStateExit();
             State = newState;
-            CurrentState.OnStateEnter();
+            CurrentState.OnStateEnter(transitionInfo);
         }
+
+        public abstract void TransitionDefaultState();
 
         protected abstract void InitializeStates();
         /* Exemple type d'implementation
         States = new Dictionary<EStates, State<T>>()
         {
+            {EStates.None, new NullState<T>(ObjectAttach)},
             {EStates.Idle, new IdleState<T>(ObjectAttach)},
-            {EStates.Move, new MoveState<T>(ObjectAttach)}
+            {EStates.Move, new MoveState<T>(ObjectAttach)},
+            {EStates.Fire, new FireState<T>(ObjectAttach)}
         };
         State = EStates.Idle;
         */

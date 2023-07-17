@@ -7,7 +7,7 @@ using UnityEngine.Jobs;
 namespace KaizerWald
 {
     public class TransformAccessWrapper<T> : IDisposable
-        where T : MonoBehaviour
+    where T : MonoBehaviour
     {
         public List<T> Datas{ get; private set; }
         public List<Transform> Transforms{ get; private set; }
@@ -50,14 +50,28 @@ namespace KaizerWald
         public void Remove(Transform data)
         {
             if (!UnitsTransformAccessArray.isCreated) return;
+            if (!DictionaryTransformIndex.TryGetValue(data, out int indexToRemove)) return;
             int lastIndex = Transforms.Count - 1;
-            int indexToRemove = DictionaryTransformIndex[data];
+            //int indexToRemove = DictionaryTransformIndex[data];
             
             UnitsTransformAccessArray.RemoveAtSwapBack(indexToRemove);
             DictionaryTransformIndex[Transforms[lastIndex]] = indexToRemove;
             DictionaryTransformIndex.Remove(Transforms[indexToRemove]);
             
             Transforms.RemoveAtSwapBack(indexToRemove);
+        }
+        
+        public void RemoveAt(int index)
+        {
+            if (!UnitsTransformAccessArray.isCreated) return;
+            if(!DictionaryTransformIndex.ContainsValue(index)) return;
+            int lastIndex = Transforms.Count - 1;
+
+            UnitsTransformAccessArray.RemoveAtSwapBack(index);
+            DictionaryTransformIndex[Transforms[lastIndex]] = index;
+            DictionaryTransformIndex.Remove(Transforms[index]);
+            
+            Transforms.RemoveAtSwapBack(index);
         }
         
         public void Dispose()

@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace KaizerWald
 {
@@ -32,7 +34,7 @@ namespace KaizerWald
             {
                 GameObject highlightObj = Object.Instantiate(prefab);
                 Records[selectableRegiment.RegimentID][i] = highlightObj.GetComponent<HighlightBehaviour>();
-                Records[selectableRegiment.RegimentID][i].InitializeHighlight(selectableRegiment.UnitsTransform[i]);
+                Records[selectableRegiment.RegimentID][i].InitializeHighlight(selectableRegiment.Units[i]);
             }
         }
 
@@ -53,5 +55,54 @@ namespace KaizerWald
             }
             Records.Remove(selectableRegiment.RegimentID);
         }
+        
+        
+        public virtual void ResizeBuffer(int regimentID, int numDead)
+        {
+            if (!Records.ContainsKey(regimentID)) return;
+            
+            List<HighlightBehaviour> highlightsToDestroy = new (numDead);
+            List<HighlightBehaviour> highlightsKept = new (Records[regimentID].Length - numDead);
+            foreach (HighlightBehaviour highlight in Records[regimentID])
+            {
+                Unit unit = highlight.UnitAttach;
+                if (unit.IsDead)
+                {
+                    highlightsToDestroy.Add(highlight);
+                }
+                else
+                {
+                    highlightsKept.Add(highlight);
+                }
+            }
+            
+            for (int i = highlightsToDestroy.Count - 1; i > -1; i--)
+            {
+                Object.Destroy(highlightsToDestroy[i]);
+            }
+
+            if (highlightsKept.Count == 0)
+            {
+                Records.Remove(regimentID);
+            }
+            else //DeadRegiment
+            {
+                Records[regimentID] = highlightsKept.ToArray();
+            }
+        }
+        /*
+        public virtual void ResizeBuffer(int regimentID, int numDead)
+        {
+            HighlightBehaviour[] highlights = Records[regimentID];
+            int iteration = highlights.Length - numDead;
+            for (int i = highlights.Length - 1; i > iteration - 1; i--)
+            {
+                //TransformAccessArrays[regimentID].RemoveAtSwapBack(i);
+                Object.Destroy(highlights[i].gameObject);
+            }
+            Array.Resize(ref highlights, Records[regimentID].Length - numDead);
+            Records[regimentID] = highlights;
+        }
+        */
     }
 }

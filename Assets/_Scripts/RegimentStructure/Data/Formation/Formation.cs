@@ -65,18 +65,26 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public int2 WidthDepth => new int2(Width, Depth);
         public float2 Direction2DForward => DirectionForward.xz;
+        public float3 DirectionLine => cross(up(), DirectionForward);
         public float2 DistanceUnitToUnit => UnitSize + SpaceBetweenUnits;
+        public float DistanceUnitToUnitX => DistanceUnitToUnit.x;
+        public float DistanceUnitToUnitY => DistanceUnitToUnit.y;
+        
         // Needed for Rearrangement
-        public int NumCompleteLine => Depth * Width == NumUnitsAlive ? Depth : Depth - 1;
         private int CountUnitsLastLine => NumUnitsAlive - NumCompleteLine * Width;
-        public int NumUnitsLastLine => CountUnitsLastLine is 0 ? Width : CountUnitsLastLine;
+        public bool IsLastLineComplete => NumCompleteLine == Depth;
+        public int NumCompleteLine => Depth * Width == NumUnitsAlive ? Depth : Depth - 1;
+        public int NumUnitsLastLine => IsLastLineComplete ? Width : CountUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                 ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public void Increment() => Add(1);
+        public void Decrement() => Remove(1);
+        
         public void Add(int numAdded) => NumUnitsAlive = min(BaseNumUnits, NumUnitsAlive + numAdded);
-
         public void Remove(int numRemoved) => NumUnitsAlive = max(0, NumUnitsAlive - numRemoved);
 
         public void SetWidth(int newWidth)

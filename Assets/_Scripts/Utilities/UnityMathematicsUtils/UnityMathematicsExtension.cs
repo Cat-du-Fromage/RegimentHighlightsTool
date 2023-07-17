@@ -57,7 +57,7 @@ namespace KaizerWald
         /// </summary>
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 xaz(this float3 value, float a) => new (value.x, a, value.y);
+        public static float3 xaz(this float3 value, float a) => new (value.x, a, value.z);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 x0z(this float3 value) => value.xaz(0);

@@ -5,29 +5,40 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public class Unit : MonoBehaviour
+    public partial class Unit : MonoBehaviour
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                 ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private Rigidbody unitRigidBody;
+        private Collider unitCollider;
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        [field: SerializeField] public Regiment RegimentAttach { get; private set; }
         [field: SerializeField] public int IndexInRegiment { get; private set; }
-
+        [field: SerializeField] public Regiment RegimentAttach { get; private set; }
+        [field: SerializeField] public UnitAnimation Animation { get; private set; }
         [field: SerializeField] public UnitStateMachine StateMachine { get; private set; }
+        
+        [field: SerializeField] public bool IsDead { get; private set; }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void Awake()
         {
+            unitRigidBody = GetComponent<Rigidbody>();
+            unitCollider = GetComponent<Collider>();
+            Animation = GetComponent<UnitAnimation>();
             StateMachine = this.GetOrAddComponent<UnitStateMachine>();
         }
-
+/*
         private void OnDestroy()
         {
             OnDeath();
         }
-
+*/
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -40,12 +51,11 @@ namespace KaizerWald
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+        //║ ◈◈◈◈◈◈ Initialization Methods (Units are Initialize by their regiment) ◈◈◈◈◈◈                         ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public Unit Initialize(Regiment regiment, int indexInRegiment, int unitLayerIndex)
         {
             InitializeProperties(regiment, indexInRegiment, unitLayerIndex);
-            InitializeStateMachine();
             return this;
         }
 
@@ -56,19 +66,19 @@ namespace KaizerWald
             gameObject.layer = unitLayerIndex;
         }
 
-        private void InitializeStateMachine()
-        {
-            StateMachine = this.GetOrAddComponent<UnitStateMachine>();
-            StateMachine.Initialize();
-        }
-        
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Unit Update Event ◈◈◈◈◈◈                                                                       ║
+        //║ ◈◈◈◈◈◈ Unit Event ◈◈◈◈◈◈                                                                              ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        //CAREFULLE EVENT RECEIVED ON FIXED UPDATE => BEFORE UPDATE
+        //Death trigger on regiment because of update order related issue
         public void OnDeath()
         {
-            if (RegimentAttach == null) return;
-            RegimentAttach.OnDeadUnit(this);
+            if (IsDead) return;
+            unitCollider.enabled = false;
+            unitRigidBody.Sleep();
+            Animation.SetDead();
+            IsDead = true;
         }
     }
 }

@@ -61,5 +61,23 @@ namespace KaizerWald
             //Registers[registerIndex].ActiveHighlights.ForEach(regiment => ((ISelectable)regiment).SetSelectableProperty(registerIndex, false));
             base.HideAll(registerIndex);
         }
+
+        public override void ResizeBuffer(int regimentID, int numDead)
+        {
+            base.ResizeBuffer(regimentID, numDead);
+            /*
+        public override void InitializeHighlight(Transform unitAttached)
+        {
+            UnitAttach = unitAttached;
+            positionConstraint = GetComponent<PositionConstraint>();
+            transform.position = unitAttached.position + Vector3.up;
+            positionConstraint.AddSource(new ConstraintSource { sourceTransform = unitAttached , weight = 1});
+            positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
+            positionConstraint.constraintActive = true;
+            positionConstraint.locked = true;
+            Hide();
+        }
+        */
+        }
     }
 }

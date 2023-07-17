@@ -6,7 +6,9 @@ namespace KaizerWald
 {
     public enum EStates
     {
-        Idle,
-        Move
+        None = -1,
+        Idle = 0,
+        Move = 1,
+        Fire = 2
     }
 }

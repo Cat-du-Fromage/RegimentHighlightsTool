@@ -14,29 +14,40 @@ namespace KaizerWald
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public List<UnitStateMachine> UnitsStateMachine { get; private set; }
-        
-        
-        
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ State Machine Override ◈◈◈◈◈◈                                                                  ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public override void TransitionDefaultState()
+        {
+            TransitionState(RegimentState.Default, RegimentOrder.Null);
+        }
+
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public override void Initialize()
+        
+        ///Call in <see cref="Regiment"/> Component
+        public override void Initialize() 
         {
             base.Initialize();
             UnitsStateMachine = new List<UnitStateMachine>(ObjectAttach.Units.Count);
             ObjectAttach.Units.ForEach(unit => UnitsStateMachine.Add(unit.StateMachine));
+            UnitsStateMachine.ForEach(machine => machine.Initialize());
         }
 
         protected override void InitializeStates()
         {
             States = new Dictionary<EStates, State<Regiment>>()
             {
+                {EStates.None, RegimentState.Null},
                 {EStates.Idle, new RegimentIdleState(ObjectAttach)},
-                {EStates.Move, new RegimentMoveState(ObjectAttach)}
+                {EStates.Move, new RegimentMoveState(ObjectAttach)},
+                {EStates.Fire, new RegimentFireState(ObjectAttach)}
             };
             State = EStates.Idle;
         }
@@ -61,12 +72,32 @@ namespace KaizerWald
                 case EStates.Idle:
                     return;
                 case EStates.Move:
-                    CurrentState.OnOrderEnter(order);
+                    MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
+                    CurrentState.OnStateEnter(order);
                     foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
                     {
-                        unitStateMachine.OnOrderReceived(order);
+                        UnitMoveOrder unitOrder = new (unitStateMachine.ObjectAttach, moveOrder);
+                        unitStateMachine.OnOrderReceived(unitOrder);
                     }
                     //foreach (Unit unit in ObjectAttach.Units) unit.StateMachine.OnOrderReceived(order);
+                    return;
+                case EStates.Fire:
+                    return;
+                default:
+                    return;
+            }
+        }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Units Request ◈◈◈◈◈◈                                                                           ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public void OnUnitRequest(UnitStateMachine unitStateMachine, EStates stateRequest)
+        {
+            switch (stateRequest)
+            {
+                case EStates.Fire: //We need a target
+                    RegimentFireState fireState = (RegimentFireState)States[EStates.Fire];
+                    fireState.OnUnitRequest(unitStateMachine);
                     return;
                 default:
                     return;
