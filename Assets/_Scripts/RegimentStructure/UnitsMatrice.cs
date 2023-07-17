@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public class UnitsInformation
+    public class UnitsMatrix
     {
         public Unit[] Units { get; private set; }
         public Transform[] UnitsTransform { get; private set; }
         
-        public UnitsInformation(List<Unit> datas)
+        public UnitsMatrix(List<Unit> datas)
         {
             Units = new Unit[datas.Count];
             UnitsTransform = new Transform[datas.Count];

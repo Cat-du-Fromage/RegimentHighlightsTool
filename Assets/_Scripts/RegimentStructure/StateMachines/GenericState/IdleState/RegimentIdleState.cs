@@ -48,7 +48,7 @@ namespace KaizerWald
             if (!hasTarget || !regimentExist) return false;
             
             AttackRegimentOrder order = new AttackRegimentOrder(ObjectAttach, EStates.Fire, target);
-            LinkedStateMachine.TransitionState(EStates.Fire, order);
+            LinkedStateMachine.TransitionState(order);
             
             Debug.Log($"{ObjectAttach.name} hasTarget: {hasTarget} : target is regiment Id: {targetId}");
             return true;

@@ -69,7 +69,6 @@ namespace KaizerWald
         private void LateUpdate()
         {
             CleanupEmptyRegiments();
-            
             foreach (Regiment regiment in Regiments)
             {
                 regiment.OnLateUpdate();
@@ -78,10 +77,12 @@ namespace KaizerWald
 
         private void CleanupEmptyRegiments()
         {
-            for (int i = Regiments.Count - 1; i > -1; i++)
+            if (Regiments.Count == 0) return;
+            for (int i = Regiments.Count - 1; i > -1; i--)
             {
                 Regiment regiment = Regiments[i];
                 if (regiment.CurrentFormation.NumUnitsAlive > 0) continue;
+                Debug.Log($"Regiment destroyed: {regiment.name}");
                 UnRegisterRegiment(regiment);
                 Destroy(regiment);
             }

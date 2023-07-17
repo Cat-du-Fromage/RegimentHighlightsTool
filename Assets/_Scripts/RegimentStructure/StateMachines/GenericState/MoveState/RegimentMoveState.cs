@@ -8,6 +8,8 @@ using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 using static Unity.Mathematics.math;
 
+using static KaizerWald.CSharpContainerUtils;
+
 namespace KaizerWald
 {
     public sealed class RegimentMoveState : MoveState<Regiment>
@@ -45,7 +47,8 @@ namespace KaizerWald
             }
             
             if (!OnTransitionCheck()) return;
-            LinkedStateMachine.TransitionState(EStates.Idle, RegimentOrder.Null);
+            LinkedStateMachine.TransitionDefaultState();
+            //LinkedStateMachine.TransitionState(EStates.Idle, RegimentOrder.Null);
         }
 
         public override bool OnTransitionCheck()
@@ -82,7 +85,7 @@ namespace KaizerWald
         {
             float2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);
             List<Unit> tempUnitList = new List<Unit>(ObjectAttach.Units);
-            SortedSet<KeyValuePair<int, float>> distances = new(CSharpContainerUtils.GetKeyValuePairComparer<int, float>());
+            SortedSet<KeyValuePair<int, float>> distances = new(GetKeyValuePairComparer<int, float>());
             for(int i = 0; i < destinations.Length; i++)
             {
                 float2 currentDestinationCheck = destinations[i];

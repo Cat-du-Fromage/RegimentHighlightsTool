@@ -24,7 +24,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public override void TransitionDefaultState()
         {
-            TransitionState(RegimentState.Default, RegimentOrder.Null);
+            TransitionState(RegimentOrder.Null, RegimentState.Default);
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖

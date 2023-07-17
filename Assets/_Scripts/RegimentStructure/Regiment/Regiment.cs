@@ -49,7 +49,16 @@ namespace KaizerWald
         public List<Transform> UnitsTransform => UnitsListWrapper.Transforms;
         
         public TransformAccessArray UnitsTransformAccessArray => UnitsListWrapper.UnitsTransformAccessArray;
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Units Matrice ◈◈◈◈◈◈                                                                           ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
+        public UnitsMatrix UnitsMatrix { get; private set; }
+        
+        //public Unit[] Units => UnitsMatrix.Units;
+        //public Transform[] UnitsTransform => UnitsMatrix.UnitsTransform;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -66,18 +75,16 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void OnUpdate()
         {
-            if (ClearDeadUnits())
-            {
-                Debug.Log($"Regiment Update: Clear Units");
-            }
+            Rearrangement();
+            //if (ClearDeadUnits()) Debug.Log($"Regiment Update: Clear Units");
             StateMachine.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
 
         public void OnLateUpdate()
         {
-            if (!ClearDeadUnits()) return;
-            Debug.Log($"Regiment LateUpdate: Clear Units");
+            //if (!ClearDeadUnits()) return;
+            //Debug.Log($"Regiment LateUpdate: Clear Units");
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -140,13 +147,6 @@ namespace KaizerWald
             for (int i = DeadUnits.Count - 1; i > -1; i--)
             {
                 RemoveDeadUnitAt(i);
-                /*
-                Unit deadUnit = DeadUnits[i];
-                UnitsListWrapper.Remove(deadUnit);
-                DeadUnits.RemoveAt(i);
-                deadUnit.OnDeath();
-                CurrentFormation.Decrement();
-                */
             }
             return true;
         }
@@ -167,9 +167,12 @@ namespace KaizerWald
         {
             if (DeadUnits.Count == 0) return;
             int cacheNumDead = DeadUnits.Count;
-            while (DeadUnits.Count != 0)
+
+            int safeGuard = 0;
+            while (DeadUnits.Count != 0 && safeGuard < CurrentFormation.BaseNumUnits)
             {
                 ManualRearrange();
+                safeGuard++;
             }
             CurrentFormation.Remove(cacheNumDead);
 
@@ -201,10 +204,14 @@ namespace KaizerWald
             HighlightRegister register = RegimentManager.Instance.RegimentHighlightSystem.Placement.StaticPlacementRegister;
             ReplaceStaticPlacements(register);
             
-            Vector3 positionToGo = register.Records[RegimentID][deadIndex].transform.position;
-            
+            float3 positionToGo = register.Records[RegimentID][deadIndex].transform.position;
             //Index in regiment n'est pas clair, il faut voir quand le changer!
             SwapUnitsIndex(Units[deadIndex], Units[swapIndex]);
+            
+            //BUG: deadIndex et swapIndex correspondent a index dans liste! et NON "index in regiment"
+
+            UnitMoveOrder unitMoveOrder = new UnitMoveOrder(Units[swapIndex], CurrentFormation, positionToGo);
+            Units[swapIndex].StateMachine.TransitionState(unitMoveOrder);
             
             //Ici on envoie le message a l'unité de bouger!
             //rearrangementSequence.Reorganize(Units[swapIndex], positionToGo);

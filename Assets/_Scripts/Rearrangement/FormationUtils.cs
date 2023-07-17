@@ -189,122 +189,70 @@ namespace KaizerWald
             (int numUnits, int lastUnitsIndex) = (formation.NumUnitsAlive, formation.NumUnitsAlive-1);
 
             (int coordX, int coordY) = GetXY(index, formation.Width);
+            
             if (coordY == lastLineIndex) return RearrangeInline(units, coordX, coordY, formation);
             
-            int indexUnit = -1;
-            for (int line = 1; line < depth - coordY; line++)
-            {
-                int lineIndexChecked = coordY + line;
-                bool isCurrentLineCheckedLast = lineIndexChecked == lastLineIndex;
-                
-                int lineWidth = isCurrentLineCheckedLast ? formation.NumUnitsLastLine : width;
-                int lastLineIndexChecked = lineWidth - 1;
+            int numLineBehind = depth - coordY;
+            
+            return CheckLineBehinds(formation);
 
-                bool2 leftRightClose = new (coordX == 0, coordX == lastLineIndexChecked);
-                if (!IsNextRowValid(units, coordY, formation)) continue; //We first check if there is something to check behind
-                for (int i = 0; i <= lineWidth; i++) // 0 because we check unit right behind
+            // ---------------------------------------------
+            // INTERNAL METHODS
+            // ---------------------------------------------
+            int CheckLineBehinds(in FormationData formation)
+            {
+                //int indexUnit = -1;
+                for (int line = 1; line < numLineBehind; line++)
                 {
-                    if (i == 0) //Check Unit Behind
+                    int lineIndexChecked = coordY + line;
+                    bool isCurrentLineCheckedLast = lineIndexChecked == lastLineIndex;
+                    
+                    int lineWidth = isCurrentLineCheckedLast ? formation.NumUnitsLastLine : width;
+                    int lastLineIndexChecked = lineWidth - 1;
+
+                    bool2 leftRightClose = new (coordX == 0, coordX == lastLineIndexChecked);
+                    if (!IsNextRowValid(units, coordY, formation)) continue; //We first check if there is something to check behind
+                    
+                    int indexUnit = -1;
+                    for (int i = 0; i <= lineWidth; i++) // 0 because we check unit right behind
                     {
-                        indexUnit = mad(lineIndexChecked, width, coordX);
-                        //Check if we pick on the last line: then adjust considering if the line is complete or not
-                        if (lineIndexChecked == lastLineIndex)
+                        if (i == 0) //Check Unit Behind
                         {
-                            int unitBehindIndex = GetUnitBehindInUnEvenLastLine(indexUnit, formation);
-                            indexUnit = formation.IsLastLineComplete ? min(indexUnit, lastUnitsIndex) : unitBehindIndex;
+                            indexUnit = mad(lineIndexChecked, width, coordX);
+                            //Check if we pick on the last line: then adjust considering if the line is complete or not
+                            if (lineIndexChecked == lastLineIndex)
+                            {
+                                int unitBehindIndex = GetUnitBehindInUnEvenLastLine(indexUnit, formation);
+                                indexUnit = formation.IsLastLineComplete ? min(indexUnit, lastUnitsIndex) : unitBehindIndex;
+                            }
+                            if (IsUnitValid(units[indexUnit])) return indexUnit;
+                            leftRightClose = IsLeftRightClose(indexUnit, numUnits, lineWidth);
+                            continue;
                         }
-                        if (IsUnitValid(units[indexUnit])) return indexUnit;
-                        leftRightClose = IsLeftRightClose(indexUnit, numUnits, lineWidth);
-                        continue;
+                        if (!leftRightClose.x) //Check Left/Negative Index
+                        {
+                            int x = min(coordX, lineWidth) - i;
+                            indexUnit = GetIndex(int2(x, lineIndexChecked), width);
+                            if (IsUnitValid(units[indexUnit])) return indexUnit;
+                            leftRightClose.x = min(coordX, lineWidth) - i == 0;
+                        }
+                        if (!leftRightClose.y) //Check Right/Positiv Index
+                        {
+                            indexUnit = GetIndex(int2(coordX + i, lineIndexChecked), width);
+                            if(IsUnitValid(units[indexUnit])) return indexUnit;
+                            leftRightClose.y = coordX + i == lastLineIndexChecked;
+                        }
+                        if (all(leftRightClose)) break; //No more unit to check in this line
                     }
-                    if (!leftRightClose.x) //Check Left/Negative Index
-                    {
-                        int x = min(coordX, lineWidth) - i;
-                        indexUnit = GetIndex(int2(x, lineIndexChecked), width);
-                        if (IsUnitValid(units[indexUnit])) return indexUnit;
-                        leftRightClose.x = min(coordX, lineWidth) - i == 0;
-                    }
-                    if (!leftRightClose.y) //Check Right/Positiv Index
-                    {
-                        indexUnit = GetIndex(int2(coordX + i, lineIndexChecked), width);
-                        if(IsUnitValid(units[indexUnit])) return indexUnit;
-                        leftRightClose.y = coordX + i == lastLineIndexChecked;
-                    }
-                    if (all(leftRightClose)) break; //No more unit to check in this line
                 }
+                return -1;
             }
-            return indexUnit;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetClosestInline<T>(this T[] units, int index, int yOffset, in FormationData formation, Func<T, bool> conditionCheck)
-        {
-            int2 coord = GetXY2(index, formation.Width);
-            int yLine = coord.y + yOffset;
-            if (yLine > formation.Depth - 1) return -1;
-            
-            //int lineWidth = yLine == formation.NumLine - 1 ? formation.NumUnitsLastLine : formation.UnitsPerLine;
-            int lineWidth = select(formation.Width, formation.NumUnitsLastLine, yLine == formation.Depth - 1);
-            int lastIndexInline = lineWidth - 1;
-            
-            bool2 leftRightClose = new (coord.x == 0, coord.x == lastIndexInline);
-
-            for (int i = 0; i < lineWidth; i++)
-            {
-                int indexUnit;
-                
-                if (i == 0)
-                {
-                    /*
-                    indexUnit = int2(coord.x, yLine).GetIndex(formation.UnitsPerLine);
-                    
-                    //TODO: Totally different : need to Externalise
-                    if (yLine == formation.NumLine - 1 && !formation.IsEven)
-                    {
-                        indexUnit = GetUnitBehindInUnEvenLastLine(indexUnit, formation);
-                        if (conditionCheck(units[indexUnit])) return indexUnit;
-                        leftRightClose = IsLeftRightClose(indexUnit, formation.NumUnitsAlive, lineWidth);
-                    }
-                    else
-                    {
-                        indexUnit = min(indexUnit, formation.NumUnitsAlive - 1);
-                        if (conditionCheck(units[indexUnit])) return indexUnit;
-                        leftRightClose = new (coord.x == 0, coord.x == lastIndexInline);
-                    }
-                    */
-                    units.GetUnitBehind(int2(coord.x, yLine), formation, ref leftRightClose, conditionCheck);
-                    if (all(leftRightClose)) break;
-                    continue;
-                }
-
-                if (!leftRightClose.x)
-                {
-                    int x = min(coord.x, lineWidth) - i;
-                    indexUnit = KzwMath.GetIndex(int2(x, yLine), formation.Width);
-
-                    if (conditionCheck(units[indexUnit])) return indexUnit;
-                    leftRightClose.x = x == 0;
-                }
-                    
-                //Check Right/Positiv Index
-                if (!leftRightClose.y)
-                {
-                    int x = coord.x + i;
-                    indexUnit = KzwMath.GetIndex(int2(x, yLine), formation.Width);
-                    
-                    if(conditionCheck(units[indexUnit])) return indexUnit;
-                    leftRightClose.y = x == lastIndexInline;
-                }
-                
-                if (all(leftRightClose)) break;
-            }
-
-            return -1;
-        }
+        
         
         private static int GetUnitBehind<T>(this T[] units, int2 coord, FormationData formation, ref bool2 leftRightClose, Func<T, bool> conditionCheck)
         {
-            int indexUnit = KzwMath.GetIndex(int2(coord.x, coord.y), formation.Width);
+            int indexUnit = GetIndex(int2(coord.x, coord.y), formation.Width);
                     
             bool lastLineComplete = formation.NumCompleteLine == formation.Width;
             //TODO: Totally different : need to Externalise
@@ -352,21 +300,27 @@ namespace KaizerWald
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsNextRowValid(this Unit[] units, int yLine, in FormationData formation)
+        private static bool IsNextRowValid(this Unit[] units, int yCoordLineChecked, in FormationData formation)
         {
-            int nextYLine = yLine + 1;
+            int nextYLine = yCoordLineChecked + 1;
             int totalLine = formation.Depth;
+            int lastLineIndex = totalLine-1;
+
+            bool isOutOfBound = nextYLine > totalLine - 1;
+            if (isOutOfBound) return false;
             
-            if (nextYLine > totalLine - 1) return false;
-            int numUnitOnLine = nextYLine == totalLine - 1 ? formation.NumUnitsLastLine : formation.Width;
+            bool isNextLineLast = nextYLine == lastLineIndex;
+            int numUnitOnLine = isNextLineLast ? formation.NumUnitsLastLine : formation.Width;
             
             ReadOnlySpan<Unit> lineToCheck = new (units,nextYLine * formation.Width, numUnitOnLine);
-            int numInvalid = 0;
+            //int numInvalid = 0;
             foreach (Unit unit in lineToCheck)
             {
-                numInvalid += select(0,1,!IsUnitValid(unit));
+                if (IsUnitValid(unit)) return true;
+                //numInvalid += !IsUnitValid(unit) ? 1 : 0; //numInvalid += select(0,1,!IsUnitValid(unit));
             }
-            return numInvalid != lineToCheck.Length;
+            return false;
+            //return numInvalid != lineToCheck.Length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

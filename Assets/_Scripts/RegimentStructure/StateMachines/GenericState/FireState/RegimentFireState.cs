@@ -85,7 +85,7 @@ namespace KaizerWald
             foreach (UnitStateMachine unitStateMachine in UnitsStateMachines)
             {
                 AttackUnitOrder order = GetTargetForUnit(unitStateMachine);
-                unitStateMachine.TransitionState(EStates.Fire, order);
+                unitStateMachine.TransitionState(order);
             }
         }
 

@@ -28,5 +28,11 @@ namespace KaizerWald
             Direction = other.Direction;
             Destination = other.Destination;
         }
+        
+        public UnitMoveOrder(Unit receiver, FormationData formationData, float3 position) : base(receiver, EStates.Move)
+        {
+            Direction = formationData.Direction3DForward;
+            Destination = position;
+        }
     }
 }

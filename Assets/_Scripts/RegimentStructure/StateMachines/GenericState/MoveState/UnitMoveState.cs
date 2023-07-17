@@ -50,7 +50,8 @@ namespace KaizerWald
             ObjectTransform.LookAt(Position + Direction);
             
             if (!OnTransitionCheck()) return;
-            LinkedStateMachine.TransitionState(EStates.Idle, UnitOrder.Null);
+            LinkedStateMachine.TransitionDefaultState();
+            //LinkedStateMachine.TransitionState(EStates.Idle, UnitOrder.Null);
         }
 
         public override bool OnTransitionCheck()

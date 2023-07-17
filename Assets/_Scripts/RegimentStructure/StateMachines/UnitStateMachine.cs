@@ -23,7 +23,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public override void TransitionDefaultState()
         {
-            TransitionState(UnitState.Default, UnitOrder.Null);
+            TransitionState(UnitOrder.Null, UnitState.Default);
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
