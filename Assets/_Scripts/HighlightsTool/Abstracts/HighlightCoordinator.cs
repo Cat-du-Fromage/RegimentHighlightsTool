@@ -29,7 +29,7 @@ namespace KaizerWald
         //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
         //║ ◇◇◇◇◇ Abstract Methods ◇◇◇◇◇                                                                               ║
         //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public void SetPlayerID(ulong playerID) => PlayerID = playerID;
+        public void SetPlayerID(ulong playerID) => PlayerID = playerID; //needed later when converting to multiplayer
         
         protected virtual void Awake()
         {
@@ -47,7 +47,5 @@ namespace KaizerWald
         {
             RegimentHighlightSystem.UnregisterRegiment(regiment);
         }
-        
-        
     }
 }

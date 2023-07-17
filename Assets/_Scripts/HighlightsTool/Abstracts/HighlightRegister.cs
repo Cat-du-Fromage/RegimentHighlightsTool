@@ -59,8 +59,20 @@ namespace KaizerWald
         
         public virtual void ResizeBuffer(int regimentID, int numDead)
         {
-            if (!Records.ContainsKey(regimentID)) return;
-            
+            if (!Records.ContainsKey(regimentID) || Records[regimentID].Length == 0) return;
+            bool isRegimentWipedOut = numDead >= Records[regimentID].Length;
+            if (isRegimentWipedOut)
+            {
+                WipeOutRegiment(regimentID);
+            }
+            else
+            {
+                CleanUnusedHighlights(regimentID, numDead);
+            }
+        }
+
+        private void CleanUnusedHighlights(int regimentID, int numDead)
+        {
             List<HighlightBehaviour> highlightsToDestroy = new (numDead);
             List<HighlightBehaviour> highlightsKept = new (Records[regimentID].Length - numDead);
             foreach (HighlightBehaviour highlight in Records[regimentID])
@@ -80,29 +92,16 @@ namespace KaizerWald
             {
                 Object.Destroy(highlightsToDestroy[i]);
             }
+            Records[regimentID] = highlightsKept.ToArray();
+        }
 
-            if (highlightsKept.Count == 0)
-            {
-                Records.Remove(regimentID);
-            }
-            else //DeadRegiment
-            {
-                Records[regimentID] = highlightsKept.ToArray();
-            }
-        }
-        /*
-        public virtual void ResizeBuffer(int regimentID, int numDead)
+        private void WipeOutRegiment(int regimentID)
         {
-            HighlightBehaviour[] highlights = Records[regimentID];
-            int iteration = highlights.Length - numDead;
-            for (int i = highlights.Length - 1; i > iteration - 1; i--)
+            for (int i = Records[regimentID].Length - 1; i > -1; i--) //try foreach after
             {
-                //TransformAccessArrays[regimentID].RemoveAtSwapBack(i);
-                Object.Destroy(highlights[i].gameObject);
+                Object.Destroy(Records[regimentID][i]);
             }
-            Array.Resize(ref highlights, Records[regimentID].Length - numDead);
-            Records[regimentID] = highlights;
+            Records[regimentID] = Array.Empty<HighlightBehaviour>();
         }
-        */
     }
 }

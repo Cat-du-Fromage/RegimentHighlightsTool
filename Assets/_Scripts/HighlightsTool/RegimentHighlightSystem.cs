@@ -67,15 +67,11 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void OnEnable()
         {
-            //RegimentManager.OnNewRegiment += RegisterRegiment;
-            //RegimentManager.OnDeadRegiment += UnregisterRegiment;
             Controllers?.ForEach(controller => controller.OnEnable());
         }
 
         private void OnDisable()
         {
-            //RegimentManager.OnNewRegiment -= RegisterRegiment;
-            //RegimentManager.OnDeadRegiment -= UnregisterRegiment;
             Controllers?.ForEach(controller => controller.OnDisable());
         }
         
@@ -131,19 +127,17 @@ namespace KaizerWald
 
         public override void RegisterRegiment(Regiment regiment)
         {
-            base.RegisterRegiment(regiment);
             Selection.AddRegiment(regiment);
             Placement.AddRegiment(regiment);
         }
         
         public override void UnregisterRegiment(Regiment regiment)
         {
-            base.UnregisterRegiment(regiment);
             Selection.RemoveRegiment(regiment);
             Placement.RemoveRegiment(regiment);
         }
         
-        public void ResizeBuffer(int regimentID, int numDead)
+        public override void ResizeBuffers(int regimentID, int numDead)
         {
             //SELECTION ARE SPECIAL!
             Placement.ResizeBuffer(regimentID, numDead);

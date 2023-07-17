@@ -28,13 +28,20 @@ namespace KaizerWald
         {
             Array.ForEach(array, action);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ForEachSafe<T>(this T[] array, Action<T> action)
+        {
+            if (array == null) return;
+            Array.ForEach(array, action);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Reverse<T>(this T[] array)
         {
             Array.Reverse(array);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Resize<T>(this T[] array, int newSize)
         {
@@ -77,10 +84,11 @@ namespace KaizerWald
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AddIf<T>(this List<T> list, T obj, bool flag)
+        public static bool AddIf<T>(this List<T> list, T obj, bool flag)
         {
-            if (!flag) return;
+            if (!flag) return false;
             list.Add(obj);
+            return true;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -102,10 +110,11 @@ namespace KaizerWald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AddIf<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value, bool flag)
+        public static bool AddIf<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value, bool flag)
         {
-            if (!flag) return;
+            if (!flag) return false;
             dictionary[key] = value;
+            return true;
         }
     }
 }

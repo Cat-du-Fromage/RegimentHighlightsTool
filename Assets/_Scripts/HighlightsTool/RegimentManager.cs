@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace KaizerWald
 {
-    public class RegimentManager : HighlightCoordinator
+    public partial class RegimentManager : HighlightCoordinator
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                          ◆◆◆◆◆◆ STATIC PROPERTIES ◆◆◆◆◆◆                                           ║
@@ -37,7 +37,6 @@ namespace KaizerWald
         public Dictionary<int, List<Regiment>> RegimentsByTeamID { get; private set; } = new ();
         
         public event Action<Regiment> OnNewRegiment;
-
         public event Action<Regiment> OnDeadRegiment;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
@@ -69,9 +68,22 @@ namespace KaizerWald
 
         private void LateUpdate()
         {
+            CleanupEmptyRegiments();
+            
             foreach (Regiment regiment in Regiments)
             {
                 regiment.OnLateUpdate();
+            }
+        }
+
+        private void CleanupEmptyRegiments()
+        {
+            for (int i = Regiments.Count - 1; i > -1; i++)
+            {
+                Regiment regiment = Regiments[i];
+                if (regiment.CurrentFormation.NumUnitsAlive > 0) continue;
+                UnRegisterRegiment(regiment);
+                Destroy(regiment);
             }
         }
         
@@ -88,8 +100,9 @@ namespace KaizerWald
         {
             factory.OnRegimentCreated -= RegisterRegiment;
             regimentHighlightSystem.OnPlacementEvent -= OnMoveOrders;
-            Array.ForEach(OnNewRegiment?.GetInvocationList()!,action => OnNewRegiment -= (Action<Regiment>)action);
-            //foreach (Delegate action in OnNewRegiment?.GetInvocationList()!) OnNewRegiment -= (Action<Regiment>)action;
+            
+            OnNewRegiment?.GetInvocationList().ForEachSafe(action => OnNewRegiment -= (Action<Regiment>)action);
+            OnDeadRegiment?.GetInvocationList().ForEachSafe(action => OnDeadRegiment -= (Action<Regiment>)action);
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -144,22 +157,7 @@ namespace KaizerWald
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        private void RegisterNewRegiment(Regiment regiment)
-        {
-            Regiments.Add(regiment);
-            RegimentsByID.Add(regiment.RegimentID, regiment);
-            RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
-            RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
-            
-            OnNewRegiment?.Invoke(regiment);
-        }
 
-        public void UnRegisterDeadRegiment(Regiment regiment)
-        {
-            
-            OnDeadRegiment?.Invoke(regiment);
-        }
-        
         public override void RegisterRegiment(Regiment regiment)
         {
             Regiments.Add(regiment);
@@ -167,28 +165,18 @@ namespace KaizerWald
             RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
             RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
             RegimentHighlightSystem.RegisterRegiment(regiment);
+            OnNewRegiment?.Invoke(regiment); //MAYBE USELESS
         }
         
         public override void UnRegisterRegiment(Regiment regiment)
         {
+            OnDeadRegiment?.Invoke(regiment); //MAYBE USELESS
             RegimentHighlightSystem.UnregisterRegiment(regiment);
             Regiments.Remove(regiment);
             RegimentsByID.Remove(regiment.RegimentID);
             RegimentsByPlayerID[regiment.OwnerID].Remove(regiment);
             RegimentsByTeamID[regiment.TeamID].Remove(regiment);
         }
-        
-        /*
-        private void TestKillUnit()
-        {
-            if (!Mouse.current.rightButton.wasReleasedThisFrame) return;
-            Ray singleRay = Camera.main.ScreenPointToRay(Mouse.current.position.value);
-            if (!Physics.Raycast(singleRay, out RaycastHit hit, 1000, 1 << 7)) return;
-            DestroyImmediate(hit.transform.gameObject);
-        }
-        */
-
-
     }
 }
 

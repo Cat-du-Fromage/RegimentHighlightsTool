@@ -62,6 +62,25 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public void OnUpdate()
+        {
+            if (ClearDeadUnits())
+            {
+                Debug.Log($"Regiment Update: Clear Units");
+            }
+            StateMachine.OnUpdate();
+            Units.ForEach(unit => unit.UpdateUnit());
+        }
+
+        public void OnLateUpdate()
+        {
+            if (!ClearDeadUnits()) return;
+            Debug.Log($"Regiment LateUpdate: Clear Units");
+        }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void Initialize(ulong ownerID, int teamID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
@@ -93,25 +112,6 @@ namespace KaizerWald
         {
             StateMachine = this.GetOrAddComponent<RegimentStateMachine>();
             StateMachine.Initialize();
-        }
-        
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void OnUpdate()
-        {
-            if (ClearDeadUnits())
-            {
-                Debug.Log($"Regiment Update: Clear Units");
-            }
-            StateMachine.OnUpdate();
-            Units.ForEach(unit => unit.UpdateUnit());
-        }
-
-        public void OnLateUpdate()
-        {
-            if (!ClearDeadUnits()) return;
-            Debug.Log($"Regiment LateUpdate: Clear Units");
         }
 
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -151,12 +151,12 @@ namespace KaizerWald
             return true;
         }
         
-        private void RemoveDeadUnitAt(int deadIndex)
+        private void RemoveDeadUnitAt(int indexLoop)
         {
-            Unit deadUnit = DeadUnits[deadIndex];
+            Unit deadUnit = DeadUnits[indexLoop];
             UnitsListWrapper.Remove(deadUnit);
-            DeadUnits.RemoveAt(deadIndex);
-            deadUnit.OnDeath();
+            DeadUnits.RemoveAt(indexLoop);
+            deadUnit.ConfirmDeathByRegiment(this);
             CurrentFormation.Decrement();
         }
         
@@ -173,14 +173,8 @@ namespace KaizerWald
             }
             CurrentFormation.Remove(cacheNumDead);
 
-            if (CurrentFormation.NumUnitsAlive == 0)
-            {
-                //TODO : DEAD REGIMENT
-            }
-            else
-            {
-                RegimentManager.Instance.RegimentHighlightSystem.ResizeBuffer(RegimentID, cacheNumDead);
-            }
+            if (CurrentFormation.NumUnitsAlive == 0) return;
+            RegimentManager.Instance.RegimentHighlightSystem.ResizeBuffers(RegimentID, cacheNumDead);
             //Need to Update NumHighlights
         }
         
@@ -188,7 +182,7 @@ namespace KaizerWald
         {
             UnitsListWrapper.Remove(deadUnit);
             DeadUnits.Remove(deadUnit);
-            deadUnit.OnDeath();
+            deadUnit.ConfirmDeathByRegiment(this);
             CurrentFormation.Decrement();
         }
         

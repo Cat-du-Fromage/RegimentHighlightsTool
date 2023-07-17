@@ -72,13 +72,19 @@ namespace KaizerWald
 
         //CAREFULLE EVENT RECEIVED ON FIXED UPDATE => BEFORE UPDATE
         //Death trigger on regiment because of update order related issue
-        public void OnDeath()
+        public void ConfirmDeathByRegiment(Regiment regimentOwner)
         {
+            if (regimentOwner.RegimentID != RegimentAttach.RegimentID) return;
             if (IsDead) return;
             unitCollider.enabled = false;
             unitRigidBody.Sleep();
             Animation.SetDead();
             IsDead = true;
+        }
+        
+        public void TriggerDeath()
+        {
+            RegimentAttach.OnDeadUnit(this);
         }
     }
 }

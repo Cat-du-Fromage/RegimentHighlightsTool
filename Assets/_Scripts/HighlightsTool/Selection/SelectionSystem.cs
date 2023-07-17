@@ -10,7 +10,8 @@ namespace KaizerWald
         public static readonly int PreselectionRegisterIndex = 0;
         public static readonly int SelectionRegisterIndex = 1;
         
-        public HashSet<Regiment> Regiments => MainSystem.AllRegiments;
+        public List<Regiment> Regiments => MainSystem.RegimentManager.RegimentsByPlayerID[MainSystem.RegimentManager.PlayerID];
+        
         public HighlightRegister PreselectionRegister => Registers[PreselectionRegisterIndex];
         public HighlightRegister SelectionRegister => Registers[SelectionRegisterIndex];
         

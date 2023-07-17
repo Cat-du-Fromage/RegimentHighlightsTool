@@ -8,23 +8,18 @@ namespace KaizerWald
     {
         public abstract T RegimentManager { get; protected set; }
         public HighlightCoordinator Coordinator { get; protected set; }
-        public HashSet<Regiment> AllRegiments { get; protected set; }
-        
+
         protected virtual void Awake()
         {
-            AllRegiments = new HashSet<Regiment>(2);
+            //AllRegiments = new HashSet<Regiment>(2);
             RegimentManager = FindAnyObjectByType<T>();
             Coordinator = (HighlightCoordinator)RegimentManager;
         }
 
-        public virtual void RegisterRegiment(Regiment regiment)
-        {
-            AllRegiments.Add(regiment);
-        }
+        public abstract void RegisterRegiment(Regiment regiment);
 
-        public virtual void UnregisterRegiment(Regiment regiment)
-        {
-            AllRegiments.Remove(regiment);
-        }
+        public abstract void UnregisterRegiment(Regiment regiment);
+
+        public abstract void ResizeBuffers(int regimentID, int numDead);
     }
 }
