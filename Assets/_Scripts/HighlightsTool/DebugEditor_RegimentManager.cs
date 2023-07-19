@@ -22,7 +22,6 @@ namespace KaizerWald
             if (!Physics.Raycast(singleRay, out RaycastHit hit, 1000, 1 << 7)) return;
             Unit unit = hit.transform.GetComponent<Unit>();
             unit.TriggerDeath();
-            //DestroyImmediate(hit.transform.gameObject);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.Jobs;
 
 using static UnityEngine.Quaternion;
@@ -22,8 +23,10 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        private List<Unit> DeadUnits;
-        private TransformAccessWrapper<Unit> UnitsListWrapper;
+        private Transform regimentTransform;
+        //private List<Unit> DeadUnits;
+        private SortedSet<int> DeadUnits;
+        public RegimentFormationMatrix RegimentFormationMatrix { get; private set; }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
@@ -45,26 +48,23 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public List<Unit> Units => UnitsListWrapper.Datas;
-        public List<Transform> UnitsTransform => UnitsListWrapper.Transforms;
-        
-        public TransformAccessArray UnitsTransformAccessArray => UnitsListWrapper.UnitsTransformAccessArray;
-        
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Units Matrice ◈◈◈◈◈◈                                                                           ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        public UnitsMatrix UnitsMatrix { get; private set; }
-        
-        //public Unit[] Units => UnitsMatrix.Units;
-        //public Transform[] UnitsTransform => UnitsMatrix.UnitsTransform;
-        
+        public float3 RegimentPosition => regimentTransform.position;
+        public List<Unit> Units => RegimentFormationMatrix.Units;
+        public List<Transform> UnitsTransform => RegimentFormationMatrix.Transforms;
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        private void Awake()
+        {
+            regimentTransform = transform;
+        }
+
         private void OnDestroy()
         {
-            UnitsListWrapper.Dispose();
+            
         }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
@@ -77,6 +77,13 @@ namespace KaizerWald
         {
             Rearrangement();
             //if (ClearDeadUnits()) Debug.Log($"Regiment Update: Clear Units");
+            /*
+            if (ConfirmDeaths(out int numDead))
+            {
+                ResizeFormation(numDead);
+                DeadUnits.Clear();
+            }
+            */
             StateMachine.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
@@ -110,9 +117,9 @@ namespace KaizerWald
         private void CreateAndRegisterUnits(UnitFactory unitFactory)
         {
             List<Unit> units = unitFactory.CreateRegimentsUnit(this, CurrentFormation.BaseNumUnits, RegimentType.UnitPrefab);
-            UnitsListWrapper = new TransformAccessWrapper<Unit>(units);
+            RegimentFormationMatrix = new RegimentFormationMatrix(units);
             //almost impossible a regiment loose more than 20% of it's member during a frame
-            DeadUnits = new List<Unit>((int)(units.Count * 0.2f));
+            DeadUnits = new SortedSet<int>();
         }
 
         private void InitializeStateMachine()
@@ -128,132 +135,97 @@ namespace KaizerWald
         //CAREFUL: Event received from Fixed Update => Before Update
         public void OnDeadUnit(Unit unit)
         {
-            DeadUnits.AddUnique(unit);
+            DeadUnits.Add(unit.IndexInRegiment);
         }
 
-        private void ClearDeadUnits2()
+        private bool ConfirmDeaths(out int numDead)
         {
-            for (int i = Units.Count-1; i > -1; i--)
-            {
-                if (!Units[i].IsDead) continue;
-                UnitsListWrapper.RemoveAt(i);
-                CurrentFormation.Decrement();
-            }
-        }
-        
-        private bool ClearDeadUnits()
-        {
+            numDead = DeadUnits.Count;
             if (DeadUnits.Count == 0) return false;
-            for (int i = DeadUnits.Count - 1; i > -1; i--)
+            foreach (int indexInRegiment in DeadUnits)
             {
-                RemoveDeadUnitAt(i);
+                //-----------------------------------------------------------------------
+                //REMOVAL OF STATE MACHINE
+                StateMachine.UnitsStateMachine.Remove(Units[indexInRegiment].StateMachine);
+                //-----------------------------------------------------------------------
+                Units[indexInRegiment].ConfirmDeathByRegiment(this);
             }
             return true;
         }
-        
-        private void RemoveDeadUnitAt(int indexLoop)
+
+        private void ResizeFormation(int numToRemove)
         {
-            Unit deadUnit = DeadUnits[indexLoop];
-            UnitsListWrapper.Remove(deadUnit);
-            DeadUnits.RemoveAt(indexLoop);
-            deadUnit.ConfirmDeathByRegiment(this);
-            CurrentFormation.Decrement();
+            RegimentFormationMatrix.Resize(numToRemove);
+            CurrentFormation.DecreaseBy(numToRemove);
         }
-        
+
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        
+        //TODO COMMENT ON TROUVE LA POSITION! car les enemy n'ont pas de "placement" => pas de rearrangement possible en utilisant les jetons!
+        
         private void Rearrangement()
         {
-            if (DeadUnits.Count == 0) return;
-            int cacheNumDead = DeadUnits.Count;
-
-            int safeGuard = 0;
-            while (DeadUnits.Count != 0 && safeGuard < CurrentFormation.BaseNumUnits)
+            if (!ConfirmDeaths(out int cacheNumDead)) return;
+            FormationData futureFormation = new (CurrentFormation, CurrentFormation.NumUnitsAlive - cacheNumDead);
+            
+            float3 regimentPosition = !StateMachine.IsMoving ? RegimentPosition : ((RegimentMoveState)StateMachine.CurrentState).Destination;
+            while (DeadUnits.Count != 0)
             {
-                ManualRearrange();
-                safeGuard++;
+                Rearrange(DeadUnits.Min, regimentPosition, futureFormation);
             }
-            CurrentFormation.Remove(cacheNumDead);
-
+            
+            if (!futureFormation.IsLastLineComplete)
+            {
+                int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
+                for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
+                {
+                    float3 position = futureFormation.GetUnitRelativePositionToRegiment3D(i, regimentPosition);
+                    UnitMoveOrder unitMoveOrder = new UnitMoveOrder(futureFormation, position);
+                    Units[i].StateMachine.TransitionState(unitMoveOrder);
+                }
+            }
+            
+            //TODO: RESIZE UNITS: STATES MACHINES
+            ResizeFormation(cacheNumDead);
             if (CurrentFormation.NumUnitsAlive == 0) return;
-            RegimentManager.Instance.RegimentHighlightSystem.ResizeBuffers(RegimentID, cacheNumDead);
-            //Need to Update NumHighlights
+            
+            //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
+            RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
         }
-        
-        private void RemoveDeadUnit(Unit deadUnit)
+
+        private void Rearrange(int deadIndex, float3 regimentPosition, in FormationData futureFormation)
         {
-            UnitsListWrapper.Remove(deadUnit);
-            DeadUnits.Remove(deadUnit);
-            deadUnit.ConfirmDeathByRegiment(this);
-            CurrentFormation.Decrement();
-        }
-        
-        public void ManualRearrange()
-        {
-            Unit firstDeadUnit = DeadUnits[0];
-            int deadIndex = firstDeadUnit.IndexInRegiment;
-            int swapIndex = Units.GetIndexAround(deadIndex, CurrentFormation);
+            //Here we use Current Formation because units are not consider "Dead" Yet
+            int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, CurrentFormation);
+            
             if (swapIndex == -1)
             {
-                DeadUnits.Remove(firstDeadUnit);
+                DeadUnits.Remove(deadIndex);
                 return;
             }
+            Unit unitToSwapWith = Units[swapIndex];
             
-            //TODO: need to replace all units in last Line
-            HighlightRegister register = RegimentManager.Instance.RegimentHighlightSystem.Placement.StaticPlacementRegister;
-            ReplaceStaticPlacements(register);
+            // ----------------------------------------------------------------------
+            // (1) we need the position "unitToSwapWith" will go
+            // we can't use dead unit as reference because:
+            // * it's unstable because of the death animation
+            // * Very Unstable when applying to Last Line because with vary a lot
+            // ==> We need to calculate position in regiment (using formationExtension?)
+            // ----------------------------------------------------------------------
+            float3 position = futureFormation.GetUnitRelativePositionToRegiment3D(deadIndex, regimentPosition);
+            RegimentFormationMatrix.SwapIndexInRegiment(deadIndex, swapIndex);
             
-            float3 positionToGo = register.Records[RegimentID][deadIndex].transform.position;
-            //Index in regiment n'est pas clair, il faut voir quand le changer!
-            SwapUnitsIndex(Units[deadIndex], Units[swapIndex]);
-            
-            //BUG: deadIndex et swapIndex correspondent a index dans liste! et NON "index in regiment"
+            DeadUnits.Remove(deadIndex);
+            DeadUnits.Add(swapIndex);
 
-            UnitMoveOrder unitMoveOrder = new UnitMoveOrder(Units[swapIndex], CurrentFormation, positionToGo);
-            Units[swapIndex].StateMachine.TransitionState(unitMoveOrder);
+            int yDeadIndex = deadIndex / futureFormation.Width;
+            int ySwappedIndex = swapIndex / futureFormation.Width;
             
-            //Ici on envoie le message a l'unité de bouger!
-            //rearrangementSequence.Reorganize(Units[swapIndex], positionToGo);
-            
-            (Units[deadIndex], Units[swapIndex]) = (Units[swapIndex], Units[deadIndex]);
-            (UnitsTransform[deadIndex], UnitsTransform[swapIndex]) = (UnitsTransform[swapIndex], UnitsTransform[deadIndex]);
-            
-            DeadUnits.Remove(Units[deadIndex]);
-            DeadUnits.Add(Units[swapIndex]);
+            if(yDeadIndex == futureFormation.Depth - 1 && yDeadIndex == ySwappedIndex) return;
+            UnitMoveOrder unitMoveOrder = new UnitMoveOrder(futureFormation, position);
+            unitToSwapWith.StateMachine.TransitionState(unitMoveOrder);
         }
-
-        private void SwapUnitsIndex(Unit unitA, Unit unitB)
-        {
-            int indexA = unitA.IndexInRegiment;
-            int indexB = unitB.IndexInRegiment;
-            unitA.SetIndexInRegiment(indexB);
-            unitB.SetIndexInRegiment(indexA);
-        }
-        
-        //TODO: REPLACE in corresponding register
-        public void ReplaceStaticPlacements(HighlightRegister register)
-        {
-            FormationData tempsFormation = new(CurrentFormation,CurrentFormation.NumUnitsAlive - 1);
-            
-            //Formation.SetNumUnits(units.Length - 1); //Need to update formation first
-            if (tempsFormation.Depth == 1 || tempsFormation.IsLastLineComplete) return;
-
-            float unitSpace = tempsFormation.SpaceBetweenUnits;
-            float3 offset = tempsFormation.GetLastLineOffset(unitSpace);
-            
-            int startIndex = (tempsFormation.NumCompleteLine - 1) * tempsFormation.Width;
-            int firstHighlightIndex = startIndex + tempsFormation.Width;
-            
-            float3 startPosition = register.Records[RegimentID][startIndex].transform.position;
-            startPosition -= tempsFormation.Direction3DForward * unitSpace + offset;
-            
-            for (int i = 0; i < tempsFormation.NumUnitsLastLine; i++)
-            {
-                float3 linePosition = startPosition + tempsFormation.Direction3DLine * (unitSpace * i);
-                register.Records[RegimentID][firstHighlightIndex + i].transform.position = linePosition;
-            }
-        }
-        
     }
 }

@@ -15,21 +15,30 @@ namespace KaizerWald
 {
     public sealed class RegimentFireState : FireState<Regiment>
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         private FormationData CacheEnemyFormation;
         private Formation CurrentEnemyFormation => EnemyTarget.CurrentFormation;
         private RegimentStateMachine LinkedRegimentStateMachine => ObjectAttach.StateMachine;
-        private List<UnitStateMachine> UnitsStateMachines => LinkedRegimentStateMachine.UnitsStateMachine;
+        private HashSet<UnitStateMachine> UnitsStateMachines => LinkedRegimentStateMachine.UnitsStateMachine;
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public override Regiment EnemyTarget { get; protected set; }
         
         public RegimentFireState(Regiment objectAttach) : base(objectAttach)
         {
             
         }
-        
-        public override void OnStateEnter(Order<Regiment> order)
+
+        public override void OnStateEnter(Order order)
         {
-            AttackRegimentOrder attackOrder = (AttackRegimentOrder)order;
-            EnemyTarget = attackOrder.EnemyTarget;
-            CacheEnemyFormation = attackOrder.EnemyTarget.CurrentFormation;
+            RegimentAttackOrder regimentAttackOrder = (RegimentAttackOrder)order;
+            EnemyTarget = regimentAttackOrder.EnemyTarget;
+            CacheEnemyFormation = regimentAttackOrder.EnemyTarget.CurrentFormation;
             OrderUnitStateTransition();
         }
 
@@ -39,17 +48,16 @@ namespace KaizerWald
             bool3 hasEnemyFormationChange = new bool3
             (
                 CacheEnemyFormation.NumUnitsAlive != CurrentEnemyFormation.NumUnitsAlive,
-                CacheEnemyFormation.Width != CurrentEnemyFormation.Width,
-                CacheEnemyFormation.Depth != CurrentEnemyFormation.Depth
+                CacheEnemyFormation.WidthDepth != CurrentEnemyFormation.WidthDepth
             );
 
-            if (any(hasEnemyFormationChange))
+            if (!any(hasEnemyFormationChange)) return;
+            if (CurrentEnemyFormation.NumUnitsAlive != 0)
             {
-                UpdateUnitsTarget();
                 CacheEnemyFormation = CurrentEnemyFormation;
-                Debug.Log("FireState : Change Detected = true");
+                UpdateUnitsTarget();
             }
-            
+
             if (!OnTransitionCheck()) return;
             LinkedStateMachine.TransitionDefaultState();
         }
@@ -63,16 +71,9 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ STATE METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ EXTERNAL CALL ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void OnUnitRequest(UnitStateMachine unitStateMachine)
-        {
-            AttackUnitOrder order = GetTargetForUnit(unitStateMachine);
-            unitStateMachine.CurrentState.OnStateEnter(order);
-        }
-
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ INTERNAL CALL ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -84,16 +85,17 @@ namespace KaizerWald
         {
             foreach (UnitStateMachine unitStateMachine in UnitsStateMachines)
             {
-                AttackUnitOrder order = GetTargetForUnit(unitStateMachine);
+                UnitAttackOrder order = GetTargetForUnit(unitStateMachine);
                 unitStateMachine.TransitionState(order);
             }
         }
 
+        //TODO: A CHANGER!
         private void UpdateUnitsTarget()
         {
             foreach (UnitStateMachine unitStateMachine in UnitsStateMachines)
             {
-                AttackUnitOrder order = GetTargetForUnit(unitStateMachine);
+                UnitAttackOrder order = GetTargetForUnit(unitStateMachine);
                 unitStateMachine.CurrentState.OnStateEnter(order);
             }
         }
@@ -101,10 +103,10 @@ namespace KaizerWald
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Get Target Methods ◇◇◇◇◇◇                                                                          │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        private AttackUnitOrder GetTargetForUnit(UnitStateMachine caller)
+        private UnitAttackOrder GetTargetForUnit(UnitStateMachine caller)
         {
             Unit target = GetTarget(caller.transform.position.xz());
-            return new AttackUnitOrder(caller.ObjectAttach, target);
+            return new UnitAttackOrder(target);
         }
 
         private Unit GetTarget(float2 unitPosition)
@@ -126,11 +128,9 @@ namespace KaizerWald
         private NativeHashMap<int, float2> GetTargetRegimentUnitsHull()
         {
             using NativeHashSet<int> hullIndices = GetUnitsHullIndices();
-            //Debug.Log($"base NumUnits: {CurrentEnemyFormation.BaseNumUnits}; Alive: {CurrentEnemyFormation.NumUnitsAlive}");
             NativeHashMap<int, float2> result = new (hullIndices.Count, Temp);
             foreach (int unitIndex in hullIndices)
             {
-                //Debug.Log($"Trying Access Index: {unitIndex}; Max: {CurrentEnemyFormation.NumUnitsAlive}");
                 float2 unitPosition = EnemyTarget.UnitsTransform[unitIndex].position.xz();
                 result.Add(unitIndex, unitPosition);
             }
@@ -158,5 +158,7 @@ namespace KaizerWald
                 return indices;
             }
         }
+
+        
     }
 }

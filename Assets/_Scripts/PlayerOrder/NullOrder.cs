@@ -2,10 +2,9 @@
 
 namespace KaizerWald
 {
-    public sealed class NullOrder<T> : Order<T>
-    where T : MonoBehaviour
+    public sealed class NullOrder : Order
     {
-        public NullOrder() : base(null, EStates.None) { }
+        public NullOrder() : base(EStates.None) { }
         public sealed override bool IsNull => true;
     }
 }

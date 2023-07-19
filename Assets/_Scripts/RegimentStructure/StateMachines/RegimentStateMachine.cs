@@ -13,7 +13,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public List<UnitStateMachine> UnitsStateMachine { get; private set; }
+        public HashSet<UnitStateMachine> UnitsStateMachine { get; private set; }
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
@@ -35,9 +35,13 @@ namespace KaizerWald
         public override void Initialize() 
         {
             base.Initialize();
-            UnitsStateMachine = new List<UnitStateMachine>(ObjectAttach.Units.Count);
+            UnitsStateMachine = new HashSet<UnitStateMachine>(ObjectAttach.Units.Count);
             ObjectAttach.Units.ForEach(unit => UnitsStateMachine.Add(unit.StateMachine));
-            UnitsStateMachine.ForEach(machine => machine.Initialize());
+            foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
+            {
+                unitStateMachine.Initialize();
+            }
+            //UnitsStateMachine.ForEach(machine => machine.Initialize());
         }
 
         protected override void InitializeStates()
@@ -72,11 +76,11 @@ namespace KaizerWald
                 case EStates.Idle:
                     return;
                 case EStates.Move:
-                    MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
+                    RegimentMoveOrder regimentMoveOrder = (RegimentMoveOrder)order;
                     CurrentState.OnStateEnter(order);
                     foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
                     {
-                        UnitMoveOrder unitOrder = new (unitStateMachine.ObjectAttach, moveOrder);
+                        UnitMoveOrder unitOrder = new (unitStateMachine.ObjectAttach.IndexInRegiment, regimentMoveOrder);
                         unitStateMachine.OnOrderReceived(unitOrder);
                     }
                     //foreach (Unit unit in ObjectAttach.Units) unit.StateMachine.OnOrderReceived(order);
@@ -88,6 +92,7 @@ namespace KaizerWald
             }
         }
         
+        /*
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Units Request ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -103,5 +108,6 @@ namespace KaizerWald
                     return;
             }
         }
+        */
     }
 }

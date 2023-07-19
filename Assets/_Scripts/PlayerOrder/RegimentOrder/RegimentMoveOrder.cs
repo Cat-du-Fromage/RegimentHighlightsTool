@@ -5,14 +5,14 @@ using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
-    public sealed class MoveRegimentOrder : RegimentOrder
+    public sealed class RegimentMoveOrder : RegimentOrder
     {
         public readonly float3 LeaderDestination;
         public Formation FormationDestination { get; private set; }
         
-        public MoveRegimentOrder(Regiment regiment,EStates stateOrdered,int widthGoal, Vector3 firstUnitFirstRow, Vector3 lastUnitFirstRow) : base(regiment, stateOrdered)
+        public RegimentMoveOrder(Formation regimentCurrentFormation, int widthGoal, Vector3 firstUnitFirstRow, Vector3 lastUnitFirstRow) : base(EStates.Move)
         {
-            FormationDestination = regiment.CurrentFormation;
+            FormationDestination = regimentCurrentFormation;
             FormationDestination.SetWidth(widthGoal);
             float3 direction = normalizesafe(cross(down(), lastUnitFirstRow - firstUnitFirstRow));
             FormationDestination.SetDirection(direction);

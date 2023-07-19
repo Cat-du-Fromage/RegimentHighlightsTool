@@ -19,6 +19,15 @@ namespace KaizerWald
     public static class KzwMath
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                               ◆◆◆◆◆◆ General ◆◆◆◆◆◆                                                ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int MinMax(int valueToClamp, int lowerBound, int upperBound)
+        {
+            return max(lowerBound, min(upperBound, valueToClamp));
+        }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ Grid Helpers ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -88,6 +97,7 @@ namespace KaizerWald
         {
             return y * width + x;
         }
+
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
         /// <summary>
@@ -185,6 +195,24 @@ namespace KaizerWald
         public static Vector3 GetIntersection3DFlat(Vector3 originX, Vector3 originY, Vector3 dirX, Vector3 dirY)
         {
             return GetIntersection3DFlat((float3)originX, (float3)originY, (float3)dirX, (float3)dirY);
+        }
+        
+        
+        //GCD: Greater Common Divisor / Plus grand diviseur commun
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GreaterCommonDivisor(int a, int b)
+        {
+            return b == 0 ? a : GreaterCommonDivisor(b, a % b);
+        }
+        
+        //LCM: Lower Common Multiplicator / Plus petit multiple commun
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int LowerCommonMultiple(int a, int b)
+        {
+            if(a > b)
+                return (a / GreaterCommonDivisor(a,b)) * b;
+            else
+                return (b / GreaterCommonDivisor(a,b)) * a;
         }
     }
 }

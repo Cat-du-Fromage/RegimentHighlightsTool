@@ -67,7 +67,7 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public int2 WidthDepth => new int2(Width, Depth);
         public float2 Direction2DForward => DirectionForward.xz;
-        public float3 DirectionLine => cross(up(), DirectionForward);
+        public float3 DirectionLine => cross(up(), DirectionForward);//cross(DirectionForward, up());
         public float2 DistanceUnitToUnit => UnitSize + SpaceBetweenUnits;
         public float DistanceUnitToUnitX => DistanceUnitToUnit.x;
         public float DistanceUnitToUnitY => DistanceUnitToUnit.y;
@@ -82,16 +82,34 @@ namespace KaizerWald
         //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                 ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void Increment() => Add(1);
-        public void Decrement() => Remove(1);
+        public void Decrement() => DecreaseBy(1);
         
-        public void Add(int numAdded) => NumUnitsAlive = min(BaseNumUnits, NumUnitsAlive + numAdded);
-        public void Remove(int numRemoved) => NumUnitsAlive = max(0, NumUnitsAlive - numRemoved);
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Increase/Decrease Formation ◇◇◇◇◇◇                                                                 │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        
+        public void Add(int numAdded)
+        {
+            NumUnitsAlive = min(BaseNumUnits, NumUnitsAlive + numAdded);
+            Depth = (int)ceil(NumUnitsAlive / (float)Width);
+        }
+
+        public void DecreaseBy(int numRemoved)
+        {
+            NumUnitsAlive = max(0, NumUnitsAlive - numRemoved);
+            Width = min(Width, NumUnitsAlive);
+            Depth = (int)ceil(NumUnitsAlive / max(1f,Width));
+        }
 
         public void SetWidth(int newWidth)
         {
             Width = min(MaxRow, newWidth);
             Depth = (int)ceil(NumUnitsAlive / max(1f,Width));
         }
+        
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Set Direction ◇◇◇◇◇◇                                                                               │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
         public void SetDirection(float3 newDirection)
         {
@@ -101,15 +119,17 @@ namespace KaizerWald
         
         public void SetDirection(float2 newDirection)
         {
-            SetDirection(new float3(newDirection.x,0,newDirection.y));
+            SetDirection(new float3(newDirection.x, 0, newDirection.y));
         }
 
         public void SetDirection(float3 firstUnitFirstRow, float3 lastUnitFirstRow)
         {
-            float3 direction = normalizesafe(lastUnitFirstRow - firstUnitFirstRow);
-            SetDirection(cross(down(), direction));
+            SetDirection(cross(down(), normalizesafe(lastUnitFirstRow - firstUnitFirstRow)));
         }
         
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Overrides ◇◇◇◇◇◇                                                                                   │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         public override string ToString()
         {
             return $"Current formation:\r\n" +

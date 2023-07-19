@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+using static System.Array;
 using Object = UnityEngine.Object;
 
 namespace KaizerWald
@@ -25,7 +27,13 @@ namespace KaizerWald
             ActiveHighlights = new List<Regiment>();
         }
         
-        public HighlightBehaviour[] this[int regimentIndex] => Records[regimentIndex];
+        public HighlightBehaviour[] this[int index]
+        {
+            get => !Records.TryGetValue(index, out _) ? Empty<HighlightBehaviour>() : Records[index];
+            set => Records[index] = value;
+        }
+
+        public int CountAt(int regimentIndex) => this[regimentIndex].Length;
 
         private void PopulateRecords(Regiment selectableRegiment, GameObject prefab)
         {
@@ -56,52 +64,5 @@ namespace KaizerWald
             Records.Remove(selectableRegiment.RegimentID);
         }
         
-        
-        public virtual void ResizeBuffer(int regimentID, int numDead)
-        {
-            if (!Records.ContainsKey(regimentID) || Records[regimentID].Length == 0) return;
-            bool isRegimentWipedOut = numDead >= Records[regimentID].Length;
-            if (isRegimentWipedOut)
-            {
-                WipeOutRegiment(regimentID);
-            }
-            else
-            {
-                CleanUnusedHighlights(regimentID, numDead);
-            }
-        }
-
-        private void CleanUnusedHighlights(int regimentID, int numDead)
-        {
-            List<HighlightBehaviour> highlightsToDestroy = new (numDead);
-            List<HighlightBehaviour> highlightsKept = new (Records[regimentID].Length - numDead);
-            foreach (HighlightBehaviour highlight in Records[regimentID])
-            {
-                Unit unit = highlight.UnitAttach;
-                if (unit.IsDead)
-                {
-                    highlightsToDestroy.Add(highlight);
-                }
-                else
-                {
-                    highlightsKept.Add(highlight);
-                }
-            }
-            
-            for (int i = highlightsToDestroy.Count - 1; i > -1; i--)
-            {
-                Object.Destroy(highlightsToDestroy[i]);
-            }
-            Records[regimentID] = highlightsKept.ToArray();
-        }
-
-        private void WipeOutRegiment(int regimentID)
-        {
-            for (int i = Records[regimentID].Length - 1; i > -1; i--) //try foreach after
-            {
-                Object.Destroy(Records[regimentID][i]);
-            }
-            Records[regimentID] = Array.Empty<HighlightBehaviour>();
-        }
     }
 }

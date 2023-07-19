@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace KaizerWald
 {
-    public class AttackRegimentOrder : RegimentOrder
+    public class RegimentAttackOrder : RegimentOrder
     {
         public Regiment EnemyTarget { get; private set; }
-        public AttackRegimentOrder(Regiment receiver, EStates state, Regiment enemyTarget) : base(receiver, state)
+        public RegimentAttackOrder(Regiment enemyTarget) : base(EStates.Fire)
         {
             EnemyTarget = enemyTarget;
         }

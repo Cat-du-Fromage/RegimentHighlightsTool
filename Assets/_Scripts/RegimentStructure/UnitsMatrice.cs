@@ -9,13 +9,13 @@ namespace KaizerWald
         public Unit[] Units { get; private set; }
         public Transform[] UnitsTransform { get; private set; }
         
-        public UnitsMatrix(List<Unit> datas)
+        public UnitsMatrix(List<Unit> units)
         {
-            Units = new Unit[datas.Count];
-            UnitsTransform = new Transform[datas.Count];
-            for (int i = 0; i < datas.Count; i++)
+            Units = new Unit[units.Count];
+            UnitsTransform = new Transform[units.Count];
+            for (int i = 0; i < units.Count; i++)
             {
-                Unit unit = datas[i];
+                Unit unit = units[i];
                 Units[i] = unit;
                 UnitsTransform[i] = unit.transform;
             }

@@ -38,6 +38,21 @@ namespace KaizerWald
         
         private void OnDrawGizmos()
         {
+            /*
+            if (Debug_ReplaceStaticPlacements)
+            {
+                Vector3 cubeSIze = one / 2f;
+                Gizmos.color = Color.blue;
+                for (int i = 0; i < DebugReplaceStaticPlacements.Count; i++)
+                {
+                    Gizmos.DrawCube(DebugReplaceStaticPlacements[i], cubeSIze);
+                }
+                Gizmos.color = Color.green;
+                Gizmos.DrawCube(DebugStartPositionBefore, cubeSIze);
+                Gizmos.color = Color.red;
+                Gizmos.DrawCube(DebugStartPositionAfter, cubeSIze);
+            }
+            */
             float2 intersect = FovGizmosDebug(FieldOfViewTriangle);
             Debug_FiringStateTargetDetection();
             

@@ -49,7 +49,7 @@ namespace KaizerWald
                 child.gameObject.AddComponent<Unit>();
                 break;
             }
-            return component.Initialize(regiment, index, UnitLayerIndex);
+            return component.Initialize(regiment, UnitLayerIndex);
         }
         
         private Vector3 GetUnitPosition(in Vector2 positionInRegiment)

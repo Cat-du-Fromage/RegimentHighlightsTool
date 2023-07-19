@@ -22,6 +22,18 @@ namespace KaizerWald
         {
             for (int i = 0; i < array.Length; i++)action(i);
         }*/
+        
+        
+        //Exemple Microsoft
+        //int[] someArray = new int[5] { 1, 2, 3, 4, 5 };
+        //int[] subArray1 = someArray[0..2];               // { 1, 2 }
+        //int[] subArray2 = someArray[1..^0];              // { 2, 3, 4, 5 }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T[] Slice<T>(this T[] array, int startIndex, int length)
+        {
+            int endIndex = startIndex + length;
+            return array[startIndex..endIndex];
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ForEach<T>(this T[] array, Action<T> action)
@@ -34,6 +46,18 @@ namespace KaizerWald
         {
             if (array == null) return;
             Array.ForEach(array, action);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<T>(this T[] arraySource, int sourceStartIndex, T[] arrayDestination, int destinationStartIndex, int length)
+        {
+            Array.Copy(arraySource, sourceStartIndex, arrayDestination, destinationStartIndex, length);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<T>(this T[] arraySource, T[] arrayDestination, int length)
+        {
+            Array.Copy(arraySource, arrayDestination, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,6 +113,17 @@ namespace KaizerWald
             if (!flag) return false;
             list.Add(obj);
             return true;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Swap<T>(this List<T> list, int left, int right)
+        {
+            /*
+            T temp = list[left];
+            list[left] = list[right];
+            list[right] = temp;
+            */
+            (list[left], list[right]) = (list[right], list[left]);
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

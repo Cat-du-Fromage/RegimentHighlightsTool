@@ -12,8 +12,10 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public readonly T ObjectAttach;
+
         public readonly EStates StateIdentity;
+        
+        public readonly T ObjectAttach;
         protected readonly StateMachine<T> LinkedStateMachine;
         protected readonly Transform ObjectTransform;
 
@@ -32,13 +34,13 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public virtual bool IsNull => false;
         public float3 Position => ObjectTransform.position;
+        
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Base Methods ◈◈◈◈◈◈                                                                            ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         //void EventTransition(T params)...(construction sur les states car les paramètres diffère selon chaque état)
         public virtual void OnAbilityTrigger() { return; }
-        //public virtual void OnStateEnter() { return; }
-        public virtual void OnStateEnter(Order<T> order) { return; }
+        public virtual void OnStateEnter(Order order) { return; }
         public virtual void OnStateUpdate() { return; }
         public virtual bool OnTransitionCheck() { return false; }
         public virtual void OnStateExit() { return; }

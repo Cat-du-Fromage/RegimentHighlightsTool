@@ -15,6 +15,11 @@ namespace KaizerWald
             return ((FormationData)formation).GetUnitRelativePositionToRegiment3D(unitIndex, regimentPosition);
         }
 
+        public static float3 GetUnitRelativePositionToRegiment3D(this in FormationData formation, int unitIndex, float3 regimentPosition)
+        {
+            return formation.GetUnitRelativePositionToRegiment3D(unitIndex, (Vector3)regimentPosition);
+        }
+
         public static Vector3 GetUnitRelativePositionToRegiment3D(this in FormationData formation, int unitIndex, Vector3 regimentPosition)
         {
             Vector2 dstUnitToUnit = formation.DistanceUnitToUnit;

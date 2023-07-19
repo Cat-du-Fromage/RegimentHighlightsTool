@@ -7,6 +7,7 @@ namespace KaizerWald
 {
     public partial class Unit : MonoBehaviour
     {
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                 ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -16,7 +17,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        [field: SerializeField] public int IndexInRegiment { get; private set; }
+        //[field: SerializeField] public int IndexInRegiment { get; private set; }
         [field: SerializeField] public Regiment RegimentAttach { get; private set; }
         [field: SerializeField] public UnitAnimation Animation { get; private set; }
         [field: SerializeField] public UnitStateMachine StateMachine { get; private set; }
@@ -33,36 +34,59 @@ namespace KaizerWald
             Animation = GetComponent<UnitAnimation>();
             StateMachine = this.GetOrAddComponent<UnitStateMachine>();
         }
-/*
-        private void OnDestroy()
-        {
-            OnDeath();
-        }
-*/
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        public void SetIndexInRegiment(int index) => IndexInRegiment = index;
+
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Interface Methods ◈◈◈◈◈◈                                                                       ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        //DEBUG
+        [field:SerializeField]public int IndexInRegimentDebug { get; private set; }
+        //DEBUG
+        public UnitMatrixElement FormationMatrix { get; private set; }
+        public int IndexInRegiment => FormationMatrix.IndexInRegiment;
+
+        public void InitializeFormationMatrix(RegimentFormationMatrix regimentFormationMatrix, int index)
+        {
+            IndexInRegimentDebug = index;
+            FormationMatrix = new UnitMatrixElement(regimentFormationMatrix, index);
+        }
+        
+        public void SetIndexInRegiment(int index)
+        {
+            FormationMatrix.SetIndexInRegiment(index);
+            IndexInRegimentDebug = IndexInRegimentDebug;
+        }
 
         public void UpdateUnit()
         {
             StateMachine.OnUpdate();
         }
 
+        // ====================================
+        //FOR DEBUG ONLY
+        private void Update()
+        {
+            if (IndexInRegimentDebug == FormationMatrix.IndexInRegiment) return;
+            IndexInRegimentDebug = FormationMatrix.IndexInRegiment;
+        }
+        // ====================================
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods (Units are Initialize by their regiment) ◈◈◈◈◈◈                         ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public Unit Initialize(Regiment regiment, int indexInRegiment, int unitLayerIndex)
+        public Unit Initialize(Regiment regiment/*, int indexInRegiment*/, int unitLayerIndex)
         {
-            InitializeProperties(regiment, indexInRegiment, unitLayerIndex);
+            InitializeProperties(regiment/*, indexInRegiment*/, unitLayerIndex);
             return this;
         }
 
-        private void InitializeProperties(Regiment regiment, int indexInRegiment, int unitLayerIndex)
+        private void InitializeProperties(Regiment regiment/*, int indexInRegiment*/, int unitLayerIndex)
         {
             RegimentAttach = regiment;
-            IndexInRegiment = indexInRegiment;
+            //IndexInRegiment = indexInRegiment;
             gameObject.layer = unitLayerIndex;
         }
 

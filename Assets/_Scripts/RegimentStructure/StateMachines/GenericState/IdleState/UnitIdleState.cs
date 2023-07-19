@@ -20,7 +20,7 @@ namespace KaizerWald
             }
         }
 
-        public override void OnStateEnter(Order<Unit> order)
+        public override void OnStateEnter(Order order)
         {
             unitAnimation.SetIdle();
             return;

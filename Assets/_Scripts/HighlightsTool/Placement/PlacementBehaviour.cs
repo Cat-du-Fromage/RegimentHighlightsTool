@@ -18,14 +18,14 @@ namespace KaizerWald
         {
             AttachToUnit(unitAttached);
             meshRenderer = GetComponent<MeshRenderer>();
+            Vector3 position = UnitTransform.position + Vector3.up * 0.05f;
+            transform.SetPositionAndRotation(position, UnitTransform.rotation);
             Hide();
         }
 
         public override void AttachToUnit(Unit unit)
         {
             base.AttachToUnit(unit);
-            Vector3 position = UnitTransform.position + Vector3.up * 0.05f;
-            transform.SetPositionAndRotation(position, UnitTransform.rotation);
         }
 
         public override bool IsShown() => meshRenderer.enabled == true;

@@ -2,14 +2,12 @@
 
 namespace KaizerWald
 {
-    public class Order<T>
-    where T : MonoBehaviour
+    public class Order
     {
-        public readonly T Receiver;
-        public readonly EStates StateOrdered;
-        protected Order(T receiver, EStates state)
+        public EStates StateOrdered { get; protected set; }
+        
+        protected Order(EStates state)
         {
-            Receiver = receiver;
             StateOrdered = state;
         }
         public virtual bool IsNull => false;

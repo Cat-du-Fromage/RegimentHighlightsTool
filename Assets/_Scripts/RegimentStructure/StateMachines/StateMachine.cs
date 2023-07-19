@@ -11,9 +11,11 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         [field: SerializeField] public T ObjectAttach { get; protected set; }
         [field: SerializeField] public EStates State { get; protected set; }
         public Dictionary<EStates, State<T>> States { get; protected set; }
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -41,14 +43,14 @@ namespace KaizerWald
         }
 
         public virtual void OnOrderReceived<TOrder>(TOrder order)
-        where TOrder : Order<T>
+        where TOrder : Order
         {
             CurrentState.OnStateExit();
             State = order.StateOrdered;
             CurrentState.OnStateEnter(order);
         }
 
-        public virtual void TransitionState(Order<T> transitionInfo, EStates orderedState = EStates.None)
+        public virtual void TransitionState(Order transitionInfo, EStates orderedState = EStates.None)
         {
             CurrentState.OnStateExit();
             State = orderedState == EStates.None ? transitionInfo.StateOrdered : orderedState;

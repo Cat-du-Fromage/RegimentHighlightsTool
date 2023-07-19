@@ -25,7 +25,7 @@ namespace KaizerWald
         {
             base.AttachToUnit(unit);
             UnlockConstraint();
-            transform.position = UnitTransform.position + Vector3.up;
+            positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
             ConstraintSource source = new ConstraintSource { sourceTransform = UnitTransform, weight = 1 };
             if (positionConstraint.sourceCount == 0)
             {
@@ -35,21 +35,18 @@ namespace KaizerWald
             {
                 positionConstraint.SetSource(0, source);
             }
-            //positionConstraint.AddSource(new ConstraintSource { sourceTransform = UnitTransform , weight = 1});
-            positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
+            transform.position = UnitTransform.position + Vector3.up;
             LockConstraint();
         }
 
         private void LockConstraint()
         {
-            positionConstraint.constraintActive = true;
-            positionConstraint.locked = true;
+            positionConstraint.constraintActive = positionConstraint.locked = true;
         }
         
         private void UnlockConstraint()
         {
-            positionConstraint.constraintActive = false;
-            positionConstraint.locked = false;
+            positionConstraint.constraintActive = positionConstraint.locked = false;
         }
 
         public override bool IsShown() => projector.enabled == true;
@@ -60,15 +57,15 @@ namespace KaizerWald
         {
             positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
             transform.position = UnitTransform.position + Vector3.up;
-            positionConstraint.locked = true;
+            LockConstraint();
             projector.enabled = true;
         }
 
         public override void Hide()
         {
-            positionConstraint.locked = false;
-            positionConstraint.translationAxis = Axis.None;
             projector.enabled = false;
+            UnlockConstraint();
+            positionConstraint.translationAxis = Axis.None;
         }
     }
 }

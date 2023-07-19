@@ -20,7 +20,7 @@ namespace KaizerWald
         public List<Regiment> SelectedRegiments => MainSystem.SelectedRegiments;
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
-
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -39,19 +39,19 @@ namespace KaizerWald
             bool keepSameFormation = newFormationsWidth.Length == 0;
             List<RegimentOrder> orders = new (SelectedRegiments.Count);
             
-            List<MoveRegimentOrder> moveOrders = new (SelectedRegiments.Count);
-            
+            //List<MoveRegimentOrder> moveOrders = new (SelectedRegiments.Count);
+            List<Tuple<Regiment, RegimentOrder>> moveOrders = new (SelectedRegiments.Count);
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 Regiment regiment = SelectedRegiments[i];
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
-                Vector3 firstUnit = StaticPlacementRegister.Records[regiment.RegimentID][0].transform.position;
-                Vector3 lastUnit = StaticPlacementRegister.Records[regiment.RegimentID][width-1].transform.position;
-                MoveRegimentOrder order = new MoveRegimentOrder(regiment, EStates.Move, width, firstUnit, lastUnit);
+                Vector3 firstUnit = StaticPlacementRegister[regiment.RegimentID][0].transform.position;
+                Vector3 lastUnit = StaticPlacementRegister[regiment.RegimentID][width-1].transform.position;
+                RegimentMoveOrder order = new RegimentMoveOrder(regiment.CurrentFormation, width, firstUnit, lastUnit);
+                moveOrders.Add(new Tuple<Regiment,RegimentOrder>(regiment,order));
                 orders.Add(order);
-                moveOrders.Add(order);
             }
-            MainSystem.OnCallback(this, orders);
+            MainSystem.OnCallback(this, moveOrders);
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -87,9 +87,9 @@ namespace KaizerWald
                 int regimentID = regiment.RegimentID;
                 for (int i = 0; i < DynamicPlacementRegister.Records[regimentID].Length; i++)
                 {
-                    Vector3 position = DynamicPlacementRegister.Records[regimentID][i].transform.position;
-                    Quaternion rotation = DynamicPlacementRegister.Records[regimentID][i].transform.rotation;
-                    StaticPlacementRegister.Records[regimentID][i].transform.SetPositionAndRotation(position, rotation);
+                    Vector3 position = DynamicPlacementRegister[regimentID][i].transform.position;
+                    Quaternion rotation = DynamicPlacementRegister[regimentID][i].transform.rotation;
+                    StaticPlacementRegister[regimentID][i].transform.SetPositionAndRotation(position, rotation);
                 }
             }
         }
@@ -97,42 +97,31 @@ namespace KaizerWald
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        public void ReplaceStaticPlacements(Regiment regiment)
+        private void ResizeAndReformRegister(int registerIndex, Regiment regiment, int numHighlightToKeep, in float3 regimentFuturePosition)
         {
-            FormationData formation = regiment.CurrentFormation;
-            if (formation.Depth == 1 || formation.IsLastLineComplete) return;
-            
-            int regimentId = regiment.RegimentID;
-            float3 direction3DLine = formation.Direction3DLine;
-            float distanceUnitToUnitX = formation.DistanceUnitToUnitX;
-            
-            float3 offset = formation.GetLastLineOffset(distanceUnitToUnitX);//0 If line complete
-            
-            int startIndex = (formation.NumCompleteLine - 1) * formation.Width;
-            int indexFirstEntityLastLine = startIndex/* + formation.Width*/; // + formation.Width.... seems wrong
-            
-            //from first Unit in last Line
-            float3 staticPosition = StaticPlacementRegister.Records[regimentId][startIndex].transform.position;
-            //Add offset if Line is not complete
-            staticPosition -= formation.Direction3DForward * formation.DistanceUnitToUnitY + offset;
-            
-            for (int i = 0; i < formation.NumUnitsLastLine; i++)
+            if (!Registers[registerIndex].Records.ContainsKey(regiment.RegimentID)) return;
+            HighlightBehaviour[] newRecordArray = Registers[registerIndex][regiment.RegimentID].Slice(0, numHighlightToKeep);
+            for (int i = 0; i < numHighlightToKeep; i++)
             {
-                int index = indexFirstEntityLastLine + i;
-                float3 linePosition = staticPosition + direction3DLine * (distanceUnitToUnitX * i) ;
-                StaticPlacementRegister.Records[regimentId][index].transform.position = linePosition;
+                HighlightBehaviour highlight = newRecordArray[i];
+                Unit unitToAttach = regiment.Units[i];
+                highlight.AttachToUnit(unitToAttach);
+                Vector3 position = regiment.CurrentFormation.GetUnitRelativePositionToRegiment3D(i, regimentFuturePosition);
+                highlight.transform.position = position;
             }
+            Registers[registerIndex][regiment.RegimentID] = newRecordArray;
         }
-        
-        //==============================================================================================================
-        // MISSING FEATURE: DYNAMIC PLACEMENT REPLACEMENT
-        //==============================================================================================================
-        public void ReplaceDynamicPlacements(Regiment regiment)
+
+        //SIMILAIRE MAIS DIFFERENT DE SELECTION
+        public void ResizeRegister(Regiment regiment, in float3 regimentFuturePosition)
         {
-            if (DynamicPlacementRegister.ActiveHighlights.Count == 0) return;
-            if (!DynamicPlacementRegister.ActiveHighlights.Contains(regiment)) return;
-            
-            //TODO: ADD TEMPORARY FORMATION IN CONTROLLER (we have no clue how dynamic formation currently look like)
+            int regimentID = regiment.RegimentID;
+            int numUnitsAlive = regiment.CurrentFormation.NumUnitsAlive;
+            for (int i = 0; i < Registers.Length; i++)
+            {
+                CleanUnusedHighlights(i, regimentID, numUnitsAlive);
+                ResizeAndReformRegister(i, regiment, numUnitsAlive, regimentFuturePosition);
+            }
         }
     }
 }

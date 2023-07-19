@@ -8,30 +8,30 @@ namespace KaizerWald
 {
     public class UnitMoveOrder : UnitOrder
     {
-        public readonly float3 Direction;
-        public readonly float3 Destination;
+        public float3 Destination { get; private set; } // Peut être calculé via FormationData
+        public FormationData FormationDestination { get; private set; }
         
-        public UnitMoveOrder(Unit receiver, EStates state, float3 leaderDestination, FormationData formationData) : base(receiver, state)
+        public UnitMoveOrder(int indexInRegiment, float3 leaderDestination, FormationData formationData) : base(EStates.Move)
         {
-            Direction = formationData.Direction3DForward;
-            Destination = formationData.GetUnitRelativePositionToRegiment3D(receiver.IndexInRegiment, leaderDestination);
+            FormationDestination = formationData;
+            Destination = formationData.GetUnitRelativePositionToRegiment3D(indexInRegiment, leaderDestination);
         }
 
-        public UnitMoveOrder(Unit receiver, MoveRegimentOrder baseOrder) 
-            : this(receiver, baseOrder.StateOrdered, baseOrder.LeaderDestination, baseOrder.FormationDestination)
+        public UnitMoveOrder(int indexInRegiment, RegimentMoveOrder other) : base(other.StateOrdered)
         {
-            
+            FormationDestination = other.FormationDestination;
+            Destination = FormationDestination.GetUnitRelativePositionToRegiment3D(indexInRegiment, other.LeaderDestination);
         }
         
-        public UnitMoveOrder(Unit receiver, UnitMoveOrder other) : base(receiver, other.StateOrdered)
+        public UnitMoveOrder(UnitMoveOrder other) : base(other.StateOrdered)
         {
-            Direction = other.Direction;
+            FormationDestination = other.FormationDestination;
             Destination = other.Destination;
         }
         
-        public UnitMoveOrder(Unit receiver, FormationData formationData, float3 position) : base(receiver, EStates.Move)
+        public UnitMoveOrder(FormationData formationData, float3 position) : base(EStates.Move)
         {
-            Direction = formationData.Direction3DForward;
+            FormationDestination = formationData;
             Destination = position;
         }
     }

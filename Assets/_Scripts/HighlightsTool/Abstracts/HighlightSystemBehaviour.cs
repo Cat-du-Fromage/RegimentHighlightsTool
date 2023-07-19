@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace KaizerWald
@@ -20,6 +21,6 @@ namespace KaizerWald
 
         public abstract void UnregisterRegiment(Regiment regiment);
 
-        public abstract void ResizeBuffers(int regimentID, int numDead);
+        public abstract void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition);
     }
 }

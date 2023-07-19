@@ -66,13 +66,19 @@ namespace KaizerWald
                 OnHide(Registers[registerIndex].ActiveHighlights[i], registerIndex);
             }
         }
-
-        public virtual void ResizeBuffer(int regimentID, int numDead)
+        
+        protected virtual void CleanUnusedHighlights(int registerIndex, int regimentIndex, int numToKeep)
         {
-            for (int i = 0; i < Registers.Length; i++)
+            int registerLength = Registers[registerIndex][regimentIndex].Length;
+            if (registerLength == numToKeep) return;
+            if (!Registers[registerIndex].Records.ContainsKey(regimentIndex)) return;
+
+            for (int i = numToKeep; i < registerLength; i++)
             {
-                Registers[i].ResizeBuffer(regimentID, numDead);
+                Destroy(Registers[registerIndex][regimentIndex][i].gameObject);
             }
+            if (numToKeep > 0) return;
+            Registers[registerIndex].Records.Remove(regimentIndex);
         }
     }
 }

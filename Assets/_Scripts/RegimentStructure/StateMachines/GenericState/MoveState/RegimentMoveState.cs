@@ -23,13 +23,13 @@ namespace KaizerWald
             FormationDestination = regiment.CurrentFormation;
         }
 
-        public override void OnStateEnter(Order<Regiment> order)
+        public override void OnStateEnter(Order order)
         {
             ResetDefaultValues();
-            MoveRegimentOrder moveOrder = (MoveRegimentOrder)order;
-            Destination = moveOrder.LeaderDestination;
-            FormationDestination = moveOrder.FormationDestination;
-            AssignIndexToUnits(moveOrder.FormationDestination);//ICI on va donner aux unité leur index d'assignation
+            RegimentMoveOrder regimentMoveOrder = (RegimentMoveOrder)order;
+            Destination = regimentMoveOrder.LeaderDestination;
+            FormationDestination = regimentMoveOrder.FormationDestination;
+            AssignIndexToUnits(regimentMoveOrder.FormationDestination);//ICI on va donner aux unité leur index d'assignation
         }
 
         public override void OnStateUpdate()

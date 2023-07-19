@@ -62,23 +62,35 @@ namespace KaizerWald
             //Registers[registerIndex].ActiveHighlights.ForEach(regiment => ((ISelectable)regiment).SetSelectableProperty(registerIndex, false));
             base.HideAll(registerIndex);
         }
+        
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        private void ResizeAndReformRegister(int registerIndex, Regiment regiment, int numHighlightToKeep)
+        {
+            if (!Registers[registerIndex].Records.ContainsKey(regiment.RegimentID)) return;
+            HighlightBehaviour[] newRecordArray = Registers[registerIndex][regiment.RegimentID].Slice(0, numHighlightToKeep);
+            for (int i = 0; i < numHighlightToKeep; i++)
+            {
+                HighlightBehaviour highlight = newRecordArray[i];
+                Unit unitToAttach = regiment.Units[i];
+                highlight.AttachToUnit(unitToAttach);
+            }
+            Registers[registerIndex][regiment.RegimentID] = newRecordArray;
+        }
 
-        public override void ResizeBuffer(int regimentID, int numDead)
+        //SIMILAIRE MAIS DIFFERENT DE PLACEMENT
+        public void ResizeRegister(Regiment regiment)
         {
-            base.ResizeBuffer(regimentID, numDead);
-            /*
-        public override void InitializeHighlight(Transform unitAttached)
-        {
-            UnitAttach = unitAttached;
-            positionConstraint = GetComponent<PositionConstraint>();
-            transform.position = unitAttached.position + Vector3.up;
-            positionConstraint.AddSource(new ConstraintSource { sourceTransform = unitAttached , weight = 1});
-            positionConstraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
-            positionConstraint.constraintActive = true;
-            positionConstraint.locked = true;
-            Hide();
+            int regimentID = regiment.RegimentID;
+            int numUnitsAlive = regiment.CurrentFormation.NumUnitsAlive;
+            for (int i = 0; i < Registers.Length; i++)
+            {
+                CleanUnusedHighlights(i, regimentID, numUnitsAlive);
+                ResizeAndReformRegister(i, regiment, numUnitsAlive);
+            }
         }
-        */
-        }
+        
+        
     }
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LineInfantry
   m_EditorClassIdentifier: 
   Category: {fileID: 11400000, guid: 41a9648400245994aa90670dbc0cacfb, type: 2}
-  BaseNumberUnit: 10
+  BaseNumberUnit: 25
   MinRow: 5
-  MaxRow: 5
+  MaxRow: 12
   SpaceBetweenUnits: 0

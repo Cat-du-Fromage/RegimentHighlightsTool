@@ -33,11 +33,11 @@ namespace KaizerWald
             unitAnimation.SetRunning();
         }
 
-        public override void OnStateEnter(Order<Unit> order)
+        public override void OnStateEnter(Order order)
         {
             ResetDefaultValues();
             UnitMoveOrder moveOrder = (UnitMoveOrder)order;
-            Direction = moveOrder.Direction;
+            Direction = moveOrder.FormationDestination.Direction3DForward;
             Destination = moveOrder.Destination;
             unitAnimation.SetMarching();
         }

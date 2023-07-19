@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEditor.Rendering;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace KaizerWald
         public PlacementSystem Placement { get; private set; }
 
         public event Action OnSelectionEvent;
-        public event Action<MoveRegimentOrder> OnPlacementEvent;
+        public event Action<Regiment, RegimentMoveOrder> OnPlacementEvent;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
@@ -83,7 +84,7 @@ namespace KaizerWald
         //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        public void OnCallback(HighlightSystem system, List<RegimentOrder> orders)
+        public void OnCallback(HighlightSystem system, List<Tuple<Regiment, RegimentOrder>> orders)
         {
             switch (system)
             {
@@ -91,11 +92,11 @@ namespace KaizerWald
                     if (orders.Count == 0) return;
                     //1) Placement-Drag => MoveOrder
                     //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
-                    if (orders[0] is MoveRegimentOrder)
+                    if (orders[0].Item2 is RegimentMoveOrder)
                     {
-                        foreach (RegimentOrder order in orders)
+                        foreach ((Regiment regiment, RegimentOrder order)  in orders)
                         {
-                            OnPlacementEvent?.Invoke((MoveRegimentOrder)order);
+                            OnPlacementEvent?.Invoke(regiment, (RegimentMoveOrder)order);
                         }
                     }
                     //3) Placement-NoDrag + Enemy Preselected => AttackOrder
@@ -137,10 +138,10 @@ namespace KaizerWald
             Placement.RemoveRegiment(regiment);
         }
         
-        public override void ResizeBuffers(int regimentID, int numDead)
+        public override void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition)
         {
-            //SELECTION ARE SPECIAL!
-            Placement.ResizeBuffer(regimentID, numDead);
+            Placement.ResizeRegister(regiment, regimentFuturePosition);
+            Selection.ResizeRegister(regiment);
         }
     }
 }
