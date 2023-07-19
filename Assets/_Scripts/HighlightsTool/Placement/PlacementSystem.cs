@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
+using static Unity.Mathematics.math;
+
 namespace KaizerWald
 {
     public sealed class PlacementSystem : HighlightSystem
@@ -37,19 +39,21 @@ namespace KaizerWald
         public void OnMoveOrderEvent(int[] newFormationsWidth)
         {
             bool keepSameFormation = newFormationsWidth.Length == 0;
-            List<RegimentOrder> orders = new (SelectedRegiments.Count);
+            List<Tuple<Regiment, Order>> moveOrders = new (SelectedRegiments.Count);
             
-            //List<MoveRegimentOrder> moveOrders = new (SelectedRegiments.Count);
-            List<Tuple<Regiment, RegimentOrder>> moveOrders = new (SelectedRegiments.Count);
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 Regiment regiment = SelectedRegiments[i];
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
-                Vector3 firstUnit = StaticPlacementRegister[regiment.RegimentID][0].transform.position;
-                Vector3 lastUnit = StaticPlacementRegister[regiment.RegimentID][width-1].transform.position;
-                RegimentMoveOrder order = new RegimentMoveOrder(regiment.CurrentFormation, width, firstUnit, lastUnit);
-                moveOrders.Add(new Tuple<Regiment,RegimentOrder>(regiment,order));
-                orders.Add(order);
+                float3 firstUnit = StaticPlacementRegister[regiment.RegimentID][0].transform.position;
+                float3 lastUnit = StaticPlacementRegister[regiment.RegimentID][width-1].transform.position;
+
+                float3 direction = normalizesafe(cross(down(), lastUnit - firstUnit));
+                FormationData formationDestination = new (regiment.CurrentFormation, width, direction);
+                float3 leaderDestination = (firstUnit + lastUnit) / 2;
+                
+                MoveOrder order = new MoveOrder(formationDestination, leaderDestination);
+                moveOrders.Add(new Tuple<Regiment, Order>(regiment,order));
             }
             MainSystem.OnCallback(this, moveOrders);
         }

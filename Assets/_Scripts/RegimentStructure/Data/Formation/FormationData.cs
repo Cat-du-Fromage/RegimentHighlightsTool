@@ -98,7 +98,7 @@ namespace KaizerWald
             
             direction2DForward = otherFormation.direction2DForward;
         }
-
+        
         public FormationData(Formation formation)
         {
             numUnitsAlive = (ushort)formation.NumUnitsAlive;
@@ -109,7 +109,7 @@ namespace KaizerWald
             spaceBetweenUnits = half(formation.SpaceBetweenUnits);
 
             width = (byte)formation.Width;
-            depth = (byte)formation.Depth;
+            depth = (byte)ceil(numUnitsAlive / max(1f,width));
 
             direction2DForward = half2(formation.Direction2DForward);
         }
@@ -128,6 +128,38 @@ namespace KaizerWald
 
             direction2DForward = half2(formation.Direction2DForward);
         }
+
+        public FormationData(Formation formation, int newWidth, float3 direction)
+        {
+            numUnitsAlive = (ushort)formation.NumUnitsAlive;
+
+            minRow = (byte)min(byte.MaxValue, formation.MinRow);
+            maxRow = (byte)min(byte.MaxValue, formation.MaxRow);
+            unitSize = half2(formation.UnitSize);
+            spaceBetweenUnits = half(formation.SpaceBetweenUnits);
+
+            width = (byte)min(newWidth, maxRow);
+            depth = (byte)formation.Depth;
+
+            direction2DForward = half2(direction.xz);
+        }
+        
+        public FormationData(Formation formation, int numUnits, int newWidth, float3 direction)
+        {
+            numUnitsAlive = (ushort)numUnits;
+
+            minRow = (byte)min(byte.MaxValue, formation.MinRow);
+            maxRow = (byte)min(byte.MaxValue, formation.MaxRow);
+            unitSize = half2(formation.UnitSize);
+            spaceBetweenUnits = half(formation.SpaceBetweenUnits);
+
+            width = (byte)min(newWidth, maxRow);
+            depth = (byte)formation.Depth;
+
+            direction2DForward = half2(direction.xz);
+        }
+        
+        
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║

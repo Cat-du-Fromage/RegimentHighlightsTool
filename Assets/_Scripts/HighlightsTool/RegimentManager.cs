@@ -150,7 +150,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
         //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
-        private void OnMoveOrders(Regiment regiment, RegimentMoveOrder regimentMoveOrder)
+        private void OnMoveOrders(Regiment regiment, MoveOrder regimentMoveOrder)
         {
             regiment.StateMachine.OnMoveOrderReceived(regimentMoveOrder);
         }

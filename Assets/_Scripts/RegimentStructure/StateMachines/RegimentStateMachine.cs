@@ -68,7 +68,7 @@ namespace KaizerWald
             }
         }
         
-        public void OnMoveOrderReceived(RegimentOrder order)
+        public void OnMoveOrderReceived(Order order)
         {
             State = order.StateOrdered;
             switch (State)
@@ -76,14 +76,12 @@ namespace KaizerWald
                 case EStates.Idle:
                     return;
                 case EStates.Move:
-                    RegimentMoveOrder regimentMoveOrder = (RegimentMoveOrder)order;
+                    MoveOrder moveOrder = (MoveOrder)order;
                     CurrentState.OnStateEnter(order);
                     foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
                     {
-                        UnitMoveOrder unitOrder = new (unitStateMachine.ObjectAttach.IndexInRegiment, regimentMoveOrder);
-                        unitStateMachine.OnOrderReceived(unitOrder);
+                        unitStateMachine.OnOrderReceived(moveOrder);
                     }
-                    //foreach (Unit unit in ObjectAttach.Units) unit.StateMachine.OnOrderReceived(order);
                     return;
                 case EStates.Fire:
                     return;

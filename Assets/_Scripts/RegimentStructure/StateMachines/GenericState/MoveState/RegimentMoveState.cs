@@ -15,7 +15,7 @@ namespace KaizerWald
     public sealed class RegimentMoveState : MoveState<Regiment>
     {
         private bool LeaderReachDestination;
-        public Formation FormationDestination { get; private set; }
+        public FormationData FormationDestination { get; private set; }
 
         public RegimentMoveState(Regiment regiment) : base(regiment, regiment.RegimentType.Speed)
         {
@@ -26,10 +26,11 @@ namespace KaizerWald
         public override void OnStateEnter(Order order)
         {
             ResetDefaultValues();
-            RegimentMoveOrder regimentMoveOrder = (RegimentMoveOrder)order;
-            Destination = regimentMoveOrder.LeaderDestination;
-            FormationDestination = regimentMoveOrder.FormationDestination;
-            AssignIndexToUnits(regimentMoveOrder.FormationDestination);//ICI on va donner aux unité leur index d'assignation
+            MoveOrder moveOrder = (MoveOrder)order;
+            Destination = moveOrder.LeaderDestination;
+            FormationDestination = moveOrder.FormationDestination;
+            
+            AssignIndexToUnits(moveOrder.FormationDestination);//ICI on va donner aux unité leur index d'assignation
         }
 
         public override void OnStateUpdate()
@@ -43,7 +44,7 @@ namespace KaizerWald
                 float3 direction = normalizesafe(Destination - Position);
                 float3 translation = Time.deltaTime * MoveSpeed * direction;
                 ObjectTransform.Translate(translation, Space.World);
-                ObjectTransform.LookAt(Position + FormationDestination.DirectionForward);
+                ObjectTransform.LookAt(Position + FormationDestination.Direction3DForward);
             }
             
             if (!OnTransitionCheck()) return;

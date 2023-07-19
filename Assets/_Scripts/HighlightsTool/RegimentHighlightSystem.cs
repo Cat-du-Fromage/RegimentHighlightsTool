@@ -33,7 +33,7 @@ namespace KaizerWald
         public PlacementSystem Placement { get; private set; }
 
         public event Action OnSelectionEvent;
-        public event Action<Regiment, RegimentMoveOrder> OnPlacementEvent;
+        public event Action<Regiment, MoveOrder> OnPlacementEvent;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
@@ -84,7 +84,7 @@ namespace KaizerWald
         //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        public void OnCallback(HighlightSystem system, List<Tuple<Regiment, RegimentOrder>> orders)
+        public void OnCallback(HighlightSystem system, List<Tuple<Regiment, Order>> orders)
         {
             switch (system)
             {
@@ -92,11 +92,11 @@ namespace KaizerWald
                     if (orders.Count == 0) return;
                     //1) Placement-Drag => MoveOrder
                     //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
-                    if (orders[0].Item2 is RegimentMoveOrder)
+                    if (orders[0].Item2 is MoveOrder)
                     {
-                        foreach ((Regiment regiment, RegimentOrder order)  in orders)
+                        foreach ((Regiment regiment, Order order)  in orders)
                         {
-                            OnPlacementEvent?.Invoke(regiment, (RegimentMoveOrder)order);
+                            OnPlacementEvent?.Invoke(regiment, (MoveOrder)order);
                         }
                     }
                     //3) Placement-NoDrag + Enemy Preselected => AttackOrder

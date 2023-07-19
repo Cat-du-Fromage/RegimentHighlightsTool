@@ -181,8 +181,7 @@ namespace KaizerWald
                 int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
                 for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
                 {
-                    float3 position = futureFormation.GetUnitRelativePositionToRegiment3D(i, regimentPosition);
-                    UnitMoveOrder unitMoveOrder = new UnitMoveOrder(futureFormation, position);
+                    MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
                     Units[i].StateMachine.TransitionState(unitMoveOrder);
                 }
             }
@@ -214,7 +213,6 @@ namespace KaizerWald
             // * Very Unstable when applying to Last Line because with vary a lot
             // ==> We need to calculate position in regiment (using formationExtension?)
             // ----------------------------------------------------------------------
-            float3 position = futureFormation.GetUnitRelativePositionToRegiment3D(deadIndex, regimentPosition);
             RegimentFormationMatrix.SwapIndexInRegiment(deadIndex, swapIndex);
             
             DeadUnits.Remove(deadIndex);
@@ -224,7 +222,7 @@ namespace KaizerWald
             int ySwappedIndex = swapIndex / futureFormation.Width;
             
             if(yDeadIndex == futureFormation.Depth - 1 && yDeadIndex == ySwappedIndex) return;
-            UnitMoveOrder unitMoveOrder = new UnitMoveOrder(futureFormation, position);
+            MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
             unitToSwapWith.StateMachine.TransitionState(unitMoveOrder);
         }
     }

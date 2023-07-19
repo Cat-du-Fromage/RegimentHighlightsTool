@@ -11,6 +11,11 @@ namespace KaizerWald
     public sealed class UnitMoveState : MoveState<Unit>
     {
         private readonly UnitAnimation unitAnimation;
+        private FormationData formation;
+
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         
         public UnitMoveState(Unit unit) : base(unit, unit.RegimentAttach.RegimentType.Speed)
         {
@@ -20,25 +25,13 @@ namespace KaizerWald
                 Debug.LogError($"Unit: {unit.name} don't have 'UnitAnimation' Component");
             }
         }
-
-        public override void SetMarching()
-        {
-            base.SetMarching();
-            unitAnimation.SetMarching();
-        }
-
-        public override void SetRunning()
-        {
-            base.SetRunning();
-            unitAnimation.SetRunning();
-        }
-
+        
         public override void OnStateEnter(Order order)
         {
-            ResetDefaultValues();
-            UnitMoveOrder moveOrder = (UnitMoveOrder)order;
+            MoveOrder moveOrder = (MoveOrder)order;
+            formation = moveOrder.FormationDestination;
             Direction = moveOrder.FormationDestination.Direction3DForward;
-            Destination = moveOrder.Destination;
+            Destination = formation.GetUnitRelativePositionToRegiment3D(IndexInRegiment, moveOrder.LeaderDestination);
             unitAnimation.SetMarching();
         }
 
@@ -69,6 +62,23 @@ namespace KaizerWald
         public override void ResetDefaultValues()
         {
             SetMarching();
+        }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private int IndexInRegiment => ObjectAttach.IndexInRegiment;
+
+        public override void SetMarching()
+        {
+            base.SetMarching();
+            unitAnimation.SetMarching();
+        }
+
+        public override void SetRunning()
+        {
+            base.SetRunning();
+            unitAnimation.SetRunning();
         }
     }
     
