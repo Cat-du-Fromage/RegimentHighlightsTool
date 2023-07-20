@@ -10,6 +10,27 @@ namespace KaizerWald
 {
     public static class FormationExtension
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ COMPARISON ◆◆◆◆◆◆                                               ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private static bool EqualComposition(int rightNumUnitsAlive, int rightWidth, int leftNumUnitsAlive, int leftWidth)
+        {
+            return rightNumUnitsAlive == leftNumUnitsAlive && rightWidth == leftWidth;
+        }
+        
+        public static bool EqualComposition(this in FormationData rhs, in Formation lhs)
+        {
+            return EqualComposition(rhs.NumUnitsAlive,rhs.Width, lhs.NumUnitsAlive, lhs.Width);
+        }
+        
+        public static bool EqualComposition(this in FormationData rhs, in FormationData lhs)
+        {
+            return EqualComposition(rhs.NumUnitsAlive,rhs.Width, lhs.NumUnitsAlive, lhs.Width);
+        }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                 ◆◆◆◆◆◆ UNIT RELATIVE POSITION TO REGIMENT ◆◆◆◆◆◆                                   ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public static Vector3 GetUnitRelativePositionToRegiment3D(this Formation formation, int unitIndex, Vector3 regimentPosition)
         {
             return ((FormationData)formation).GetUnitRelativePositionToRegiment3D(unitIndex, regimentPosition);
@@ -111,7 +132,7 @@ namespace KaizerWald
             }
             return positions;
         }
-        
+
         public static float2[] GetUnitsPositionRelativeToRegiment(this FormationData formation, float3 regimentPosition)
         {
             return formation.GetUnitsPositionRelativeToRegiment(regimentPosition.xz).ToArray();

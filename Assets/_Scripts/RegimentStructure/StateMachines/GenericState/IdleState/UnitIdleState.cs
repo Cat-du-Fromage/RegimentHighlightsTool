@@ -28,6 +28,8 @@ namespace KaizerWald
 
         public override void OnStateUpdate()
         {
+            //Si Regiment est en Mode "Fire" et unit en premiere ligne
+            
             return;
         }
 
@@ -37,6 +39,7 @@ namespace KaizerWald
             // => return (ObjAttach.IndexInRegiment < Regiment.Formation.Width)
             
             //Check if enemies in Range (if autoFire is Active)!! maybe regiment shall be in charge of this?
+            
             return false;
         }
 

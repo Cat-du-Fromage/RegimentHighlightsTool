@@ -44,7 +44,6 @@ namespace KaizerWald
             
             if (!OnTransitionCheck()) return;
             LinkedStateMachine.TransitionDefaultState();
-            //LinkedStateMachine.TransitionState(EStates.Idle, UnitOrder.Null);
         }
 
         public override bool OnTransitionCheck()

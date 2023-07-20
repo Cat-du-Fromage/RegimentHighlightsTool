@@ -33,6 +33,7 @@ namespace KaizerWald
         public override Unit EnemyTarget { get; protected set; }
         public Regiment RegimentTargeted { get; private set; }
         public float3 AimDirection { get; private set; }
+        public FormationData CacheEnemyFormation { get; private set; }
         
         private float3 TargetPosition => EnemyTarget.transform.position;
         private UnitStateMachine LinkedUnitStateMachine => ObjectAttach.StateMachine;
@@ -43,14 +44,10 @@ namespace KaizerWald
         public UnitFireState(Unit objectAttach) : base(objectAttach)
         {
             objectAttach.Animation.OnShootEvent += OnFireEvent;
-            
             EnemyTarget = null;
             unitAnimation = objectAttach.Animation;
-            //unitLayerMask = RegimentManager.Instance == null ? NameToLayer("Unit") : RegimentManager.Instance.UnitLayerMask;
-            
             maxRange = objectAttach.RegimentAttach.RegimentType.Range;
             accuracy = objectAttach.RegimentAttach.RegimentType.Accuracy;
-            
             randomState = Random.CreateFromIndex((uint)(abs(objectAttach.GetInstanceID()) + objectAttach.IndexInRegiment));
         }
         
@@ -58,9 +55,11 @@ namespace KaizerWald
         public override void OnStateEnter(Order order)
         {
             //ResetDefaultValues();
-            UnitAttackOrder unitAttackOrder = (UnitAttackOrder)order;
-            EnemyTarget = unitAttackOrder.EnemyTarget;
-            RegimentTargeted = EnemyTarget.RegimentAttach;
+            AttackOrder attackOrder = (AttackOrder)order;
+            CacheEnemyFormation = attackOrder.TargetEnemyRegiment.CurrentFormation;
+            RegimentTargeted = attackOrder.TargetEnemyRegiment;
+            EnemyTarget = GetEnemyTarget();
+            unitAnimation.SetFullFireSequenceOn();
         }
 
         public override void OnStateUpdate()
@@ -68,8 +67,22 @@ namespace KaizerWald
             bool isUnitOnFirstLine = ObjectAttach.IndexInRegiment >= ObjectAttach.RegimentAttach.CurrentFormation.Width;
             if (isUnitOnFirstLine) return;
             
+            //1) Est-ce que la formation adverse est changée?
+            //si oui -> Retarget
+            //sinon -> passer
+            if (IsEnemyFormationChanged())
+            {
+                CacheEnemyFormation = RegimentTargeted.CurrentFormation;
+                EnemyTarget = GetEnemyTarget();
+            }
+            else if(!IsTargetValid())
+            {
+                EnemyTarget = GetEnemyTarget();
+            }
+            UnitTakeAim();
+            /*
             // L'unité doit réclamer? ou doit on attendre que le régiment le fasse
-            if (CheckAndRequestTarget())
+            if (IsTargetValid())
             {
                 // Take Aim
                 OnUnitAim();
@@ -77,7 +90,8 @@ namespace KaizerWald
                 // Fire
                 OnUnitShoot(); //TODO: il faudra empêcher de tirer sur les camarades
             }
-
+            */
+            
             //Issue target null may not be a good idea here..
             if (!OnTransitionCheck()) return;
             LinkedStateMachine.TransitionDefaultState();
@@ -85,7 +99,7 @@ namespace KaizerWald
 
         public override bool OnTransitionCheck()
         {
-            return EnemyTarget == null;
+            return EnemyTarget == null || EnemyTarget.IsDead;
         }
 
         public override void OnStateExit()
@@ -103,14 +117,14 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ STATE METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        //BUG TERRIBLE!! TANT DE SAUT POUR TROUVER une cible et introduire un bug on l'animation est reset...
-        //Ne pourrait on pas calculer Ici?
-        //Le regiment fourni le regiment "Target" l'unité choisi sa cible
-        private bool CheckAndRequestTarget()
+        private bool IsEnemyFormationChanged()
         {
-            if (EnemyTarget != null && !EnemyTarget.IsDead) return true;
-            EnemyTarget = GetEnemyTarget();
-            return false;
+            return !CacheEnemyFormation.EqualComposition(RegimentTargeted.CurrentFormation);
+        }
+        
+        private bool IsTargetValid()
+        {
+            return (EnemyTarget != null && !EnemyTarget.IsDead);
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -127,9 +141,27 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Shoot Sequence ◈◈◈◈◈◈                                                                          ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        private void UnitTakeAim()
+        {
+            if (unitAnimation.IsPlayingReload) return;
+            float3 vectorUnitToTarget = TargetPosition - Position;
+            float3 directionUnitToTarget = normalizesafe(vectorUnitToTarget);
+            
+            //Only on x and y axis (forward(z) axis dont have any value)
+            float3 randomDirection = new (randomState.NextFloat2Direction() * (accuracy / 10f),0);
+            float3 maxRangePosition = Position + maxRange * directionUnitToTarget;
+            float3 spreadEndPoint = maxRangePosition + randomDirection;
+            AimDirection = normalizesafe(spreadEndPoint - Position);
+
+            if (unitAnimation.IsInFiringMode) return;
+            unitAnimation.SetFullFireSequenceOn();
+        }
+        
+        
         private void OnUnitAim()
         {
-            if (unitAnimation.IsReloading) return;
+            if (unitAnimation.IsPlayingReload) return;
             float3 vectorUnitToTarget = TargetPosition - Position;
             //float distanceUnitToTarget = length(vectorUnitToTarget);
             float3 directionUnitToTarget = normalizesafe(vectorUnitToTarget);
@@ -145,7 +177,7 @@ namespace KaizerWald
 
         private void OnUnitShoot()
         {
-            if (!unitAnimation.IsFiring && unitAnimation.IsAiming)
+            if (!unitAnimation.IsInFiringMode && unitAnimation.IsInAimingMode)
             {
                 unitAnimation.SetFireOn();
             }
@@ -155,27 +187,10 @@ namespace KaizerWald
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Get Target Methods ◇◇◇◇◇◇                                                                          │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        /*
-        private Unit GetTarget()
-        {
-            float2 unitPosition = Position.xz;
-            NativeHashMap<int, float2> indexPairPosition = GetTargetRegimentUnitsHull();
-            int index = -1;
-            float minDistance = INFINITY;
-            foreach (KVPair<int, float2> pair in indexPairPosition)
-            {
-                float distance = distancesq(unitPosition, pair.Value);
-                if (distance > minDistance) continue;
-                minDistance = distance;
-                index = pair.Key;
-            }
-            return index == -1 ? null : RegimentTargeted.Units[index];
-        }
-        */
         private Unit GetEnemyTarget()
         {
             float2 unitPosition = Position.xz;
-            using NativeHashSet<int> hullIndices = GetUnitsHullIndices(RegimentTargeted.CurrentFormation);
+            using NativeHashSet<int> hullIndices = GetUnitsHullIndices(CacheEnemyFormation);
             
             int index = -1;
             float minDistance = INFINITY;
@@ -189,21 +204,6 @@ namespace KaizerWald
             
             return index == -1 ? null : RegimentTargeted.Units[index];
         }
-        
-        /*
-        //ISSUE : REORGANISATION NOT DONE So we try to access index that no longer exist
-        private NativeHashMap<int, float2> GetTargetRegimentUnitsHull()
-        {
-            using NativeHashSet<int> hullIndices = GetUnitsHullIndices(RegimentTargeted.CurrentFormation);
-            NativeHashMap<int, float2> result = new (hullIndices.Count, Temp);
-            foreach (int unitIndex in hullIndices)
-            {
-                float2 unitPosition = RegimentTargeted.UnitsTransform[unitIndex].position.xz();
-                result.Add(unitIndex, unitPosition);
-            }
-            return result;
-        }
-        */
         
         private NativeHashSet<int> GetUnitsHullIndices(in FormationData enemyFormation)
         {

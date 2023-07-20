@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -18,10 +19,10 @@ namespace KaizerWald
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         //public readonly ushort BaseNumUnits;
-        private readonly byte  minRow; 
-        private readonly byte  maxRow;
-        private readonly half2 unitSize;
-        private readonly half  spaceBetweenUnits;
+        private readonly byte   minRow; 
+        private readonly byte   maxRow;
+        private readonly half2  unitSize;
+        private readonly half   spaceBetweenUnits;
 
         private readonly ushort numUnitsAlive;
         private readonly byte   width;
@@ -158,9 +159,6 @@ namespace KaizerWald
 
             direction2DForward = half2(direction.xz);
         }
-        
-        
-
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -187,11 +185,34 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator FormationData(Formation rhs)
         {
             return new FormationData(rhs);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(FormationData lhs, FormationData rhs)
+        {
+            bool sameNumUnitsAlive = lhs.numUnitsAlive ==  rhs.numUnitsAlive;
+            bool sameWidthDepth = lhs.width == rhs.width && lhs.depth == rhs.depth;
+            bool isSameDirection = all(lhs.direction2DForward ==  rhs.direction2DForward);
+            bool sameUnitSize = all(lhs.unitSize == rhs.unitSize);
+            bool sameSpaceBetweenUnits = lhs.spaceBetweenUnits ==  rhs.spaceBetweenUnits;
+            bool sameMinMaxRow = lhs.minRow == rhs.minRow && lhs.maxRow ==  rhs.maxRow;
+            return sameNumUnitsAlive && sameWidthDepth && isSameDirection && sameUnitSize && sameSpaceBetweenUnits && sameMinMaxRow;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(FormationData lhs, FormationData rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public override string ToString()
         {
             return $"Current formation:\r\n" +

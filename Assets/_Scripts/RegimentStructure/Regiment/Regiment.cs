@@ -9,7 +9,7 @@ using UnityEngine.Android;
 using UnityEngine.Jobs;
 
 using static UnityEngine.Quaternion;
-
+using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
@@ -76,14 +76,6 @@ namespace KaizerWald
         public void OnUpdate()
         {
             Rearrangement();
-            //if (ClearDeadUnits()) Debug.Log($"Regiment Update: Clear Units");
-            /*
-            if (ConfirmDeaths(out int numDead))
-            {
-                ResizeFormation(numDead);
-                DeadUnits.Clear();
-            }
-            */
             StateMachine.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
@@ -136,6 +128,10 @@ namespace KaizerWald
         public void OnDeadUnit(Unit unit)
         {
             DeadUnits.Add(unit.IndexInRegiment);
+            // -------------------------------------------------------
+            // Seems Wrong place but not better Idea for State Machine...
+            StateMachine.DeadUnitsStateMachine.Add(unit.StateMachine);
+            // -------------------------------------------------------
         }
 
         private bool ConfirmDeaths(out int numDead)
@@ -144,20 +140,12 @@ namespace KaizerWald
             if (DeadUnits.Count == 0) return false;
             foreach (int indexInRegiment in DeadUnits)
             {
-                //-----------------------------------------------------------------------
-                //REMOVAL OF STATE MACHINE
-                StateMachine.UnitsStateMachine.Remove(Units[indexInRegiment].StateMachine);
-                //-----------------------------------------------------------------------
                 Units[indexInRegiment].ConfirmDeathByRegiment(this);
             }
             return true;
         }
 
-        private void ResizeFormation(int numToRemove)
-        {
-            RegimentFormationMatrix.Resize(numToRemove);
-            CurrentFormation.DecreaseBy(numToRemove);
-        }
+
 
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
@@ -168,37 +156,44 @@ namespace KaizerWald
         private void Rearrangement()
         {
             if (!ConfirmDeaths(out int cacheNumDead)) return;
-            FormationData futureFormation = new (CurrentFormation, CurrentFormation.NumUnitsAlive - cacheNumDead);
             
+            FormationData futureFormation = new (CurrentFormation,  CurrentFormation.NumUnitsAlive - cacheNumDead);
             float3 regimentPosition = !StateMachine.IsMoving ? RegimentPosition : ((RegimentMoveState)StateMachine.CurrentState).Destination;
+            MoveOrder moveOrder = new MoveOrder(futureFormation, regimentPosition);
+            
             while (DeadUnits.Count != 0)
             {
-                Rearrange(DeadUnits.Min, regimentPosition, futureFormation);
+                Rearrange(moveOrder, DeadUnits.Min, futureFormation);
             }
-            
-            if (!futureFormation.IsLastLineComplete)
-            {
-                int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
-                for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
-                {
-                    MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
-                    Units[i].StateMachine.TransitionState(unitMoveOrder);
-                }
-            }
-            
-            //TODO: RESIZE UNITS: STATES MACHINES
+            LastLineRearrangementOrder(moveOrder, futureFormation);
             ResizeFormation(cacheNumDead);
-            if (CurrentFormation.NumUnitsAlive == 0) return;
             
+            if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
             RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
         }
+        
+        private void ResizeFormation(int numToRemove)
+        {
+            RegimentFormationMatrix.Resize(numToRemove);
+            CurrentFormation.DecreaseBy(numToRemove);
+        }
 
-        private void Rearrange(int deadIndex, float3 regimentPosition, in FormationData futureFormation)
+        private void LastLineRearrangementOrder(Order order, in FormationData futureFormation)
+        {
+            if (futureFormation.IsLastLineComplete) return;
+            int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
+            for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
+            {
+                //MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
+                Units[i].StateMachine.ChangeState(order);
+            }
+        }
+
+        private void Rearrange(Order order, int deadIndex, in FormationData futureFormation)
         {
             //Here we use Current Formation because units are not consider "Dead" Yet
             int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, CurrentFormation);
-            
             if (swapIndex == -1)
             {
                 DeadUnits.Remove(deadIndex);
@@ -217,13 +212,14 @@ namespace KaizerWald
             
             DeadUnits.Remove(deadIndex);
             DeadUnits.Add(swapIndex);
-
-            int yDeadIndex = deadIndex / futureFormation.Width;
-            int ySwappedIndex = swapIndex / futureFormation.Width;
             
-            if(yDeadIndex == futureFormation.Depth - 1 && yDeadIndex == ySwappedIndex) return;
-            MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
-            unitToSwapWith.StateMachine.TransitionState(unitMoveOrder);
+            int deadYCoord = deadIndex / futureFormation.Width;
+            int swappedYCoord = swapIndex / futureFormation.Width;
+            bool2 areUnitsOnLastLine = new (deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
+            if(all(areUnitsOnLastLine)) return;
+            
+            //MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
+            unitToSwapWith.StateMachine.ChangeState(order);
         }
     }
 }

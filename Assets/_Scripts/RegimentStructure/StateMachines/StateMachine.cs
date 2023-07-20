@@ -50,7 +50,7 @@ namespace KaizerWald
             CurrentState.OnStateEnter(order);
         }
 
-        public virtual void TransitionState(Order transitionInfo, EStates orderedState = EStates.None)
+        public virtual void ChangeState(Order transitionInfo, EStates orderedState = EStates.None)
         {
             CurrentState.OnStateExit();
             State = orderedState == EStates.None ? transitionInfo.StateOrdered : orderedState;

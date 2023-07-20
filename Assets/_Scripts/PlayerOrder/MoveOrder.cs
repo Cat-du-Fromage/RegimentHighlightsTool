@@ -15,5 +15,10 @@ namespace KaizerWald
             FormationDestination = formation;
             LeaderDestination = leaderDestination;
         }
+
+        public override string ToString()
+        {
+            return $"LeaderDestination: {LeaderDestination}\n {FormationDestination.ToString()}";
+        }
     }
 }

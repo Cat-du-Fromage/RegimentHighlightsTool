@@ -47,8 +47,8 @@ namespace KaizerWald
             bool regimentExist = RegimentManager.Instance.RegimentsByID.TryGetValue(targetId, out Regiment target);
             if (!hasTarget || !regimentExist) return false;
             
-            RegimentAttackOrder order = new RegimentAttackOrder(target);
-            LinkedStateMachine.TransitionState(order);
+            AttackOrder order = new AttackOrder(target);
+            LinkedStateMachine.ChangeState(order);
             
             Debug.Log($"{ObjectAttach.name} hasTarget: {hasTarget} : target is regiment Id: {targetId}");
             return true;

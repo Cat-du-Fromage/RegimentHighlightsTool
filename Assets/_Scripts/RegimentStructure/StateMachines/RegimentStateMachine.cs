@@ -8,13 +8,13 @@ using UnityEngine.InputSystem;
 
 namespace KaizerWald
 {
-    public partial class RegimentStateMachine : StateMachine<Regiment>
+    public sealed partial class RegimentStateMachine : StateMachine<Regiment>
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public HashSet<UnitStateMachine> UnitsStateMachine { get; private set; }
-
+        public HashSet<UnitStateMachine> DeadUnitsStateMachine { get; private set; }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -24,7 +24,20 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public override void TransitionDefaultState()
         {
-            TransitionState(RegimentOrder.Null, RegimentState.Default);
+            ChangeState(Order.Default);
+        }
+
+        public override void OnUpdate()
+        {
+            CleanUpNullUnitsStateMachine();
+            base.OnUpdate();
+        }
+
+        private void CleanUpNullUnitsStateMachine()
+        {
+            if (DeadUnitsStateMachine.Count == 0) return;
+            UnitsStateMachine.ExceptWith(DeadUnitsStateMachine);
+            DeadUnitsStateMachine.Clear();
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -36,12 +49,18 @@ namespace KaizerWald
         {
             base.Initialize();
             UnitsStateMachine = new HashSet<UnitStateMachine>(ObjectAttach.Units.Count);
-            ObjectAttach.Units.ForEach(unit => UnitsStateMachine.Add(unit.StateMachine));
-            foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
+            foreach (Unit unit in ObjectAttach.Units)
             {
-                unitStateMachine.Initialize();
+                UnitsStateMachine.Add(unit.StateMachine);
+                unit.StateMachine.Initialize();
             }
-            //UnitsStateMachine.ForEach(machine => machine.Initialize());
+            //ObjectAttach.Units.ForEach(unit => UnitsStateMachine.Add(unit.StateMachine));
+            //foreach (UnitStateMachine unitStateMachine in UnitsStateMachine) { unitStateMachine.Initialize(); }
+            
+            // ================================================================
+            //TEST DEAD UNITS
+            DeadUnitsStateMachine = new HashSet<UnitStateMachine>(ObjectAttach.Units.Count);
+            // ================================================================
         }
 
         protected override void InitializeStates()
@@ -68,7 +87,7 @@ namespace KaizerWald
             }
         }
         
-        public void OnMoveOrderReceived(Order order)
+        public void OnOrderReceived(Order order)
         {
             State = order.StateOrdered;
             switch (State)

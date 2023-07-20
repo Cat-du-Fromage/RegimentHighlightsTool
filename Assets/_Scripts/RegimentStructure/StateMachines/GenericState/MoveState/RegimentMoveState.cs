@@ -27,10 +27,16 @@ namespace KaizerWald
         {
             ResetDefaultValues();
             MoveOrder moveOrder = (MoveOrder)order;
+            
+            //-------------------------------------------------------------------------------------------
+            //Seems Out of Place
+            ObjectAttach.CurrentFormation.SetWidth(moveOrder.FormationDestination.Width);
+            ObjectAttach.CurrentFormation.SetDirection(moveOrder.FormationDestination.Direction3DForward);
+            //-------------------------------------------------------------------------------------------
+            
             Destination = moveOrder.LeaderDestination;
             FormationDestination = moveOrder.FormationDestination;
-            
-            AssignIndexToUnits(moveOrder.FormationDestination);//ICI on va donner aux unité leur index d'assignation
+            AssignIndexToUnits(FormationDestination);//ICI on va donner aux unité leur index d'assignation
         }
 
         public override void OnStateUpdate()
@@ -49,7 +55,6 @@ namespace KaizerWald
             
             if (!OnTransitionCheck()) return;
             LinkedStateMachine.TransitionDefaultState();
-            //LinkedStateMachine.TransitionState(EStates.Idle, RegimentOrder.Null);
         }
 
         public override bool OnTransitionCheck()
@@ -82,15 +87,15 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public void AssignIndexToUnits(FormationData formation)
+        private void AssignIndexToUnits(in FormationData formation)
         {
-            float2[] destinations = formation.GetUnitsPositionRelativeToRegiment(Destination);
-            List<Unit> tempUnitList = new List<Unit>(ObjectAttach.Units);
+            NativeArray<float2> destinations = formation.GetUnitsPositionRelativeToRegiment(Destination.xz);
+            List<Unit> tempUnitList = new(ObjectAttach.Units);
+            
             SortedSet<KeyValuePair<int, float>> distances = new(GetKeyValuePairComparer<int, float>());
             for(int i = 0; i < destinations.Length; i++)
             {
-                float2 currentDestinationCheck = destinations[i];
-                GatherUnitsDistance(distances, tempUnitList, currentDestinationCheck);
+                GatherUnitsDistance(distances, tempUnitList, destinations[i]);
                 Unit unitToRemove = tempUnitList[distances.Min.Key];
                 unitToRemove.SetIndexInRegiment(i);
                 tempUnitList.Remove(unitToRemove);

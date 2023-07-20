@@ -32,7 +32,7 @@ namespace KaizerWald
         
         private void ShowAimTarget(UnitFireState fireState)
         {
-            if (!Animation.IsAiming) return;
+            if (!Animation.IsInAimingMode) return;
             if(fireState.EnemyTarget == null) return;
             Vector3 unitPosition = transform.position;
             Vector3 directionTarget = fireState.AimDirection;

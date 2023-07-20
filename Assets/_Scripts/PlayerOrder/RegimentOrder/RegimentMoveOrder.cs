@@ -1,6 +1,7 @@
-﻿using Unity.Mathematics;
-using UnityEngine;
+﻿/*
 
+using Unity.Mathematics;
+using UnityEngine;
 using static Unity.Mathematics.math;
 
 namespace KaizerWald
@@ -20,3 +21,5 @@ namespace KaizerWald
         }
     }
 }
+
+*/

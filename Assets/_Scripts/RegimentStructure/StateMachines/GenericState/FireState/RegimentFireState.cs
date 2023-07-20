@@ -29,6 +29,10 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public override Regiment EnemyTarget { get; protected set; }
         
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         public RegimentFireState(Regiment objectAttach) : base(objectAttach)
         {
             
@@ -36,10 +40,10 @@ namespace KaizerWald
 
         public override void OnStateEnter(Order order)
         {
-            RegimentAttackOrder regimentAttackOrder = (RegimentAttackOrder)order;
-            EnemyTarget = regimentAttackOrder.EnemyTarget;
-            CacheEnemyFormation = regimentAttackOrder.EnemyTarget.CurrentFormation;
-            OrderUnitStateTransition();
+            AttackOrder attackOrder = (AttackOrder)order;
+            EnemyTarget = attackOrder.TargetEnemyRegiment;
+            CacheEnemyFormation = attackOrder.TargetEnemyRegiment.CurrentFormation;
+            OrderUnitStateTransition(attackOrder);
         }
 
         public override void OnStateUpdate()
@@ -55,7 +59,7 @@ namespace KaizerWald
             if (CurrentEnemyFormation.NumUnitsAlive != 0)
             {
                 CacheEnemyFormation = CurrentEnemyFormation;
-                UpdateUnitsTarget();
+                //UpdateUnitsTarget();
             }
 
             if (!OnTransitionCheck()) return;
@@ -64,8 +68,12 @@ namespace KaizerWald
 
         public override bool OnTransitionCheck()
         {
-            // Is Regiment Still Alive
-            return EnemyTarget == null || EnemyTarget.Units.Count == 0;
+            return EnemyTarget == null || EnemyTarget.Units.Count == 0; // Is Regiment Still Alive
+        }
+
+        public override void OnStateExit()
+        {
+            base.OnStateExit();
         }
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -81,32 +89,34 @@ namespace KaizerWald
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ State Transition Methods ◇◇◇◇◇◇                                                                    │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        private void OrderUnitStateTransition()
+        private void OrderUnitStateTransition(AttackOrder attackOrder)
         {
             foreach (UnitStateMachine unitStateMachine in UnitsStateMachines)
             {
-                UnitAttackOrder order = GetTargetForUnit(unitStateMachine);
-                unitStateMachine.TransitionState(order);
+                unitStateMachine.ChangeState(attackOrder);
             }
         }
 
+        /*
         //TODO: A CHANGER!
         private void UpdateUnitsTarget()
         {
             foreach (UnitStateMachine unitStateMachine in UnitsStateMachines)
             {
-                UnitAttackOrder order = GetTargetForUnit(unitStateMachine);
+                AttackOrder order = GetTargetForUnit(unitStateMachine);
                 unitStateMachine.CurrentState.OnStateEnter(order);
             }
         }
+        */
         
+        /*
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Get Target Methods ◇◇◇◇◇◇                                                                          │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        private UnitAttackOrder GetTargetForUnit(UnitStateMachine caller)
+        private AttackOrder GetTargetForUnit(UnitStateMachine caller)
         {
             Unit target = GetTarget(caller.transform.position.xz());
-            return new UnitAttackOrder(target);
+            return new AttackOrder(target);
         }
 
         private Unit GetTarget(float2 unitPosition)
@@ -159,6 +169,6 @@ namespace KaizerWald
             }
         }
 
-        
+        */
     }
 }

@@ -16,6 +16,8 @@ namespace KaizerWald
                 a.Value.CompareTo(b.Value));
         }
         
+        
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Swap<T>(ref T leftElement, ref T rightElement)
         {

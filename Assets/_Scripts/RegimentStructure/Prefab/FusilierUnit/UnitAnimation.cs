@@ -58,8 +58,9 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [SerializeField] private Dictionary<string, AnimationClip> AnimationClips;
 
-        public bool IsAiming => aim;
-        public bool IsFiring => aim && shoot;
+        public bool IsInAimingMode => aim;
+        public bool IsInFiringMode => aim && shoot;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -95,7 +96,7 @@ namespace KaizerWald
         private void ToggleFireAnimation()
         {
             if (!Keyboard.current.eKey.wasPressedThisFrame) return;
-            SetFullFireSequence(!IsFiring);
+            SetFullFireSequence(!IsInFiringMode);
         }
 
 
@@ -106,9 +107,9 @@ namespace KaizerWald
         
         public bool IsPlaying(EUnitAnimation unitAnimation) => GetCurrentClipName == unitAnimation.ToString();
         
-        public bool IsIdlePlaying => GetCurrentClipName == nameof(EUnitAnimation.RifleIdle);
-        public bool IsFirePlaying => GetCurrentClipName == nameof(EUnitAnimation.FusilierFiring);
-        public bool IsReloading => GetCurrentClipName == nameof(EUnitAnimation.RifleReloading);
+        public bool IsPlayingIdle => GetCurrentClipName == nameof(EUnitAnimation.RifleIdle);
+        public bool IsPlayingFire => GetCurrentClipName == nameof(EUnitAnimation.FusilierFiring);
+        public bool IsPlayingReload => GetCurrentClipName == nameof(EUnitAnimation.RifleReloading);
 
         //TODO: Since unit share all the same animation, We need to Moveit to UnitManager (at least the way to retrieve them)
         private void GetAllCLips()
@@ -187,12 +188,14 @@ namespace KaizerWald
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Aim + FIre ◇◇◇◇◇◇                                                                                  │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        public void SetFullFireSequence(bool state)
+        private void SetFullFireSequence(bool state)
         {
             animator.SetBool(animIDIsAiming, aim = state);//aim = state;
             animator.SetBool(animIDIsShooting, shoot = state);//shoot = state;
         }
-        
+        public void SetFullFireSequenceOn() => SetFullFireSequence(true);
+        public void SetFullFireSequenceOff() => SetFullFireSequence(false);
+
         public void SetDead()
         {
             animator.SetTrigger(animTriggerIDDeath);
