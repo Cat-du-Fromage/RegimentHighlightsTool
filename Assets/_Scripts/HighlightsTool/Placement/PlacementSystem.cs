@@ -45,14 +45,6 @@ namespace KaizerWald
             {
                 Regiment regiment = SelectedRegiments[i];
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
-                /*
-                float3 firstUnit = StaticPlacementRegister[regiment.RegimentID][0].transform.position;
-                float3 lastUnit = StaticPlacementRegister[regiment.RegimentID][width-1].transform.position;
-                float3 direction = normalizesafe(cross(down(), lastUnit - firstUnit));
-                FormationData formationDestination = new (regiment.CurrentFormation, width, direction);
-                float3 leaderDestination = (firstUnit + lastUnit) / 2;
-                MoveOrder order = new MoveOrder(formationDestination, leaderDestination);
-                */
                 MoveOrder order = PackOrder(regiment, width);
                 moveOrders.Add(new Tuple<Regiment, Order>(regiment,order));
             }

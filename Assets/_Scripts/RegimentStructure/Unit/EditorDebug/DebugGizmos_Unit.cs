@@ -16,28 +16,28 @@ namespace KaizerWald
         private void Debug_FireState()
         {
             if (!StateMachine.IsFiring) return;
-            UnitFireState fireState = (UnitFireState)StateMachine.CurrentState;
+            FireUnitState fireState = (FireUnitState)StateMachine.CurrentState;
             ShowGizmosTarget(fireState);
             ShowAimTarget(fireState);
         }
         
-        private void ShowGizmosTarget(UnitFireState fireState)
+        private void ShowGizmosTarget(FireUnitState fireState)
         {
             if (!RegimentAttach.ShowTargetsFiringStateTest) return;
-            if(fireState.EnemyTarget == null) return;
+            if(fireState.RegimentTargeted == null) return;
             Vector3 unitPosition = transform.position;
-            Vector3 targetPosition = fireState.EnemyTarget.transform.position;
+            Vector3 targetPosition = fireState.TargetPosition;
             DrawArrow.HandleLine(unitPosition, targetPosition, Color.red,1f, 0.5f);
         }
         
-        private void ShowAimTarget(UnitFireState fireState)
+        private void ShowAimTarget(FireUnitState fireState)
         {
             if (!Animation.IsInAimingMode) return;
-            if(fireState.EnemyTarget == null) return;
+            if(fireState.RegimentTargeted == null) return;
             Vector3 unitPosition = transform.position;
             Vector3 directionTarget = fireState.AimDirection;
             
-            float distanceUnitToTarget = Vector3.Distance(unitPosition, fireState.EnemyTarget.transform.position);
+            float distanceUnitToTarget = Vector3.Distance(unitPosition, fireState.TargetPosition);
 
             Vector3 endPosition = unitPosition + directionTarget * distanceUnitToTarget;
             DrawArrow.HandleLine(unitPosition, endPosition, Color.magenta,1f, 0.5f);

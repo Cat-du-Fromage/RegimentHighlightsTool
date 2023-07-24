@@ -140,7 +140,7 @@ namespace KaizerWald
             spaceBetweenUnits = half(formation.SpaceBetweenUnits);
 
             width = (byte)min(newWidth, maxRow);
-            depth = (byte)formation.Depth;
+            depth = (byte)ceil(numUnitsAlive / max(1f,width));
 
             direction2DForward = half2(direction.xz);
         }
@@ -155,7 +155,7 @@ namespace KaizerWald
             spaceBetweenUnits = half(formation.SpaceBetweenUnits);
 
             width = (byte)min(newWidth, maxRow);
-            depth = (byte)formation.Depth;
+            depth = (byte)ceil(numUnitsAlive / max(1f,width));
 
             direction2DForward = half2(direction.xz);
         }
@@ -178,8 +178,10 @@ namespace KaizerWald
         //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private readonly int CountUnitsLastLine => numUnitsAlive - NumCompleteLine * width;
+
         public readonly bool IsLastLineComplete => NumCompleteLine == depth;
         public readonly int NumCompleteLine => Depth * Width == numUnitsAlive ? depth : depth - 1;
+
         public readonly int NumUnitsLastLine => IsLastLineComplete ? width : CountUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -216,7 +218,6 @@ namespace KaizerWald
         public override string ToString()
         {
             return $"Current formation:\r\n" +
-                   //$"BaseNumUnits:{BaseNumUnits}\r\n" +
                    $"minRow {minRow}\r\n" +
                    $"maxRow {maxRow}\r\n" +
                    $"unitSize {unitSize}\r\n" +

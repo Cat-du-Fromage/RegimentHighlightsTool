@@ -21,7 +21,7 @@ namespace KaizerWald
         [field: SerializeField] public Regiment RegimentAttach { get; private set; }
         [field: SerializeField] public UnitAnimation Animation { get; private set; }
         [field: SerializeField] public UnitStateMachine StateMachine { get; private set; }
-        
+
         [field: SerializeField] public bool IsDead { get; private set; }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

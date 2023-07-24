@@ -94,13 +94,13 @@ namespace KaizerWald
         private void OnEnable()
         {
             factory.OnRegimentCreated += RegisterRegiment;
-            regimentHighlightSystem.OnPlacementEvent += OnMoveOrders;
+            regimentHighlightSystem.OnPlacementEvent += OnPlayerOrder;
         }
 
         private void OnDisable()
         {
             factory.OnRegimentCreated -= RegisterRegiment;
-            regimentHighlightSystem.OnPlacementEvent -= OnMoveOrders;
+            regimentHighlightSystem.OnPlacementEvent -= OnPlayerOrder;
             
             OnNewRegiment?.GetInvocationList().ForEachSafe(action => OnNewRegiment -= (Action<Regiment>)action);
             OnDeadRegiment?.GetInvocationList().ForEachSafe(action => OnDeadRegiment -= (Action<Regiment>)action);
@@ -150,7 +150,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
         //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
-        private void OnMoveOrders(Regiment regiment, MoveOrder regimentMoveOrder)
+        private void OnPlayerOrder(Regiment regiment, Order regimentMoveOrder)
         {
             regiment.StateMachine.OnOrderReceived(regimentMoveOrder);
         }

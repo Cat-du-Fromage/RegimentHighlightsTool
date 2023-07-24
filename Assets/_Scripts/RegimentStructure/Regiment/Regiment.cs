@@ -158,7 +158,7 @@ namespace KaizerWald
             if (!ConfirmDeaths(out int cacheNumDead)) return;
             
             FormationData futureFormation = new (CurrentFormation,  CurrentFormation.NumUnitsAlive - cacheNumDead);
-            float3 regimentPosition = !StateMachine.IsMoving ? RegimentPosition : ((RegimentMoveState)StateMachine.CurrentState).Destination;
+            float3 regimentPosition = !StateMachine.IsMoving ? RegimentPosition : ((MoveRegimentState)StateMachine.CurrentRegimentState).Destination;
             MoveOrder moveOrder = new MoveOrder(futureFormation, regimentPosition);
             
             while (DeadUnits.Count != 0)
@@ -186,7 +186,7 @@ namespace KaizerWald
             for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
             {
                 //MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
-                Units[i].StateMachine.ChangeState(order);
+                Units[i].StateMachine.RequestChangeState(order);
             }
         }
 
@@ -219,7 +219,7 @@ namespace KaizerWald
             if(all(areUnitsOnLastLine)) return;
             
             //MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
-            unitToSwapWith.StateMachine.ChangeState(order);
+            unitToSwapWith.StateMachine.RequestChangeState(order);
         }
     }
 }

@@ -34,9 +34,9 @@ namespace KaizerWald
             return clockwise ? new float2(value.y, -value.x) : new float2(-value.y, value.x);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 CrossClockWise(this float2 value) => value.Cross();
+        public static float2 CrossRight(this float2 value) => value.Cross();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 CrossCounterClockWise(this float2 value) => value.Cross(false);
+        public static float2 CrossLeft(this float2 value) => value.Cross(false);
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
         /// <summary>

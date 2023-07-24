@@ -214,8 +214,10 @@ namespace KaizerWald
             Gizmos.color = Color.white;
             float3 regimentForward = transform.forward;
             
-            float2 directionLeft = (AngleAxis(-FovAngleInDegrees, Vector3.up) * regimentForward).xz();
-            float2 directionRight = (AngleAxis(FovAngleInDegrees, Vector3.up) * regimentForward).xz();
+            //float2 directionLeft = (KzwMath.AngleAxis(-FovAngleInDegrees, Vector3.up) * regimentForward).xz();
+            //float2 directionRight = (KzwMath.AngleAxis(FovAngleInDegrees, Vector3.up) * regimentForward).xz();
+            float2 directionLeft = mul(AngleAxis(-Regiment.FovAngleInDegrees, up()), regimentForward).xz;
+            float2 directionRight = mul(AngleAxis(Regiment.FovAngleInDegrees, up()), regimentForward).xz;
             float2x2 leftRightDirection = float2x2(directionLeft, directionRight);
 
             float2x2 leftStartDirection = float2x2(leftStart, directionLeft);
@@ -248,10 +250,10 @@ namespace KaizerWald
                 Gizmos.color = Color.magenta;
                 Gizmos.DrawSphere(topForwardFov.x1y(), 0.3f);
                 
-                float2 leftCross = topForwardDirection.CrossCounterClockWise();
+                float2 leftCross = topForwardDirection.CrossLeft();
                 float2 intersectArcLeft = GetIntersection(topForwardFov, leftStart, leftCross, leftRightDir.c0);
                 
-                float2 rightCross = topForwardDirection.CrossClockWise();
+                float2 rightCross = topForwardDirection.CrossRight();
                 float2 intersectArcRight = GetIntersection(topForwardFov, rightStart, rightCross, leftRightDir.c1);
                 
                 float2x2 leftRightCrossDir = float2x2(leftCross, rightCross);
@@ -352,13 +354,13 @@ namespace KaizerWald
             
             if (!FiringStateTest && StateMachine.State == EStates.Idle)
             {
-                RegimentIdleState idleState = (RegimentIdleState)StateMachine.CurrentState;
+                IdleRegimentState idleState = (IdleRegimentState)StateMachine.CurrentRegimentState;
                 if (!idleState.AutoFire) return;
                 idleState.AutoFireOff();
             }
             else if (FiringStateTest && StateMachine.State == EStates.Idle)
             {
-                RegimentIdleState idleState = (RegimentIdleState)StateMachine.CurrentState;
+                IdleRegimentState idleState = (IdleRegimentState)StateMachine.CurrentRegimentState;
                 if (idleState.AutoFire) return;
                 idleState.AutoFireOn();
             }

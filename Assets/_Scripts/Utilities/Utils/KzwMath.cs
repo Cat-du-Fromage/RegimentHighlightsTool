@@ -27,6 +27,12 @@ namespace KaizerWald
             return max(lowerBound, min(upperBound, valueToClamp));
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsEven(int value) => (value & 1) == 0;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsOdd(int value) => (value & 1) == 1;
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ Grid Helpers ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -98,12 +104,10 @@ namespace KaizerWald
             return y * width + x;
         }
 
-
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        /// <summary>
-        /// Square value : Multiply value by itself (v * v)
-        /// </summary>
+//║                        ◆◆◆◆◆◆ Square value : Multiply value by itself (v * v) ◆◆◆◆◆◆                               ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Square(int v) => v * v;
 
@@ -111,11 +115,9 @@ namespace KaizerWald
         public static float Square(float v) => v * v;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        /// <summary>
-        /// Determinant of 2 Vectors
-        /// </summary>
+//║                                        ◆◆◆◆◆◆ Determinant of 2 Vectors ◆◆◆◆◆◆                                      ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Determinant(float v1x, float v1y, float v2x, float v2y)
         {
@@ -127,11 +129,8 @@ namespace KaizerWald
         {
             return determinant(new float2x2(v1, v2)); //Det(v1.x, v1.y, v2.x, v2.y);
         }
-        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        /// <summary>
-        /// Get Intersection Between 2 Vectors(and their respective direction)
-        /// </summary>
+//║              ◆◆◆◆◆◆ Get Intersection Between 2 Vectors(and their respective direction) ◆◆◆◆◆◆                      ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 GetIntersection(Vector2 originX, Vector2 originY, Vector2 dirX, Vector2 dirY)
@@ -175,7 +174,7 @@ namespace KaizerWald
             float det = a1 * b2 - a2 * b1;
             //This line checks if the determinant is approximately zero, which means that the lines are parallel or coincident.
             bool isDetZero = Approximately(det, 0);
-            return isDetZero ? NegativeInfinity : float2((b2 * c1 - b1 * c2) / det, (a1 * c2 - a2 * c1) / det);
+            return isDetZero ? INFINITY : float2((b2 * c1 - b1 * c2) / det, (a1 * c2 - a2 * c1) / det);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -197,6 +196,29 @@ namespace KaizerWald
             return GetIntersection3DFlat((float3)originX, (float3)originY, (float3)dirX, (float3)dirY);
         }
         
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ QUATERNION ◆◆◆◆◆◆                                               ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion AngleAxis(float angle, Vector3 axis)
+        {
+            float angleRadianDiv2 = angle * Deg2Rad / 2;
+            Vector3 xyz = axis.normalized * Sin(angleRadianDiv2);
+            float w = Cos(angleRadianDiv2);
+            return new Quaternion(xyz[0], xyz[1], xyz[2], w);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static quaternion AngleAxis(float angle, float3 axis)
+        {
+            float angleRadianDiv2 = radians(angle)/2;
+            return quaternion(new float4(normalizesafe(axis) * sin(angleRadianDiv2), cos(angleRadianDiv2)));
+        }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                      ◆◆◆◆◆◆ Greater Common Divisor / Lower Common Multiplicator ◆◆◆◆◆◆                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         
         //GCD: Greater Common Divisor / Plus grand diviseur commun
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
