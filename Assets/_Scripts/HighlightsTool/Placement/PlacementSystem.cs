@@ -35,6 +35,10 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Orders Callback ◈◈◈◈◈◈                                                                         ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         //Callback On RegimentHighlightSystem
         public void OnMoveOrderEvent(int[] newFormationsWidth)
         {
@@ -56,8 +60,9 @@ namespace KaizerWald
             float3 firstUnit = StaticPlacementRegister[regiment.RegimentID][0].transform.position;
             float3 lastUnit = StaticPlacementRegister[regiment.RegimentID][width-1].transform.position;
             float3 direction = normalizesafe(cross(down(), lastUnit - firstUnit));
+            
             FormationData formationDestination = new (regiment.CurrentFormation, width, direction);
-            float3 leaderDestination = (firstUnit + lastUnit) / 2;
+            float3 leaderDestination = (firstUnit + lastUnit) / 2f;
             MoveOrder order = new MoveOrder(formationDestination, leaderDestination);
             return order;
         }
@@ -102,9 +107,9 @@ namespace KaizerWald
             }
         }
         
-        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
-        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                           ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void ResizeAndReformRegister(int registerIndex, Regiment regiment, int numHighlightToKeep, in float3 regimentFuturePosition)
         {
             if (!Registers[registerIndex].Records.ContainsKey(regiment.RegimentID)) return;
@@ -114,6 +119,8 @@ namespace KaizerWald
                 HighlightBehaviour highlight = newRecordArray[i];
                 Unit unitToAttach = regiment.Units[i];
                 highlight.AttachToUnit(unitToAttach);
+                
+                //Different from Preselection/Selection
                 Vector3 position = regiment.CurrentFormation.GetUnitRelativePositionToRegiment3D(i, regimentFuturePosition);
                 highlight.transform.position = position;
             }

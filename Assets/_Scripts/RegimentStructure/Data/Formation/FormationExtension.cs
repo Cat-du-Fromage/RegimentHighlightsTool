@@ -5,6 +5,7 @@ using UnityEngine;
 
 using static UnityEngine.Vector2;
 using static Unity.Mathematics.math;
+using static KaizerWald.KzwMath;
 
 namespace KaizerWald
 {
@@ -31,6 +32,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                 ◆◆◆◆◆◆ UNIT RELATIVE POSITION TO REGIMENT ◆◆◆◆◆◆                                   ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         public static Vector3 GetUnitRelativePositionToRegiment3D(this Formation formation, int unitIndex, Vector3 regimentPosition)
         {
             return ((FormationData)formation).GetUnitRelativePositionToRegiment3D(unitIndex, regimentPosition);
@@ -45,7 +47,7 @@ namespace KaizerWald
         {
             Vector2 dstUnitToUnit = formation.DistanceUnitToUnit;
 
-            (int x, int y) = KzwMath.GetXY(unitIndex, formation.Width);
+            (int x, int y) = GetXY(unitIndex, formation.Width);
             int widthRow = y == formation.Depth - 1 ? formation.NumUnitsLastLine : formation.Width;
             
             Vector2 regimentBackDirection = -(float2)formation.Direction2DForward;
@@ -92,7 +94,7 @@ namespace KaizerWald
         {
             float2 dstUnitToUnit = formation.DistanceUnitToUnit;
 
-            (int x, int y) = KzwMath.GetXY(unitIndex, formation.Width);
+            (int x, int y) = GetXY(unitIndex, formation.Width);
             //int y = unitIndex / formation.Width;
             //int x = unitIndex - y * formation.Width;
             int widthRow = select(formation.Width, formation.NumUnitsLastLine, y == formation.Depth - 1);

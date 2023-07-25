@@ -16,6 +16,9 @@ namespace KaizerWald
 {
     public sealed class RegimentSelectionController : HighlightController
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private const float SPHERE_RADIUS = 0.5f;
         private const float RAYCAST_DISTANCE = ushort.MaxValue;
         
@@ -27,9 +30,12 @@ namespace KaizerWald
         private Vector2 StartLMouse, EndLMouse;
         
         public SelectionSystem SelectionSystem { get; private set; }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private HighlightRegister PreselectionRegister => SelectionSystem.PreselectionRegister;
         private HighlightRegister SelectionRegister => SelectionSystem.SelectionRegister;
-        
         private bool IsCtrlPressed => selectionControl.LockSelection.IsPressed();
         
         public RegimentSelectionController(HighlightSystem system, PlayerControls controls, LayerMask unitLayer)
@@ -65,15 +71,16 @@ namespace KaizerWald
             if (ClickDragPerformed) return;
             CheckMouseHoverUnit();
         }
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ PRESELECTION ◇◇◇◇◇                                                                                   ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ PRESELECTION ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ EVENT FUNCTIONS ◇◇◇◇◇                                                                                ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ EVENT FUNCTIONS ◈◈◈◈◈◈                                                                         ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆ Single Unit Preselection ◆◆◆◆                                                                        │
+        //│  ◇◇◇◇◇◇ Single Unit Preselection ◇◇◇◇◇◇                                                                    │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void OnMouseHover(CallbackContext context)
         {
@@ -83,7 +90,7 @@ namespace KaizerWald
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆ Multiple Unit Preselection ◆◆◆◆                                                                      │
+        //│  ◇◇◇◇◇◇ Multiple Unit Preselection ◇◇◇◇◇◇                                                                  │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void OnDragSelectionStart(CallbackContext context)
         {
@@ -101,7 +108,7 @@ namespace KaizerWald
         private bool IsDragSelection() => Vector2.SqrMagnitude(EndLMouse - StartLMouse) >= 128;
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆ Mouse Hover Check ◆◆◆◆                                                                               │
+        //│  ◇◇◇◇◇◇ Mouse Hover Check ◇◇◇◇◇◇                                                                           │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
         private bool NoHits(int numHits)
@@ -122,12 +129,11 @@ namespace KaizerWald
             Array.Clear(Hits, 0, Hits.Length);
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ PRESELECTION METHODS ◇◇◇◇◇                                                                           ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ PRESELECTION TYPE ◈◈◈◈◈◈                                                                       ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆ Single Preselection ◆◆◆◆                                                                             │
+        //│  ◇◇◇◇◇◇ Single Preselection ◇◇◇◇◇◇                                                                         │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void MouseHoverSingleEntity(in Ray singleRay, int numHits)
         {
@@ -161,7 +167,7 @@ namespace KaizerWald
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-        //│  ◆◆◆◆ Group Preselection ◆◆◆◆                                                                              │
+        //│  ◇◇◇◇◇◇ Group Preselection ◇◇◇◇◇◇                                                                          │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void GroupPreselectionRegiments()
         {
@@ -171,9 +177,9 @@ namespace KaizerWald
                 if (regiment == null) continue;
                 bool isInSelectionRectangle = CheckUnitsInRectangleBounds(regiment);
                 
-                if(!regiment.IsPreselected && isInSelectionRectangle) 
+                if(!regiment.IsPreselected && isInSelectionRectangle) //NOT preselected but in rectangle
                     AddPreselection(regiment);
-                else if(regiment.IsPreselected && !isInSelectionRectangle) 
+                else if(regiment.IsPreselected && !isInSelectionRectangle) //Preselected and NOT in Rectangle
                     RemovePreselection(regiment);
             }
             
@@ -203,9 +209,9 @@ namespace KaizerWald
             return bounds;
         }
         
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ Method Preselection ◇◇◇◇◇                                                                            ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Link To System ◈◈◈◈◈◈                                                                          ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void AddPreselection(Regiment selectableRegiment)
         {
             SelectionSystem.OnShow(selectableRegiment, SelectionSystem.PreselectionRegisterIndex);
@@ -220,10 +226,9 @@ namespace KaizerWald
         {
             SelectionSystem.HideAll(SelectionSystem.PreselectionRegisterIndex);
         }
-        
-        //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-        //║ ◇◇◇◇◇ SELECTION ◇◇◇◇◇                                                                                      ║
-        //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ SELECTION ◆◆◆◆◆◆                                                ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private void OnSelection(CallbackContext context)
         {
             DeselectNotPreselected();
