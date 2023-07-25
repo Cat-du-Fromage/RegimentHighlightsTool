@@ -144,28 +144,20 @@ namespace KaizerWald
             }
             return true;
         }
-
-
+        
 
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-        
-        //TODO COMMENT ON TROUVE LA POSITION! car les enemy n'ont pas de "placement" => pas de rearrangement possible en utilisant les jetons!
-        
+        //Problématique: ne peut pas être une state car il y a un changement de structure de la matrice de formation
+        //Changement des "IndexInRegiment" des unités qui entrainerait des sauts entre les classes "StateMachine" et "Regiment"
+        //Conclusion: Rearrangement n'est PAS une STATE mais une FONCTION du régiment!
         private void Rearrangement()
         {
             if (!ConfirmDeaths(out int cacheNumDead)) return;
             
-            FormationData futureFormation = new (CurrentFormation,  CurrentFormation.NumUnitsAlive - cacheNumDead);
             float3 regimentPosition = !StateMachine.IsMoving ? RegimentPosition : ((MoveRegimentState)StateMachine.CurrentRegimentState).Destination;
-            MoveOrder moveOrder = new MoveOrder(futureFormation, regimentPosition);
-            
-            while (DeadUnits.Count != 0)
-            {
-                Rearrange(moveOrder, DeadUnits.Min, futureFormation);
-            }
-            LastLineRearrangementOrder(moveOrder, futureFormation);
+            Rearrange(cacheNumDead, regimentPosition);
             ResizeFormation(cacheNumDead);
             
             if (CurrentFormation.NumUnitsAlive == 0) return;
@@ -179,47 +171,63 @@ namespace KaizerWald
             CurrentFormation.DecreaseBy(numToRemove);
         }
 
-        private void LastLineRearrangementOrder(Order order, in FormationData futureFormation)
+        private void Rearrange(int cacheNumDead, in float3 regimentPosition)
         {
-            if (futureFormation.IsLastLineComplete) return;
-            int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
-            for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
+            FormationData currentFormationData = CurrentFormation;
+            FormationData futureFormation = new (CurrentFormation,  CurrentFormation.NumUnitsAlive - cacheNumDead);
+            MoveOrder order = new MoveOrder(futureFormation, regimentPosition);
+            
+            while (DeadUnits.Count > 0)
             {
-                //MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
-                Units[i].StateMachine.RequestChangeState(order);
+                SwapRearrange();
             }
-        }
+            LastLineRearrangementOrder();
+            
+            //------------------------------------------
+            // INTERNAL METHODS
+            //------------------------------------------
+            void SwapRearrange()
+            {
+                int deadIndex = DeadUnits.Min;
+                //Here we use Current Formation because units are not consider "Dead" Yet
+                int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, currentFormationData);
+            
+                if (swapIndex == -1)
+                {
+                    DeadUnits.Remove(deadIndex);
+                    return;
+                }
+                Unit unitToSwapWith = Units[swapIndex];
 
-        private void Rearrange(Order order, int deadIndex, in FormationData futureFormation)
-        {
-            //Here we use Current Formation because units are not consider "Dead" Yet
-            int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, CurrentFormation);
-            if (swapIndex == -1)
-            {
+                // ----------------------------------------------------------------------
+                // (1) we need the position "unitToSwapWith" will go
+                // we can't use dead unit as reference because:
+                // * it's unstable because of the death animation
+                // * Very Unstable when applying to Last Line because with vary a lot
+                // ==> We need to calculate position in regiment (using formationExtension?)
+                // ----------------------------------------------------------------------
+                RegimentFormationMatrix.SwapIndexInRegiment(deadIndex, swapIndex);
+
                 DeadUnits.Remove(deadIndex);
-                return;
+                DeadUnits.Add(swapIndex);
+
+                int deadYCoord = deadIndex / futureFormation.Width;
+                int swappedYCoord = swapIndex / futureFormation.Width;
+                bool2 areUnitsOnLastLine = new(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
+            
+                if (all(areUnitsOnLastLine)) return;
+                unitToSwapWith.StateMachine.RequestChangeState(order);
             }
-            Unit unitToSwapWith = Units[swapIndex];
             
-            // ----------------------------------------------------------------------
-            // (1) we need the position "unitToSwapWith" will go
-            // we can't use dead unit as reference because:
-            // * it's unstable because of the death animation
-            // * Very Unstable when applying to Last Line because with vary a lot
-            // ==> We need to calculate position in regiment (using formationExtension?)
-            // ----------------------------------------------------------------------
-            RegimentFormationMatrix.SwapIndexInRegiment(deadIndex, swapIndex);
-            
-            DeadUnits.Remove(deadIndex);
-            DeadUnits.Add(swapIndex);
-            
-            int deadYCoord = deadIndex / futureFormation.Width;
-            int swappedYCoord = swapIndex / futureFormation.Width;
-            bool2 areUnitsOnLastLine = new (deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
-            if(all(areUnitsOnLastLine)) return;
-            
-            //MoveOrder unitMoveOrder = new MoveOrder(futureFormation, regimentPosition);
-            unitToSwapWith.StateMachine.RequestChangeState(order);
+            void LastLineRearrangementOrder()
+            {
+                if (futureFormation.IsLastLineComplete) return;
+                int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
+                for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
+                {
+                    Units[i].StateMachine.RequestChangeState(order);
+                }
+            }
         }
     }
 }

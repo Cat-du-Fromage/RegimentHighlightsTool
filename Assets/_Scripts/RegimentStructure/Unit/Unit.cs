@@ -51,14 +51,20 @@ namespace KaizerWald
 
         public void InitializeFormationMatrix(RegimentFormationMatrix regimentFormationMatrix, int index)
         {
+            //------------------------------------------
+            //DEBUG
             IndexInRegimentDebug = index;
+            //------------------------------------------
             FormationMatrix = new UnitMatrixElement(regimentFormationMatrix, index);
         }
         
         public void SetIndexInRegiment(int index)
         {
             FormationMatrix.SetIndexInRegiment(index);
+            //------------------------------------------
+            //DEBUG
             IndexInRegimentDebug = IndexInRegimentDebug;
+            //------------------------------------------
         }
 
         public void UpdateUnit()
@@ -66,14 +72,15 @@ namespace KaizerWald
             StateMachine.OnUpdate();
         }
 
-        // ====================================
-        //FOR DEBUG ONLY
+        //------------------------------------------
+        //DEBUG
         private void Update()
         {
             if (IndexInRegimentDebug == FormationMatrix.IndexInRegiment) return;
             IndexInRegimentDebug = FormationMatrix.IndexInRegiment;
         }
-        // ====================================
+        //------------------------------------------
+        
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods (Units are Initialize by their regiment) ◈◈◈◈◈◈                         ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
