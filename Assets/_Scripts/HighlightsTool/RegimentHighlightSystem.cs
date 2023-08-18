@@ -33,8 +33,8 @@ namespace KaizerWald
         public PlacementSystem Placement { get; private set; }
 
         public event Action OnSelectionEvent;
-        public event Action<Regiment, MoveOrder> OnPlacementEvent;
-
+        public event Action<Regiment, Order> OnPlacementEvent;
+        //public event Action<Regiment, MoveOrder> OnPlacementEvent;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -79,27 +79,24 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public List<Regiment> PreselectedRegiments => Selection.PreselectionRegister.ActiveHighlights;
         public List<Regiment> SelectedRegiments => Selection.SelectionRegister.ActiveHighlights;
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-
+        
         public void OnCallback(HighlightSystem system, List<Tuple<Regiment, Order>> orders)
         {
             switch (system)
             {
                 case PlacementSystem: // ORDRE
-                    if (orders.Count == 0) return;
                     //1) Placement-Drag => MoveOrder
                     //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
-                    if (orders[0].Item2 is MoveOrder)
-                    {
-                        foreach ((Regiment regiment, Order order)  in orders)
-                        {
-                            OnPlacementEvent?.Invoke(regiment, (MoveOrder)order);
-                        }
-                    }
                     //3) Placement-NoDrag + Enemy Preselected => AttackOrder
+                    foreach ((Regiment regiment, Order order) in orders)
+                    {
+                        OnPlacementEvent?.Invoke(regiment, order);
+                    }
                     return;
                 case SelectionSystem: // Indication (UI Regiment Preselected)
                     OnSelectionEvent?.Invoke();

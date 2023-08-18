@@ -136,11 +136,56 @@ namespace KaizerWald
             tempWidths = PlaceRegiments();
         }
         
+        private void OnAttackCallback()
+        {
+            //Prevent order attack while trying to order place
+            //if (PlacementsVisible || PlacementSystem.PreselectedRegiments.Count != 1) return;
+            // =============================================================================
+            // TODO: FOR NOW TEAM ID IS HARDCODED (not 0 means not the player) => Change When "PlayersManager"/"TeamsManager" implemented
+            // =============================================================================
+            Regiment preselectedRegiment = PlacementSystem.PreselectedRegiments[0];
+            if (preselectedRegiment.TeamID == 0) return;
+            PlacementSystem.OnAttackOrderEvent(preselectedRegiment);
+        }
+
+        private void OnMoveCallback(int registerIndex)
+        {
+            PlacementSystem.OnMoveOrderEvent(registerIndex, tempWidths);
+        }
+
+        private void OrdersCallbackChoice(int registerIndex)
+        {
+            if (!PlacementsVisible)
+            {
+                if (PlacementSystem.PreselectedRegiments.Count == 0)
+                {
+                    //TODO : Implement Move while keeping same Formation(Width)
+                    //Carefull WAY More complicated than it looks.. How will it work when multiple selection?
+                }
+                else
+                {
+                    OnAttackCallback();
+                }
+            }
+            else
+            {
+                OnMoveCallback(registerIndex);
+            }
+        }
+        
         private void OnRightMouseClickAndMoveCancel(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0 || PlacementCancel) return; //Means Left Click is pressed
+            //Currently only drag order work
+            
+            //Precise Register because in this case, static are not in position, can't move after because
+            //DisablePlacements methods make "PlacementsVisible = false;"
+            OrdersCallbackChoice(PlacementSystem.DynamicRegisterIndex);
             OnMouseReleased();
-            PlacementSystem.OnMoveOrderEvent(tempWidths);
+            
+            //Currently only drag order work
+            //OrdersCallbackChoice();
+            //PlacementSystem.OnMoveOrderEvent(tempWidths);
 
             void OnMouseReleased()
             {

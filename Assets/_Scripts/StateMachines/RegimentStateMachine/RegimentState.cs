@@ -31,12 +31,12 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        protected RegimentState(RegimentStateMachine linkedRegimentStateMachine, EStates stateIdentity)
+        protected RegimentState(RegimentStateMachine regimentStateMachine, EStates stateIdentity)
         {
             StateIdentity = stateIdentity;
-            LinkedRegimentStateMachine = linkedRegimentStateMachine;
-            RegimentAttach = linkedRegimentStateMachine.Regiment;
-            RegimentTransform = linkedRegimentStateMachine.transform;
+            LinkedRegimentStateMachine = regimentStateMachine;
+            RegimentAttach = regimentStateMachine.Regiment;
+            RegimentTransform = regimentStateMachine.transform;
         }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║

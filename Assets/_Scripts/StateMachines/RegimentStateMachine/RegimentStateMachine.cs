@@ -69,8 +69,10 @@ namespace KaizerWald
             {
                 {EStates.Idle, new IdleRegimentState(this)},
                 {EStates.Move, new MoveRegimentState(this)},
-                {EStates.Fire, new FireRegimentState(this)}
+                {EStates.Fire, new FireRegimentState(this)},
+                {EStates.Chase, new ChaseRegimentState(this)},
             };
+
             State = EStates.Idle;
         }
         
@@ -97,9 +99,20 @@ namespace KaizerWald
                     RequestChangeState(order);
                     return;
                 case EStates.Fire:
+                    OnFireOrderReceived(order);
                     return;
                 default:
                     return;
+            }
+        }
+
+        private void OnFireOrderReceived(Order attackOrder)
+        {
+            bool enterFireState = RequestChangeState(attackOrder);
+            
+            if (!enterFireState)
+            {
+                
             }
         }
         
@@ -108,15 +121,16 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void ToDefaultState() => TryEnterState(RegimentState.Default);
 
-        public void RequestChangeState(Order order)
+        public bool RequestChangeState(Order order)
         {
             States[order.StateOrdered].SetupState(order);
-            if (!TryEnterState(order.StateOrdered)) return;
+            if (!TryEnterState(order.StateOrdered)) return false;
             //Propagate Order to Units
             foreach (UnitStateMachine unitStateMachine in UnitsStateMachine)
             {
                 unitStateMachine.RequestChangeState(order);
             }
+            return true;
         }
         
         public bool TryEnterState(EStates state)

@@ -19,7 +19,9 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public List<Regiment> PreselectedRegiments => MainSystem.PreselectedRegiments;
         public List<Regiment> SelectedRegiments => MainSystem.SelectedRegiments;
+        
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
         
@@ -38,10 +40,26 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Orders Callback ◈◈◈◈◈◈                                                                         ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        public void OnAttackOrderEvent(Regiment enemyRegiment)
+        {
+            Debug.Log($"Attack Ordered");
+            /*
+            AttackOrder order = new AttackOrder(enemyRegiment);
+            List<Tuple<Regiment, Order>> attackOrders = new (SelectedRegiments.Count);
+            
+            foreach (Regiment regiment in SelectedRegiments)
+            {
+                attackOrders.Add(new Tuple<Regiment, Order>(regiment, order));
+            }
+            MainSystem.OnCallback(this, attackOrders);
+            */
+        }
         
         //Callback On RegimentHighlightSystem
-        public void OnMoveOrderEvent(int[] newFormationsWidth)
+        public void OnMoveOrderEvent(int registerIndexUsed, int[] newFormationsWidth)
         {
+            Debug.Log($"Move NewFormation Ordered");
             bool keepSameFormation = newFormationsWidth.Length == 0;
             List<Tuple<Regiment, Order>> moveOrders = new (SelectedRegiments.Count);
             
@@ -49,16 +67,16 @@ namespace KaizerWald
             {
                 Regiment regiment = SelectedRegiments[i];
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
-                MoveOrder order = PackOrder(regiment, width);
+                MoveOrder order = PackOrder(registerIndexUsed, regiment, width);
                 moveOrders.Add(new Tuple<Regiment, Order>(regiment,order));
             }
             MainSystem.OnCallback(this, moveOrders);
         }
 
-        private MoveOrder PackOrder(Regiment regiment, int width)
+        private MoveOrder PackOrder(int registerIndexUsed, Regiment regiment, int width)
         {
-            float3 firstUnit = StaticPlacementRegister[regiment.RegimentID][0].transform.position;
-            float3 lastUnit = StaticPlacementRegister[regiment.RegimentID][width-1].transform.position;
+            float3 firstUnit = Registers[registerIndexUsed][regiment.RegimentID][0].transform.position;
+            float3 lastUnit = Registers[registerIndexUsed][regiment.RegimentID][width-1].transform.position;
             float3 direction = normalizesafe(cross(down(), lastUnit - firstUnit));
             
             FormationData formationDestination = new (regiment.CurrentFormation, width, direction);

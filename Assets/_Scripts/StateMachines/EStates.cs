@@ -9,6 +9,7 @@ namespace KaizerWald
         None = -1,
         Idle = 0,
         Move = 1,
-        Fire = 2
+        Fire = 2,
+        Chase = 3,
     }
 }
