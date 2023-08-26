@@ -72,8 +72,10 @@ namespace KaizerWald
             CheckSwitchState();
         }
         
+        //Possible Next State: Move(if target order); Idle(if (target dead or Out of range) and no target Order)
         public override bool CheckSwitchState()
         {
+            
             return SwitchToIdleState(); // Is Regiment Still Alive
         }
 

@@ -7,13 +7,21 @@ namespace KaizerWald
 {
     public class RegimentStateMachine : MonoBehaviour
     {
+        //==================================================
+        //TEST
+        public RegimentBlackboard Blackboard;
+        //==================================================
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        [field: SerializeField] public Regiment Regiment { get; private set; }
         [field: SerializeField] public EStates State { get; private set; }
         public Dictionary<EStates, RegimentState> States { get; private set; }
-        public Regiment Regiment { get; private set; }
         
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Units Reference ◇◇◇◇◇◇                                                                             │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         public HashSet<UnitStateMachine> UnitsStateMachine { get; private set; }
         public HashSet<UnitStateMachine> DeadUnitsStateMachine { get; private set; }
 
@@ -23,6 +31,10 @@ namespace KaizerWald
         
         private void Awake()
         {
+            //==================================================
+            //TEST
+            Blackboard = new RegimentBlackboard();
+            //==================================================
             Regiment = GetComponent<Regiment>();
         }
         
@@ -99,6 +111,7 @@ namespace KaizerWald
                     RequestChangeState(order);
                     return;
                 case EStates.Fire:
+                    Blackboard.SetOrderRegimentTarget(((AttackOrder)order).TargetEnemyRegiment);
                     OnFireOrderReceived(order);
                     return;
                 default:

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace KaizerWald
 {
+    /*
     public class RegimentCompositeState : RegimentState
     {
         protected Dictionary<EStates, RegimentState> StatesComposition { get; private set; }
@@ -13,4 +14,5 @@ namespace KaizerWald
             states.ForEach(state => StatesComposition.TryAdd(state.StateIdentity, state));
         }
     }
+    */
 }
