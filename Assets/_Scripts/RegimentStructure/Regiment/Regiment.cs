@@ -24,7 +24,7 @@ namespace KaizerWald
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private Transform regimentTransform;
-        //private List<Unit> DeadUnits;
+        
         private SortedSet<int> DeadUnits;
         public RegimentFormationMatrix RegimentFormationMatrix { get; private set; }
         
@@ -222,8 +222,7 @@ namespace KaizerWald
             void LastLineRearrangementOrder()
             {
                 if (futureFormation.IsLastLineComplete) return;
-                int lastRowFirstIndex = futureFormation.NumUnitsAlive - futureFormation.NumUnitsLastLine;
-                for (int i = lastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
+                for (int i = futureFormation.LastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
                 {
                     Units[i].StateMachine.RequestChangeState(order);
                 }

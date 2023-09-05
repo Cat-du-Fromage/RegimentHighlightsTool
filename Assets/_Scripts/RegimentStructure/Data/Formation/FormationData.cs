@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -166,6 +167,7 @@ namespace KaizerWald
         public readonly float2 DistanceUnitToUnit => UnitSize + SpaceBetweenUnits;
         public float DistanceUnitToUnitX => DistanceUnitToUnit.x;
         public float DistanceUnitToUnitY => DistanceUnitToUnit.y;
+        public int LastRowFirstIndex => NumUnitsAlive - NumUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Direction ◈◈◈◈◈◈                                                                               ║
@@ -215,6 +217,28 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public bool Equals(FormationData other)
+        {
+            bool rowsEqual = minRow == other.minRow && maxRow == other.maxRow;
+            bool widthDepthEquals = width == other.width && depth == other.depth;
+            return rowsEqual && widthDepthEquals &&
+                   numUnitsAlive == other.numUnitsAlive && 
+                   unitSize.Equals(other.unitSize) && 
+                   spaceBetweenUnits.Equals(other.spaceBetweenUnits) && 
+                   direction2DForward.Equals(other.direction2DForward);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is FormationData other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(minRow, maxRow, unitSize, spaceBetweenUnits, numUnitsAlive, width, depth, direction2DForward);
+        }
+        
         public override string ToString()
         {
             return $"Current formation:\r\n" +

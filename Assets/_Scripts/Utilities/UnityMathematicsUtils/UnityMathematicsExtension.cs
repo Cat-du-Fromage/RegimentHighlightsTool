@@ -11,6 +11,24 @@ namespace KaizerWald
     public static class UnityMathematicsExtension
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsZero(this float lhs)
+        {
+            return Approximately(lhs, 0);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsZero(this float2 lhs)
+        {
+            return Approximately(lhs.x, 0) && Approximately(lhs.y, 0);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsZero(this float3 lhs)
+        {
+            return Approximately(lhs.x, 0) && Approximately(lhs.y, 0) && Approximately(lhs.z, 0);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool approximately(this float2 lhs, float2 rhs)
         {
             return Approximately(lhs.x, rhs.x) && Approximately(lhs.y, rhs.y);
@@ -33,6 +51,7 @@ namespace KaizerWald
         {
             return clockwise ? new float2(value.y, -value.x) : new float2(-value.y, value.x);
         }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 CrossRight(this float2 value) => value.Cross();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

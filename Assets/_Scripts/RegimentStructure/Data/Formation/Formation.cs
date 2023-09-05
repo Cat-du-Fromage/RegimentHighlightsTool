@@ -71,6 +71,7 @@ namespace KaizerWald
         public float2 DistanceUnitToUnit => UnitSize + SpaceBetweenUnits;
         public float DistanceUnitToUnitX => DistanceUnitToUnit.x;
         public float DistanceUnitToUnitY => DistanceUnitToUnit.y;
+        public int LastRowFirstIndex => NumUnitsAlive - NumUnitsLastLine;
         
         // Needed for Rearrangement
         private int CountUnitsLastLine => NumUnitsAlive - NumCompleteLine * Width;
@@ -113,7 +114,7 @@ namespace KaizerWald
         
         public void SetDirection(float3 newDirection)
         {
-            if (newDirection.approximately(float3.zero)) return;
+            if (newDirection.IsZero()) return;
             DirectionForward = newDirection;
         }
         
