@@ -11,12 +11,6 @@ namespace KaizerWald
 {
     public static class FormationExtension
     {
-        private static int LastRowFirstIndex(this in FormationData formation)
-        {
-            return formation.NumUnitsAlive - formation.NumUnitsLastLine;
-        }
-        
-        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ COMPARISON ◆◆◆◆◆◆                                               ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
