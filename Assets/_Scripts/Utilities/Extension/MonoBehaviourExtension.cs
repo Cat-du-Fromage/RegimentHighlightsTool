@@ -7,6 +7,11 @@ namespace KaizerWald
 {
     public static class MonoBehaviourExtension
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+        /// <summary>
+        /// Remove Component
+        /// </summary>
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void RemoveComponent<TComponent>(this GameObject obj, bool immediate = false)
             where TComponent : Component
@@ -21,7 +26,11 @@ namespace KaizerWald
                     Object.Destroy((Object)component);
                 }
             }
-            
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+            /// <summary>
+            /// Interface
+            /// </summary>
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static List<T> FindObjectsWithInterface<T>() 
             where T : class
@@ -36,7 +45,29 @@ namespace KaizerWald
                 }
                 return list;
             }
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+            /// <summary>
+            /// Add Unique Component
+            /// </summary>
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static T AddUniqueComponent<T>(this GameObject gameObject)
+            where T : Component
+            {
+                return !gameObject.TryGetComponent(out T component) ? gameObject.AddComponent<T>() : component;
+            }
             
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static T AddUniqueComponent<T>(this MonoBehaviour monoBehaviour)
+            where T : Component
+            {
+                return monoBehaviour.gameObject.AddUniqueComponent<T>();
+            }
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+            /// <summary>
+            /// Get Or AddComponent
+            /// </summary>
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T GetOrAddComponent<T>(this GameObject gameObject)
             where T : Component

@@ -54,7 +54,7 @@ namespace KaizerWald
             }
             */
             float2 intersect = FovGizmosDebug(FieldOfViewTriangle);
-            Debug_FiringStateTargetDetection();
+            //Debug_FiringStateTargetDetection();
             
             if (DebugDotProduct)
             {
@@ -347,24 +347,23 @@ namespace KaizerWald
             }
             return ButtonHeight + space;
         }
-
+/*
         private void Debug_FiringStateTargetDetection()
         {
-            //if()
-            
-            if (!FiringStateTest && StateMachine.State == EStates.Idle)
+            if (!FiringStateTest && BehaviourTree.State == EStates.Idle)
             {
                 IdleRegimentState idleState = (IdleRegimentState)StateMachine.CurrentRegimentState;
                 if (!idleState.AutoFire) return;
                 idleState.AutoFireOff();
             }
-            else if (FiringStateTest && StateMachine.State == EStates.Idle)
+            else if (FiringStateTest && BehaviourTree.State == EStates.Idle)
             {
                 IdleRegimentState idleState = (IdleRegimentState)StateMachine.CurrentRegimentState;
                 if (idleState.AutoFire) return;
                 idleState.AutoFireOn();
             }
         }
+        */
     }
 }
 #endif

@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace KaizerWald
 {
+    /*
     public partial class Unit : MonoBehaviour
     {
+        private bool DebugAvailable = false;
+        
         private void OnDrawGizmos()
         {
             if (!Application.isPlaying) return;
@@ -43,5 +46,6 @@ namespace KaizerWald
             DrawArrow.HandleLine(unitPosition, endPosition, Color.magenta,1f, 0.5f);
         }
     }
+    */
 }
 #endif

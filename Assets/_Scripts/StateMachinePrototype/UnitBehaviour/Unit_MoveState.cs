@@ -6,127 +6,74 @@ using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
-    public class MoveUnitState : UnitState
+    public class Unit_MoveState : UnitStateBase
     {
-        private const int MarchSpeed = 1;
-        private const int RunSpeed = 3;
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                 ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private Dictionary<Regiment, float> EngagementInvulnerability = new (4);
+
+        private float MoveSpeed = 1f;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public float3 LeaderDestination { get; private set; }
         public FormationData FormationDestination { get; private set; }
-        
         public float3 UnitDestination { get; private set; }
         
-        public bool DestinationReach { get; private set; }
-        
-        public int SpeedModifier { get; private set; }
-        
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private UnitAnimation UnitAnimation => UnitAttach.Animation;
-        private int IndexInRegiment => UnitAttach.IndexInRegiment;
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Move Related ◈◈◈◈◈◈                                                                            ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private float Speed => UnitAttach.RegimentAttach.RegimentType.Speed;
-        private float MoveSpeed => Speed * SpeedModifier;
-        public bool IsRunning => SpeedModifier == RunSpeed;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
-        public MoveUnitState(UnitStateMachine linkedUnitStateMachine) : base(linkedUnitStateMachine, EStates.Move)
+        public Unit_MoveState(UnitBehaviourTree behaviourTree) : base(behaviourTree, EStates.Move)
         {
-            
+            Sequences = new List<EStates>()
+            {
+                EStates.Move,
+                EStates.Idle
+            };
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ STATE METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
-        public override void OnAbilityTrigger()
+        public override void OnSetup(Order order)
         {
-            if (IsRunning)
-                SetMarching();
-            else
-                SetRunning();
-        }
-
-        public override void SetupState(Order order)
-        {
-            ResetValuesToDefaults();
-            DestinationReach = false;
             MoveOrder moveOrder = (MoveOrder)order;
             FormationDestination = moveOrder.FormationDestination;
             LeaderDestination = moveOrder.LeaderDestination;
-        }
-
-        public override void EnterState()
-        {
             UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, LeaderDestination);
         }
 
-        public override bool ConditionStateEnter()
+        public override void OnEnter()
         {
-            //Debug.Log($"Unit( {UnitAttach.name} ) dest Reach: {DestinationReach}");
-            return !DestinationReach;
-        }
-
-        public override void UpdateState()
-        {
-            MoveUnit();
-            CheckSwitchState();
-        }
-        
-        public override bool CheckSwitchState()
-        {
-            //Later: if(Enemy Engage Unit in Melee){}
-            return SwitchToIdleState();
-        }
-        
-        public override void ExitState()
-        {
-            //if value resets here they will try to go back to Move
-            //ResetValuesToDefaults();
-        }
-        
-        public override void ResetValuesToDefaults()
-        {
-            SetMarching();
-        }
-
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
-        // temporaire, pas un vrai pathfinding....
-        private void MoveUnit()
-        {
-            float3 direction = normalizesafe(UnitDestination - Position);
-            float3 translation = Time.deltaTime * MoveSpeed * direction;
-            UnitTransform.Translate(translation, Space.World);
-            UnitTransform.LookAt(Position + FormationDestination.Direction3DForward);
-        }
-        
-        private bool SwitchToIdleState()
-        {
-            DestinationReach = distancesq(Position, UnitDestination) <= 0.01f;
-            if (DestinationReach) LinkedUnitStateMachine.ToDefaultState();
-            return DestinationReach;
-        }
-        
-        private void SetMarching()
-        {
-            SpeedModifier = MarchSpeed;
             UnitAnimation.SetMarching();
         }
 
-        private void SetRunning()
+        public override void OnUpdate()
         {
-            SpeedModifier = RunSpeed;
-            UnitAnimation.SetRunning();
+            //
+        }
+
+        public override void OnExit()
+        {
+            //
+        }
+
+        public override EStates ShouldExit()
+        {
+            return StateIdentity;
+        }
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+        private void MoveUnit()
+        {
+            float3 direction = normalizesafe(UnitDestination - BehaviourTree.Position);
+            float3 translation = Time.deltaTime * MoveSpeed * direction;
+            UnitTransform.Translate(translation, Space.World);
+            UnitTransform.LookAt(BehaviourTree.Position + FormationDestination.Direction3DForward);
         }
     }
 }

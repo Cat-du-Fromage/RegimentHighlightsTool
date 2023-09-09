@@ -1,57 +1,41 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using Unity.Mathematics;
 
 namespace KaizerWald
 {
-    public class RegimentAbilityManager : MonoBehaviour
+    public abstract class RegimentStateBase : StateBase
     {
-        private RegimentManager regimentManager;
-        public RegimentAbilityControls Controls { get; private set; }
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                               ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public Blackboard RegimentBlackboard { get; protected set; }
+        public RegimentBehaviourTree BehaviourTree { get; private set; }
+        public Regiment RegimentAttach { get; protected set; }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public float3 Position => BehaviourTree.Position;
+        public float3 Forward  => BehaviourTree.Forward;
+        public float3 Back     => BehaviourTree.Back;
+        public float3 Right    => BehaviourTree.Right;
+        public float3 Left     => BehaviourTree.Left;
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Setter ◈◈◈◈◈◈                                                                                  ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Awake | Start ◈◈◈◈◈◈                                                                           ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void Awake()
+        protected RegimentStateBase(RegimentBehaviourTree behaviourTree, Blackboard blackboard, EStates stateIdentity) : base(stateIdentity)
         {
-            regimentManager = GetComponent<RegimentManager>();
-            Controls ??= new RegimentAbilityControls();
+            RegimentBlackboard = blackboard;
+            BehaviourTree = behaviourTree;
+            RegimentAttach = behaviourTree.RegimentAttach;
         }
-        
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Enable | Disable ◈◈◈◈◈◈                                                                        ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void OnEnable()
-        {
-            Controls.Enable();
-            //Controls.GeneralAbility.MarchRun.started += ToggleRunMarch;
-        }
-        
-        private void OnDisable()
-        {
-            //Controls.GeneralAbility.MarchRun.started -= ToggleRunMarch;
-            Controls.Disable();
-        }
-        
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-/*
-        private void ToggleRunMarch(InputAction.CallbackContext context)
-        {
-            if (regimentManager.RegimentHighlightSystem.SelectedRegiments.Count == 0) return;
-            foreach (Regiment regiment in regimentManager.RegimentHighlightSystem.SelectedRegiments)
-            {
-                if (!regiment.BehaviourTree.IsMoving) continue;
-                regiment.BehaviourTree.OnAbilityTrigger(EStates.Move);
-            }
-        }
-        */
     }
 }

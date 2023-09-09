@@ -1,57 +1,41 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace KaizerWald
 {
-    public class RegimentAbilityManager : MonoBehaviour
+    public abstract class UnitStateBase : StateBase
     {
-        private RegimentManager regimentManager;
-        public RegimentAbilityControls Controls { get; private set; }
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                               ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public UnitBehaviourTree BehaviourTree { get; protected set; }
+        public Unit UnitAttach { get; protected set; }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        protected Transform UnitTransform => BehaviourTree.CachedTransform;
+        protected UnitAnimation UnitAnimation => UnitAttach.Animation;
+        protected int IndexInRegiment => UnitAttach.IndexInRegiment;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Awake | Start ◈◈◈◈◈◈                                                                           ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void Awake()
+        protected UnitStateBase(UnitBehaviourTree behaviourTree, EStates stateIdentity) : base(stateIdentity)
         {
-            regimentManager = GetComponent<RegimentManager>();
-            Controls ??= new RegimentAbilityControls();
-        }
-        
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Enable | Disable ◈◈◈◈◈◈                                                                        ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void OnEnable()
-        {
-            Controls.Enable();
-            //Controls.GeneralAbility.MarchRun.started += ToggleRunMarch;
-        }
-        
-        private void OnDisable()
-        {
-            //Controls.GeneralAbility.MarchRun.started -= ToggleRunMarch;
-            Controls.Disable();
+            BehaviourTree = behaviourTree;
+            UnitAttach = behaviourTree.UnitAttach;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-/*
-        private void ToggleRunMarch(InputAction.CallbackContext context)
+
+        protected EStates GetRegimentState()
         {
-            if (regimentManager.RegimentHighlightSystem.SelectedRegiments.Count == 0) return;
-            foreach (Regiment regiment in regimentManager.RegimentHighlightSystem.SelectedRegiments)
-            {
-                if (!regiment.BehaviourTree.IsMoving) continue;
-                regiment.BehaviourTree.OnAbilityTrigger(EStates.Move);
-            }
+            return BehaviourTree.RegimentState;
         }
-        */
     }
 }

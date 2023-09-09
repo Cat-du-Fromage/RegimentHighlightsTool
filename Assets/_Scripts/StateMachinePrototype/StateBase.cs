@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Collections;
+using Unity.Mathematics;
 
 namespace KaizerWald
 {
@@ -9,14 +10,15 @@ namespace KaizerWald
     {
         public EStates StateIdentity { get; private set; }
         
-        public List<StateBase> Sequences;
+        public List<EStates> Sequences;
         
-        public SortedList<int,StateBase> Interruptions; // both external and Order
 
         protected StateBase(EStates stateIdentity)
         {
             StateIdentity = stateIdentity;
         }
+        
+        public abstract void OnSetup(Order order);
         
         public abstract void OnEnter();
         

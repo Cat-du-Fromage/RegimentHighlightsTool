@@ -20,8 +20,7 @@ namespace KaizerWald
         //[field: SerializeField] public int IndexInRegiment { get; private set; }
         [field: SerializeField] public Regiment RegimentAttach { get; private set; }
         [field: SerializeField] public UnitAnimation Animation { get; private set; }
-        [field: SerializeField] public UnitStateMachine StateMachine { get; private set; }
-
+        [field: SerializeField] public UnitBehaviourTree BehaviourTree { get; private set; }
         [field: SerializeField] public bool IsDead { get; private set; }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -32,7 +31,6 @@ namespace KaizerWald
             unitRigidBody = GetComponent<Rigidbody>();
             unitCollider = GetComponent<Collider>();
             Animation = GetComponent<UnitAnimation>();
-            StateMachine = this.GetOrAddComponent<UnitStateMachine>();
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -62,18 +60,18 @@ namespace KaizerWald
         {
             FormationMatrix.SetIndexInRegiment(index);
             //------------------------------------------
-            //DEBUG
+            //DEBUG: TO BE REMOVED
             IndexInRegimentDebug = IndexInRegimentDebug;
             //------------------------------------------
         }
 
         public void UpdateUnit()
         {
-            StateMachine.OnUpdate();
+            //StateMachine.OnUpdate();
         }
 
         //------------------------------------------
-        //DEBUG
+        //DEBUG: TO BE REMOVED
         private void Update()
         {
             if (IndexInRegimentDebug == FormationMatrix.IndexInRegiment) return;

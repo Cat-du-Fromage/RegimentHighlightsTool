@@ -11,5 +11,6 @@ namespace KaizerWald
         Move = 1,
         Fire = 2,
         Chase = 3,
+        Melee = 4,
     }
 }

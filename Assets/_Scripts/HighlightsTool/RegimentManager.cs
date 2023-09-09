@@ -152,7 +152,7 @@ namespace KaizerWald
         //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
         private void OnPlayerOrder(Regiment regiment, Order regimentMoveOrder)
         {
-            regiment.StateMachine.OnOrderReceived(regimentMoveOrder);
+            regiment.BehaviourTree.OnOrderReceived(regimentMoveOrder);
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐

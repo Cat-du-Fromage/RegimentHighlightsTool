@@ -41,7 +41,7 @@ namespace KaizerWald
         public void Initialize()
         {
             InitializeStates();
-            ParentStateMachine = Unit.RegimentAttach.StateMachine;
+            //ParentStateMachine = Unit.RegimentAttach.StateMachine;
         }
 
         private void InitializeStates()

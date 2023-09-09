@@ -23,7 +23,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        private Transform regimentTransform;
+        public Transform RegimentTransform { get; private set; }
         
         private SortedSet<int> DeadUnits;
         public RegimentFormationMatrix RegimentFormationMatrix { get; private set; }
@@ -37,7 +37,8 @@ namespace KaizerWald
         [field:SerializeField] public RegimentType RegimentType { get; private set; }
         
         public Formation CurrentFormation { get; private set; }
-        public RegimentStateMachine StateMachine { get; private set; }
+        //public RegimentStateMachine StateMachine { get; private set; }
+        public RegimentBehaviourTree BehaviourTree { get; private set; }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ ISelectable ◈◈◈◈◈◈                                                                             ║
@@ -49,7 +50,8 @@ namespace KaizerWald
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        public float3 RegimentPosition => regimentTransform.position;
+        public float3 RegimentPosition => RegimentTransform.position;
+        
         public List<Unit> Units => RegimentFormationMatrix.Units;
         public List<Transform> UnitsTransform => RegimentFormationMatrix.Transforms;
 
@@ -59,13 +61,9 @@ namespace KaizerWald
 
         private void Awake()
         {
-            regimentTransform = transform;
+            RegimentTransform = transform;
         }
-
-        private void OnDestroy()
-        {
-            
-        }
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -75,8 +73,8 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void OnUpdate()
         {
-            Rearrangement();
-            StateMachine.OnUpdate();
+            //Rearrangement();
+            BehaviourTree.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
 
@@ -93,7 +91,7 @@ namespace KaizerWald
         {
             InitializeProperties(ownerID, teamID, currentSpawner.RegimentType, direction, regimentName);
             CreateAndRegisterUnits(unitFactory);
-            InitializeStateMachine();
+            //InitializeStateMachine();
         }
 
         private void InitializeProperties(ulong ownerID, int teamID, RegimentType regimentType, Vector3 direction, string regimentName = default)
@@ -114,12 +112,13 @@ namespace KaizerWald
             DeadUnits = new SortedSet<int>();
         }
 
+        /*
         private void InitializeStateMachine()
         {
             StateMachine = this.GetOrAddComponent<RegimentStateMachine>();
             StateMachine.Initialize();
         }
-
+*/
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -130,7 +129,7 @@ namespace KaizerWald
             DeadUnits.Add(unit.IndexInRegiment);
             // -------------------------------------------------------
             // Seems Wrong place but not better Idea for State Machine...
-            StateMachine.DeadUnitsStateMachine.Add(unit.StateMachine);
+            BehaviourTree.DeadUnitsBehaviourTrees.Add(unit.BehaviourTree);
             // -------------------------------------------------------
         }
 
@@ -155,8 +154,7 @@ namespace KaizerWald
         private void Rearrangement()
         {
             if (!ConfirmDeaths(out int cacheNumDead)) return;
-            
-            float3 regimentPosition = !StateMachine.IsMoving ? RegimentPosition : ((MoveRegimentState)StateMachine.CurrentRegimentState).Destination;
+            float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : ((Regiment_MoveState)BehaviourTree.CurrentState).Destination;
             Rearrange(cacheNumDead, regimentPosition);
             ResizeFormation(cacheNumDead);
             
@@ -216,7 +214,7 @@ namespace KaizerWald
                 bool2 areUnitsOnLastLine = new(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
             
                 if (all(areUnitsOnLastLine)) return;
-                unitToSwapWith.StateMachine.RequestChangeState(order);
+                unitToSwapWith.BehaviourTree.RequestChangeState(order);
             }
             
             void LastLineRearrangementOrder()
@@ -224,9 +222,10 @@ namespace KaizerWald
                 if (futureFormation.IsLastLineComplete) return;
                 for (int i = futureFormation.LastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
                 {
-                    Units[i].StateMachine.RequestChangeState(order);
+                    Units[i].BehaviourTree.RequestChangeState(order);
                 }
             }
         }
+        
     }
 }

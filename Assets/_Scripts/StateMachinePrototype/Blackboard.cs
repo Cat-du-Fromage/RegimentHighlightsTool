@@ -1,73 +1,71 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Mathematics;
+
+using static KaizerWald.RegimentManager;
 
 namespace KaizerWald
 {
-    public class BehaviourTreeBase : MonoBehaviour
+    public class Blackboard
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
+        private bool hasTarget;
+        private bool isChasing;
+        private int targetedRegimentID;
+        private Regiment enemyTarget;
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                               ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
-        public Transform CachedTransform { get; protected set; }
-        public EStates State { get; protected set; }
-        public Dictionary<EStates, StateBase> States { get; protected set; }
-        public Queue<EStates> Interruptions { get; protected set; } = new (2);
-        
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public StateBase CurrentState => States[State];
-        public bool IsIdle => State == EStates.Idle;
-        public bool IsMoving => State == EStates.Move;
-        public bool IsFiring => State == EStates.Fire;
-        public bool IsInMelee => State == EStates.Melee;
-        
-        public float3 Position => CachedTransform.position;
-        public float3 Forward => CachedTransform.forward;
-        public float3 Back => -CachedTransform.forward;
-        public float3 Right => CachedTransform.right;
-        public float3 Left => -CachedTransform.right;
+        public bool HasTarget => hasTarget;
+        public bool IsChasing => isChasing;
+        public int TargetedRegimentID => targetedRegimentID;
+        public Regiment EnemyTarget => enemyTarget;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Setter ◈◈◈◈◈◈                                                                                  ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
+        public void SetHasTarget(bool value) => hasTarget = value;
+        public void SetIsChasing(bool value) => isChasing = value;
+        public void SetTargetedRegimentID(int value) => targetedRegimentID = value;
         
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝ 
-
-        protected virtual void Awake()
+        public bool SetEnemyTarget(int targetId)
         {
-            State = EStates.Idle;
-            CachedTransform = transform;
+            bool isTargetValid = targetId != -1;
+            if (!isTargetValid)
+            {
+                ResetTarget();
+                return false;
+            }
+            else
+            {
+                targetedRegimentID = targetId;
+                return Instance.RegimentsByID.TryGetValue(targetedRegimentID, out enemyTarget);
+            }
         }
 
-        public virtual void OnUpdate()
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public Blackboard()
         {
-            TryChangeState();
-            CurrentState.OnUpdate();
+            hasTarget = false;
+            isChasing = false;
+            targetedRegimentID = -1;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        private void TryChangeState()
+        public void ResetTarget()
         {
-            EStates nextState = CurrentState.ShouldExit();
-            if (nextState == EStates.None || nextState == CurrentState.StateIdentity) return;
-            CurrentState.OnExit();
-            State = nextState;
-            CurrentState.OnEnter();
+            targetedRegimentID = -1;
+            enemyTarget = null;
         }
-
-        public virtual void RequestChangeState(Order order) { return; }
     }
 }
