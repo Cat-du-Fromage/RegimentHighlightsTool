@@ -9,6 +9,7 @@ using UnityEngine;
 using static KaizerWald.KzwMath;
 using static Unity.Mathematics.math;
 
+using static KaizerWald.StateExtension;
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using static Unity.Collections.Allocator;
@@ -18,18 +19,24 @@ using float2 = Unity.Mathematics.float2;
 
 namespace KaizerWald
 {
-    public class Regiment_IdleState : RegimentStateBase
+    public sealed class Regiment_IdleState : RegimentStateBase
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public bool AutoFire { get; private set; }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private int AttackRange => BehaviourTree.RegimentAttach.RegimentType.Range;
-
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        private int AttackRange => RegimentAttach.RegimentType.Range;
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                     ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public void AutoFireOn() => AutoFire = true;
+        public void AutoFireOff() => AutoFire = false;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -37,41 +44,39 @@ namespace KaizerWald
         {
         }
 
-        public override void OnSetup(Order order)
-        {
-            //
-        }
+        //Maybe "Stop" button like in Total war?
+        public override void OnSetup(Order order) { return; }
 
-        public override void OnEnter()
-        {
-            //
-        }
+        public override void OnEnter() { return; }
 
-        public override void OnUpdate()
-        {
-            //
-        }
+        public override void OnUpdate() { return; }
 
-        public override void OnExit()
-        {
-            //
-        }
+        public override void OnExit() { return; }
 
         public override EStates ShouldExit()
         {
-            if (StateExtension.CheckEnemiesAtRange(RegimentAttach, RegimentAttach.RegimentType.Range, out int targetId))
-            {
-                RegimentBlackboard.SetEnemyTarget(targetId);
-                return EStates.Fire;
-            }
+            if(FireExit()) return EStates.Fire;
+            
+            if (MoveExit()) return EStates.Move;
+            
             return StateIdentity;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
-        public void AutoFireOn() => AutoFire = true;
-        public void AutoFireOff() => AutoFire = false;
+        private bool FireExit()
+        {
+            bool enemyInRange = CheckEnemiesAtRange(RegimentAttach, AttackRange, out int targetId);
+            if (enemyInRange) RegimentBlackboard.SetEnemyTarget(targetId);
+            return enemyInRange;
+        }
+        
+        private bool MoveExit()
+        {
+            bool isChasing = RegimentBlackboard.IsChasing;
+            if (RegimentBlackboard.IsChasing) RegimentBlackboard.SetChaseDestination();
+            return isChasing;
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public UnitBehaviourTree BehaviourTree { get; protected set; }
         public Unit UnitAttach { get; protected set; }
+        public Blackboard RegimentBlackboard { get; protected set; }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
@@ -18,6 +19,7 @@ namespace KaizerWald
         protected Transform UnitTransform => BehaviourTree.CachedTransform;
         protected UnitAnimation UnitAnimation => UnitAttach.Animation;
         protected int IndexInRegiment => UnitAttach.IndexInRegiment;
+        protected EStates RegimentState => BehaviourTree.RegimentState;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
@@ -27,6 +29,7 @@ namespace KaizerWald
         {
             BehaviourTree = behaviourTree;
             UnitAttach = behaviourTree.UnitAttach;
+            RegimentBlackboard = behaviourTree.RegimentBehaviourTree.RegimentBlackboard;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

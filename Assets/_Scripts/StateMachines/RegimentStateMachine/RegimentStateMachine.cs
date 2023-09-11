@@ -113,7 +113,7 @@ namespace KaizerWald
                     RequestChangeState(order);
                     return;
                 case EStates.Fire:
-                    Blackboard.SetOrderRegimentTarget(((AttackOrder)order).TargetEnemyRegiment);
+                    Blackboard.SetOrderRegimentTarget(((RangeAttackOrder)order).TargetEnemyRegiment);
                     OnFireOrderReceived(order);
                     return;
                 default:

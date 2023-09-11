@@ -49,7 +49,6 @@ namespace KaizerWald
         {
             randomState = Random.CreateFromIndex((uint)(abs(UnitAttach.GetInstanceID()) + UnitAttach.IndexInRegiment));
             CurrentRandomAimDirection = randomState.NextFloat2Direction();
-            
             UnitAnimation.OnShootEvent += OnFireEvent;
         }
         
@@ -65,9 +64,9 @@ namespace KaizerWald
         
         public override void SetupState(Order order)
         {
-            AttackOrder attackOrder = (AttackOrder)order;
-            RegimentTargeted = attackOrder.TargetEnemyRegiment;
-            CacheEnemyFormation = attackOrder.TargetEnemyRegiment.CurrentFormation;
+            RangeAttackOrder rangeAttackOrder = (RangeAttackOrder)order;
+            RegimentTargeted = rangeAttackOrder.TargetEnemyRegiment;
+            CacheEnemyFormation = rangeAttackOrder.TargetEnemyRegiment.CurrentFormation;
         }
         
         public override void EnterState()
@@ -76,7 +75,6 @@ namespace KaizerWald
             EnemyTarget = target;
             UnitAnimation.SetFullFireSequenceOn();
         }
-        
 
         public override void UpdateState()
         {
@@ -133,8 +131,10 @@ namespace KaizerWald
         private void OnFireEvent(AnimationEvent animationEvent)
         {
             if (LinkedUnitStateMachine.State != EStates.Fire) return;
+            
             float3 bulletPosition = Position + up() + (float3)UnitTransform.forward;
             ProjectileComponent bullet = ProjectileManager.Instance.UnitRequestAmmo(UnitAttach, bulletPosition);
+            
             bullet.Fire(bulletPosition,AimDirection);
             CurrentRandomAimDirection = randomState.NextFloat2Direction(); // Renew Random Direction
         }

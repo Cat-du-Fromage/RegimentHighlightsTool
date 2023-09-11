@@ -9,15 +9,13 @@ namespace KaizerWald
     public abstract class StateBase
     {
         public EStates StateIdentity { get; private set; }
-        
-        public List<EStates> Sequences;
-        
 
         protected StateBase(EStates stateIdentity)
         {
             StateIdentity = stateIdentity;
         }
         
+        //Specific to Player Order
         public abstract void OnSetup(Order order);
         
         public abstract void OnEnter();

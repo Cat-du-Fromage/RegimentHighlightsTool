@@ -62,6 +62,7 @@ namespace KaizerWald
         private void Awake()
         {
             RegimentTransform = transform;
+            
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -91,6 +92,7 @@ namespace KaizerWald
         {
             InitializeProperties(ownerID, teamID, currentSpawner.RegimentType, direction, regimentName);
             CreateAndRegisterUnits(unitFactory);
+            BehaviourTree = this.GetOrAddComponent<RegimentBehaviourTree>();
             //InitializeStateMachine();
         }
 
@@ -154,7 +156,8 @@ namespace KaizerWald
         private void Rearrangement()
         {
             if (!ConfirmDeaths(out int cacheNumDead)) return;
-            float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : ((Regiment_MoveState)BehaviourTree.CurrentState).Destination;
+            //float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : ((Regiment_MoveState)BehaviourTree.CurrentState).Destination;
+            float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : BehaviourTree.RegimentBlackboard.Destination;
             Rearrange(cacheNumDead, regimentPosition);
             ResizeFormation(cacheNumDead);
             

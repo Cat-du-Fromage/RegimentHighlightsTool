@@ -13,7 +13,7 @@ using static KaizerWald.CSharpContainerUtils;
 
 namespace KaizerWald
 {
-    public class MoveRegimentState : RegimentState
+    public sealed class MoveRegimentState : RegimentState
     {
         private const int MarchSpeed = 1;
         private const int RunSpeed = 3;
@@ -24,17 +24,17 @@ namespace KaizerWald
         public FormationData FormationDestination { get; private set; }
         public bool LeaderReachDestination { get; private set; }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Move Related ◈◈◈◈◈◈                                                                            ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Move Related ◈◈◈◈◈◈                                                                                ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private float Speed => RegimentAttach.RegimentType.Speed;
         public int SpeedModifier { get; private set; }
         private float MoveSpeed => Speed * SpeedModifier;
         public bool IsRunning => SpeedModifier == RunSpeed;
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                 ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                     ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void SetDestination(float3 destination) => Destination = destination;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

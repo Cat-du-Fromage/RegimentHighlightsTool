@@ -6,6 +6,18 @@ namespace KaizerWald
 {
     public sealed class Unit_IdleState : UnitStateBase
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public Unit_IdleState(UnitBehaviourTree behaviourTree) : base(behaviourTree, EStates.Idle)
         {
             
@@ -33,33 +45,13 @@ namespace KaizerWald
 
         public override EStates ShouldExit()
         {
-            EStates nextState = CheckInterruptionExit();
-            //Si Unité engagé en Melee => return EState.MeleeAttack
-            if (nextState != EStates.None) return nextState;
-            
-            
-            //Si Unité engagé en Melee => return EState.MeleeAttack
-            nextState = CheckSequenceExit();
-            if (nextState != EStates.None) return nextState;
-
-            //return to regiment state or keep the same
-            nextState = GetRegimentState();
-            return nextState != StateIdentity ? nextState : StateIdentity;
+            return TryReturnToRegimentState(out EStates nextState) ? nextState : StateIdentity;
         }
-
-        protected override EStates CheckInterruptionExit()
+        
+        private bool TryReturnToRegimentState(out EStates nextState)
         {
-            //Si Unité engagé en Melee => return EState.MeleeAttack
-            //Si Ordre Reçu:
-            // 1) Movement
-            // 2) Melee
-            return EStates.None;
-        }
-
-        private void CheckRegimentState()
-        {
-            // Move ? difference btw order and pregress state
-            // Melee ?
+            nextState = StateIdentity != RegimentState ? RegimentState : StateIdentity;
+            return true;
         }
     }
 }

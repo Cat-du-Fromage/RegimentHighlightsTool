@@ -22,6 +22,7 @@ namespace KaizerWald
 
         public override void OnUpdate()
         {
+            RegimentBlackboard.UpdateInformation();
             base.OnUpdate();
         }
         
@@ -30,6 +31,24 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public void OnOrderReceived(Order order)
         {
+            /*
+            switch (order)
+            {
+                case MoveOrder moveOrder:
+                    RegimentBlackboard.SetDestination(moveOrder.LeaderDestination);
+                    RegimentBlackboard.SetDestinationFormation(moveOrder.FormationDestination);
+                    RegimentBlackboard.ResetTarget();
+                    break;
+                case RangeAttackOrder rangeAttackOrder:
+                    RegimentBlackboard.SetEnemyChase(rangeAttackOrder.TargetEnemyRegiment);
+                    break;
+                case MeleeAttackOrder meleeAttackOrder:
+                    RegimentBlackboard.SetEnemyChase(meleeAttackOrder.TargetEnemyRegiment);
+                    break;
+                default:
+                    break;
+            }
+            */
             RequestChangeState(order);
         }
         
@@ -37,7 +56,7 @@ namespace KaizerWald
         {
             EStates stateOrdered = order.StateOrdered;
             States[stateOrdered].OnSetup(order);
-            Interruptions.Enqueue(stateOrdered); // Interruption a bouger dans la state machine?
+            State = stateOrdered;
             //Propagate Order to Units
             foreach (UnitBehaviourTree unitBehaviourTree in UnitsBehaviourTrees)
             {
@@ -45,30 +64,40 @@ namespace KaizerWald
             }
         }
         
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void Initializations()
         {
-            RegimentBlackboard = new Blackboard();
-            RegimentAttach = GetComponent<Regiment>();
-            InitializeStates();
-            
-            UnitsBehaviourTrees = new HashSet<UnitBehaviourTree>(RegimentAttach.Units.Count);
-            DeadUnitsBehaviourTrees = new HashSet<UnitBehaviourTree>(RegimentAttach.Units.Count);
-            foreach (Unit unit in RegimentAttach.Units)
+            if (!TryGetComponent(out Regiment regimentAttach))
             {
-                UnitBehaviourTree unitBt = unit.AddUniqueComponent<UnitBehaviourTree>();
-                UnitsBehaviourTrees.Add(unitBt);
-                //unit.StateMachine.Initialize();
+                Debug.LogError("No Regiment Component Attach with the BehaviourTree");
+            }
+            else
+            {
+                RegimentAttach = regimentAttach;
+                RegimentBlackboard = new Blackboard(RegimentAttach);
+                InitializeStates();
+            
+                UnitsBehaviourTrees = new HashSet<UnitBehaviourTree>(RegimentAttach.Units.Count);
+                DeadUnitsBehaviourTrees = new HashSet<UnitBehaviourTree>(RegimentAttach.Units.Count);
+                foreach (Unit unit in RegimentAttach.Units)
+                {
+                    UnitBehaviourTree unitBt = unit.SetBehaviourTree(this);
+                    Debug.Log("Added to Unit");
+                    UnitsBehaviourTrees.Add(unitBt);
+                    //unit.StateMachine.Initialize();
+                }
             }
         }
         
         private void InitializeStates()
         {
-            
             States = new Dictionary<EStates, StateBase>()
             {
                 {EStates.Idle, new Regiment_IdleState(this, RegimentBlackboard)},
                 {EStates.Move, new Regiment_MoveState(this, RegimentBlackboard)},
-                //{EStates.Fire, new FireRegimentState(this)},
+                {EStates.Fire, new Regiment_RangeAttackState(this, RegimentBlackboard)},
                 //{EStates.Melee, new ChaseRegimentState(this)},
             };
             

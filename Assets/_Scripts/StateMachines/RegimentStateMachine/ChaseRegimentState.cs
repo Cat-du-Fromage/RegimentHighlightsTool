@@ -24,9 +24,9 @@ namespace KaizerWald
 
         public override void SetupState(Order order)
         {
-            AttackOrder attackOrder = (AttackOrder)order;
+            RangeAttackOrder rangeAttackOrder = (RangeAttackOrder)order;
             //1) Setup target to engage
-            TargetToChase = attackOrder.TargetEnemyRegiment;
+            TargetToChase = rangeAttackOrder.TargetEnemyRegiment;
             //2) Establish distance?
         }
 

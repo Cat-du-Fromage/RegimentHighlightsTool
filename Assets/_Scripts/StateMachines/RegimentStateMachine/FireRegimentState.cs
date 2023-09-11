@@ -52,9 +52,9 @@ namespace KaizerWald
 
         public override void SetupState(Order order)
         {
-            AttackOrder attackOrder = (AttackOrder)order;
-            RegimentTargeted = attackOrder.TargetEnemyRegiment;
-            CacheEnemyFormation = attackOrder.TargetEnemyRegiment.CurrentFormation;
+            RangeAttackOrder rangeAttackOrder = (RangeAttackOrder)order;
+            RegimentTargeted = rangeAttackOrder.TargetEnemyRegiment;
+            CacheEnemyFormation = rangeAttackOrder.TargetEnemyRegiment.CurrentFormation;
         }
         
         public override void EnterState()
@@ -105,9 +105,9 @@ namespace KaizerWald
             return isTargetDead;
         }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Check Enemies at Range ◈◈◈◈◈◈                                                                  ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Check Enemies at Range ◈◈◈◈◈◈                                                                      ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private bool CheckEnemyRegimentAtRange()
         {
             //from center of the first Row : direction * midWidth length(Left and Right)

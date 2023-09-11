@@ -20,6 +20,78 @@ namespace KaizerWald
 {
     public static class StateExtension
     {
+        // CHECK STILL IN RANGE
+        
+        public static bool CheckEnemiesAtRange(Regiment regimentAttach, Regiment regimentTargeted, int attackRange)
+        {
+            float2 position = regimentAttach.RegimentTransform.position.xz();
+            float3 forward = regimentAttach.RegimentTransform.forward;
+            
+            //from center of the first Row : direction * midWidth length(Left and Right)
+            float2 midWidthDistance = regimentAttach.RegimentTransform.right.xz() * regimentAttach.CurrentFormation.Width / 2f;
+            
+            float2 unitLeft = position - midWidthDistance; //unit most left
+            float2 unitRight = position + midWidthDistance; //unit most Right
+            
+            //Rotation of the direction the regiment is facing (around Vector3.up) to get both direction of the vision cone
+            float2 directionLeft = mul(AngleAxis(-Regiment.FovAngleInDegrees, up()), forward).xz;
+            float2 directionRight = mul(AngleAxis(Regiment.FovAngleInDegrees, up()), forward).xz;
+
+            //wrapper for more readable value passed
+            float2x2 leftStartDir = float2x2(unitLeft, directionLeft);
+            float2x2 rightStartDir = float2x2(unitRight, directionRight);
+            
+            //Get tip of the cone formed by the intersection made by the 2 previous directions calculated
+            float2 intersection = GetIntersection(leftStartDir, rightStartDir);
+            float radius = attackRange + distance(intersection, unitLeft); //unit left choisi arbitrairement(right va aussi)
+            
+            return IsEnemyInRange(regimentAttach, regimentTargeted, intersection, leftStartDir, rightStartDir, radius);
+        }
+        
+        private static bool IsEnemyInRange(Regiment regimentAttach, Regiment regimentTargeted, float2 triangleTip, in float2x2 leftStartDir, in float2x2 rightStartDir, float radius)
+        {
+            float radiusSq = Square(radius);
+            float2 regimentPosition = regimentAttach.RegimentPosition.xz;
+            float2 forward = regimentAttach.RegimentTransform.forward.xz();
+            NativeArray<float3> enemyUnitsPositions = GetTargetUnitsPosition(regimentTargeted);
+            foreach (float3 unitPosition in enemyUnitsPositions)
+            {
+                float2 unitPosition2D = unitPosition.xz;
+                // 1) Is Inside The Circle (Range)
+                float distanceFromEnemy = distancesq(triangleTip, unitPosition2D);
+                if (IsOutOfRange(distanceFromEnemy)) continue;
+                
+                // 2) Behind Regiment Check
+                //Regiment.forward: (regPos -> directionForward) , regiment -> enemy: (enemyPos - regPos) 
+                float2 regimentToUnitDirection = normalizesafe(unitPosition2D - regimentPosition);
+                if (IsEnemyBehind(regimentToUnitDirection)) continue;
+                
+                // 3) Is Inside the Triangle of vision (by checking inside both circle and triangle we get the Cone)
+                NativeArray<float2> triangle = GetTrianglePoints(regimentPosition, triangleTip, leftStartDir, rightStartDir, radius);
+                if (!unitPosition2D.IsPointInTriangle(triangle)) continue;
+                return true;
+            }
+            return false;
+
+            // --------------------------------------------------------------
+            // INTERNAL METHODS
+            // --------------------------------------------------------------
+            bool IsOutOfRange(float distance) => distance > radiusSq;
+            bool IsEnemyBehind(in float2 direction) => dot(direction, forward) < 0;
+        }
+        
+        private static NativeArray<float3> GetTargetUnitsPosition(Regiment regimentTargeted)
+        {
+            NativeArray<float3> targetUnitsPosition = new(regimentTargeted.Units.Count, Temp, UninitializedMemory);
+            for (int i = 0; i < regimentTargeted.Units.Count; i++)
+            {
+                targetUnitsPosition[i] = regimentTargeted.UnitsTransform[i].position;
+            }
+            return targetUnitsPosition;
+        }
+        
+        // GET CLOSEST ENEMY
+        
         public static bool CheckEnemiesAtRange(Regiment regimentAttach, int attackRange, out int regimentTargeted)
         {
             float2 position = regimentAttach.RegimentTransform.position.xz();

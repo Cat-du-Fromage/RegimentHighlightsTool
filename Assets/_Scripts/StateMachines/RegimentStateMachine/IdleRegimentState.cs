@@ -65,7 +65,7 @@ namespace KaizerWald
             if (!CheckEnemiesAtRange(out int targetId)) return false;
             if(!RegimentManager.Instance.RegimentsByID.TryGetValue(targetId, out Regiment target)) return false;
 
-            AttackOrder order = new AttackOrder(target);
+            RangeAttackOrder order = new RangeAttackOrder(target);
             LinkedRegimentStateMachine.RequestChangeState(order);
             //Debug.Log($"{RegimentAttach.name} hasTarget: {hasTarget} : target is regiment Id: {targetId}");
             return true;

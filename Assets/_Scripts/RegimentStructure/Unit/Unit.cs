@@ -23,6 +23,12 @@ namespace KaizerWald
         [field: SerializeField] public UnitBehaviourTree BehaviourTree { get; private set; }
         [field: SerializeField] public bool IsDead { get; private set; }
         
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                     ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public UnitBehaviourTree SetBehaviourTree(RegimentBehaviourTree regimentBt) => BehaviourTree = this.GetOrAddComponent<UnitBehaviourTree>();
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -68,6 +74,7 @@ namespace KaizerWald
         public void UpdateUnit()
         {
             //StateMachine.OnUpdate();
+            BehaviourTree.OnUpdate();
         }
 
         //------------------------------------------
