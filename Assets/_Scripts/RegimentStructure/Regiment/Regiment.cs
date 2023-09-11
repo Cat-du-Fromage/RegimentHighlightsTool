@@ -74,7 +74,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void OnUpdate()
         {
-            //Rearrangement();
+            Rearrangement();
             BehaviourTree.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
@@ -176,7 +176,7 @@ namespace KaizerWald
         {
             FormationData currentFormationData = CurrentFormation;
             FormationData futureFormation = new (CurrentFormation,  CurrentFormation.NumUnitsAlive - cacheNumDead);
-            MoveOrder order = new MoveOrder(futureFormation, regimentPosition);
+            MoveOrder order = new MoveOrder(futureFormation, regimentPosition, EMoveType.March);
             
             while (DeadUnits.Count > 0)
             {
@@ -217,6 +217,7 @@ namespace KaizerWald
                 bool2 areUnitsOnLastLine = new(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
             
                 if (all(areUnitsOnLastLine)) return;
+                // IL FAUT FORCER LE REARRANGEMENT
                 unitToSwapWith.BehaviourTree.RequestChangeState(order);
             }
             

@@ -32,6 +32,9 @@ namespace KaizerWald
         {
             EStates stateOrdered = order.StateOrdered;
             States[stateOrdered].OnSetup(order);
+            CurrentState.OnExit();
+            State = stateOrdered;
+            CurrentState.OnEnter();
         }
 
         private void Initializations()

@@ -15,6 +15,8 @@ namespace KaizerWald
             StateIdentity = stateIdentity;
         }
         
+        public virtual bool ConditionEnter() { return true; }
+
         //Specific to Player Order
         public abstract void OnSetup(Order order);
         
@@ -25,9 +27,5 @@ namespace KaizerWald
         public abstract void OnExit();
         
         public abstract EStates ShouldExit();
-        
-        protected virtual EStates CheckInterruptionExit() => EStates.None;
-        
-        protected virtual EStates CheckSequenceExit() => EStates.None;
     }
 }

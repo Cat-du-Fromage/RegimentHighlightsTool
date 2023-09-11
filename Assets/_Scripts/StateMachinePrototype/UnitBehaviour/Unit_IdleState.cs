@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace KaizerWald
@@ -45,13 +47,18 @@ namespace KaizerWald
 
         public override EStates ShouldExit()
         {
-            return TryReturnToRegimentState(out EStates nextState) ? nextState : StateIdentity;
+            //if (FireExit()) return EStates.Fire;
+            return TryReturnToRegimentState();
         }
         
-        private bool TryReturnToRegimentState(out EStates nextState)
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        public EStates TryReturnToRegimentState()
         {
-            nextState = StateIdentity != RegimentState ? RegimentState : StateIdentity;
-            return true;
+            if (StateIdentity == RegimentState) return StateIdentity;
+            return BehaviourTree.States[RegimentState].ConditionEnter() ? RegimentState : StateIdentity;
         }
     }
 }

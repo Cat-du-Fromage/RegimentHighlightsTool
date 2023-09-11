@@ -75,6 +75,7 @@ namespace KaizerWald
 
         private MoveOrder PackOrder(int registerIndexUsed, Regiment regiment, int width)
         {
+            //PROBLEME QUAND UNE UNITE
             float3 firstUnit = Registers[registerIndexUsed][regiment.RegimentID][0].transform.position;
             float3 lastUnit = Registers[registerIndexUsed][regiment.RegimentID][width-1].transform.position;
             float3 direction = normalizesafe(cross(down(), lastUnit - firstUnit));

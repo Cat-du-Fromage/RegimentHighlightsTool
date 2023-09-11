@@ -137,8 +137,8 @@ namespace KaizerWald
         
         public override void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition)
         {
-            Placement.ResizeRegister(regiment, regimentFuturePosition);
             Selection.ResizeRegister(regiment);
+            Placement.ResizeRegister(regiment, regimentFuturePosition);
         }
     }
 }

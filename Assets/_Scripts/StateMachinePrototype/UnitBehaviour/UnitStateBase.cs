@@ -13,9 +13,9 @@ namespace KaizerWald
         public Unit UnitAttach { get; protected set; }
         public Blackboard RegimentBlackboard { get; protected set; }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         protected Transform UnitTransform => BehaviourTree.CachedTransform;
         protected UnitAnimation UnitAnimation => UnitAttach.Animation;
         protected int IndexInRegiment => UnitAttach.IndexInRegiment;

@@ -69,10 +69,10 @@ namespace KaizerWald
         
         protected virtual void CleanUnusedHighlights(int registerIndex, int regimentIndex, int numToKeep)
         {
+            if (!Registers[registerIndex].Records.ContainsKey(regimentIndex)) return;
             int registerLength = Registers[registerIndex][regimentIndex].Length;
             if (registerLength == numToKeep) return;
-            if (!Registers[registerIndex].Records.ContainsKey(regimentIndex)) return;
-
+            
             for (int i = numToKeep; i < registerLength; i++)
             {
                 Destroy(Registers[registerIndex][regimentIndex][i].gameObject);

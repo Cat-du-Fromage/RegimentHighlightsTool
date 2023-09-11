@@ -11,6 +11,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                 ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        public const EStates DefaultNextState = EStates.Idle;
         private readonly int MarchSpeed;
         private readonly int RunSpeed;
         private Dictionary<Regiment, float> EngagementInvulnerability = new (4);
@@ -46,6 +47,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ STATE METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         public override void OnSetup(Order order)
         {
             UnitReachDestination = false;
@@ -67,6 +69,7 @@ namespace KaizerWald
             {
                 SetMarching();
             }
+            AdaptSpeed();
         }
 
         public override void OnUpdate()
@@ -83,7 +86,7 @@ namespace KaizerWald
         public override EStates ShouldExit()
         {
             UpdateDestinationReach();
-            return TryReturnToRegimentState(out EStates nextState) ? nextState : StateIdentity;
+            return TryReturnToRegimentState();
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -95,18 +98,19 @@ namespace KaizerWald
             if (UnitReachDestination) return;
             UnitReachDestination = distancesq(BehaviourTree.Position, UnitDestination) <= 0.0125f;
         }
-
-        private bool TryReturnToRegimentState(out EStates nextState)
+        
+        private EStates TryReturnToRegimentState()
         {
-            if (!UnitReachDestination)
+            if (StateIdentity == RegimentState || !UnitReachDestination) return StateIdentity;
+            bool canEnterNextState = BehaviourTree.States[RegimentState].ConditionEnter();
+            EStates nextState = canEnterNextState ? RegimentState : DefaultNextState;
+            /*
+            if (UnitAttach.RegimentAttach.OwnerID == 0 && RegimentState == EStates.Fire)
             {
-                nextState = EStates.None;
+                Debug.Log($"canEnterNextState: {canEnterNextState} || nextState: {nextState}");
             }
-            else
-            {
-                nextState = StateIdentity == RegimentState ? EStates.Idle : RegimentState;
-            }
-            return UnitReachDestination;
+            */
+            return nextState;
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖

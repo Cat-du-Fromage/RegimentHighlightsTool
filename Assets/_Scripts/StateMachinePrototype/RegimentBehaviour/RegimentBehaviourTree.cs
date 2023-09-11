@@ -29,6 +29,13 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        private void CleanUpNullUnitsStateMachine()
+        {
+            if (DeadUnitsBehaviourTrees.Count == 0) return;
+            UnitsBehaviourTrees.ExceptWith(DeadUnitsBehaviourTrees);
+            DeadUnitsBehaviourTrees.Clear();
+        }
+        
         public void OnOrderReceived(Order order)
         {
             /*
@@ -84,7 +91,7 @@ namespace KaizerWald
                 foreach (Unit unit in RegimentAttach.Units)
                 {
                     UnitBehaviourTree unitBt = unit.SetBehaviourTree(this);
-                    Debug.Log("Added to Unit");
+                    //Debug.Log("Added to Unit");
                     UnitsBehaviourTrees.Add(unitBt);
                     //unit.StateMachine.Initialize();
                 }

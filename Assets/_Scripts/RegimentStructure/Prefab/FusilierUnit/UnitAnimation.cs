@@ -190,6 +190,7 @@ namespace KaizerWald
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         private void SetFullFireSequence(bool state)
         {
+            if (state) SetSpeed(0);
             animator.SetBool(animIDIsAiming, aim = state);//aim = state;
             animator.SetBool(animIDIsShooting, shoot = state);//shoot = state;
         }

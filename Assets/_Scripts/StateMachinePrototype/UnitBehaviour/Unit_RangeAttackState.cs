@@ -52,14 +52,23 @@ namespace KaizerWald
             UnitAnimation.OnShootEvent += OnFireEvent;
         }
 
+        public override bool ConditionEnter()
+        {
+            bool regimentIsFiring = BehaviourTree.RegimentBehaviourTree.IsFiring;
+            bool isFirstLine = IndexInRegiment < UnitAttach.RegimentAttach.CurrentFormation.Width;
+            return regimentIsFiring && isFirstLine;
+        }
+
         public override void OnSetup(Order order)
         {
-            TryGetEnemyTarget(out Unit unit);
-            UnitEnemyTarget = unit;
+            //TryGetEnemyTarget(out Unit unit);
+            //UnitEnemyTarget = unit;
         }
 
         public override void OnEnter()
         {
+            TryGetEnemyTarget(out Unit unit);
+            UnitEnemyTarget = unit;
             UnitAnimation.SetFullFireSequenceOn();
         }
 
@@ -76,6 +85,7 @@ namespace KaizerWald
 
         public override EStates ShouldExit()
         {
+            // IL FAUT FORCER LE REARRANGEMENT
             //Ajouter Melee
             return StateIdentity == RegimentState ? StateIdentity : RegimentState;
         }

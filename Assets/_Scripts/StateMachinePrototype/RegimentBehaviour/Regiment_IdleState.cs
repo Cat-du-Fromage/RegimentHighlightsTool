@@ -55,6 +55,7 @@ namespace KaizerWald
 
         public override EStates ShouldExit()
         {
+            //if(RegimentAttach.TeamID != 0) return StateIdentity;
             if(FireExit()) return EStates.Fire;
             
             if (MoveExit()) return EStates.Move;
@@ -67,6 +68,8 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private bool FireExit()
         {
+            
+            //if (!AutoFire) return false;
             bool enemyInRange = CheckEnemiesAtRange(RegimentAttach, AttackRange, out int targetId);
             if (enemyInRange) RegimentBlackboard.SetEnemyTarget(targetId);
             return enemyInRange;
