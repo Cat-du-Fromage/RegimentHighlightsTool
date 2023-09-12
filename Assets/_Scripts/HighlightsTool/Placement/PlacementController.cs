@@ -49,6 +49,17 @@ namespace KaizerWald
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public PlacementSystem PlacementSystem { get; private set; }
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Getters ◈◈◈◈◈◈                                                                                     ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public int[] DynamicsTempWidth => tempWidths;
+    
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         private List<Regiment> SelectedRegiments => PlacementSystem.SelectedRegiments;
         private int NumSelections => PlacementSystem.SelectedRegiments.Count;
         
@@ -221,6 +232,12 @@ namespace KaizerWald
         private int[] PlaceRegiments()
         {
             if (!IsVisibilityTrigger()) return Array.Empty<int>(); //Ordre => Garde la formation actuelle
+
+            if (SelectedRegiments.Count is 1 && SelectedRegiments[0].CurrentFormation.NumUnitsAlive is 1)
+            {
+                return PlaceSingleUnitRegiment();
+            }
+            
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth.x;
             NativeArray<int> newWidths = GetUpdatedFormationWidths(ref unitsToAddLength);
             NativeArray<float2> starts = GetStartsPosition(unitsToAddLength, newWidths);
@@ -230,6 +247,19 @@ namespace KaizerWald
             MoveHighlightsTokens(results);
             
             return newWidths.ToArray();
+        }
+
+        private int[] PlaceSingleUnitRegiment()
+        {
+            Vector3 origin3D = new Vector3(MouseStart.x, ORIGIN_HEIGHT, MouseStart.y);
+            Ray ray = new Ray(origin3D, Vector3.down);
+            if (!Raycast(ray, out RaycastHit hit, Infinity, TerrainLayer)) return Array.Empty<int>();
+                
+            int regimentId = SelectedRegiments[0].RegimentID;
+            Vector3 hitPoint = MouseStart + hit.normal * 0.05f;
+            Quaternion newRotation = LookRotationSafe(-DepthDirection, hit.normal);
+            DynamicRegister.Records[regimentId][0].transform.SetPositionAndRotation(hitPoint, newRotation);
+            return new int[]{1};
         }
         
         /// <summary>
@@ -347,6 +377,8 @@ namespace KaizerWald
             float leftOver = isMaxDistanceReach ? unitsToAddLength / (SelectedRegiments.Count - 1) : 0;
             
             NativeArray<float2> starts = new (SelectedRegiments.Count, Temp, UninitializedMemory);
+            if (SelectedRegiments.Count is 0) return starts;
+            
             starts[0] = ((float3)MouseStart).xz;
             for (int i = 1; i < SelectedRegiments.Count; i++)
             {
@@ -418,7 +450,6 @@ namespace KaizerWald
             {
                 if (tokens[0].IsShown()) continue;
                 tokens.ForEach(token => token.Show());
-                //Array.ForEach(tokens, token => token.Show());
             }
         }
         
@@ -428,7 +459,6 @@ namespace KaizerWald
             {
                 if (tokens[0].IsHidden()) continue;
                 tokens.ForEach(token => token.Hide());
-                //Array.ForEach(tokens, token => token.Hide());
             }
         }
         

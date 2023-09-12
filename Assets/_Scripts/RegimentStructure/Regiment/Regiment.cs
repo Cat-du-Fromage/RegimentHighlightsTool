@@ -163,6 +163,7 @@ namespace KaizerWald
             
             if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
+            //Debug.Log(CurrentFormation);
             RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
         }
         
@@ -174,9 +175,11 @@ namespace KaizerWald
 
         private void Rearrange(int cacheNumDead, in float3 regimentPosition)
         {
+            //CAREFULL IF IN MOVEMENT
             FormationData currentFormationData = CurrentFormation;
-            FormationData futureFormation = new (CurrentFormation,  CurrentFormation.NumUnitsAlive - cacheNumDead);
-            MoveOrder order = new MoveOrder(futureFormation, regimentPosition, EMoveType.March);
+            //FormationData currentFormationData = BehaviourTree.IsMoving ? BehaviourTree.RegimentBlackboard.DestinationFormation : CurrentFormation;
+            FormationData futureFormation = new (currentFormationData,  currentFormationData.NumUnitsAlive - cacheNumDead);
+            MoveOrder order = new MoveOrder(futureFormation, regimentPosition);
             
             while (DeadUnits.Count > 0)
             {

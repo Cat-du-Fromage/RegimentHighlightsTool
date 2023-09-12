@@ -130,6 +130,21 @@ namespace KaizerWald
 
             direction2DForward = half2(formation.Direction2DForward);
         }
+        
+        public FormationData(FormationData formation, int numUnits)
+        {
+            numUnitsAlive = (ushort)numUnits;
+
+            minRow = (byte)min(byte.MaxValue, formation.MinRow);
+            maxRow = (byte)min(byte.MaxValue, formation.MaxRow);
+            unitSize = half2(formation.UnitSize);
+            spaceBetweenUnits = half(formation.SpaceBetweenUnits);
+
+            width = (byte)formation.Width;
+            depth = (byte)ceil(numUnitsAlive / max(1f,width));
+
+            direction2DForward = half2(formation.Direction2DForward);
+        }
 
         public FormationData(Formation formation, int newWidth, float3 direction)
         {
@@ -160,6 +175,22 @@ namespace KaizerWald
 
             direction2DForward = half2(direction.xz);
         }
+        
+        public FormationData(FormationData formation, int numUnits, int newWidth, float3 direction)
+        {
+            numUnitsAlive = (ushort)numUnits;
+
+            minRow = (byte)min(byte.MaxValue, formation.MinRow);
+            maxRow = (byte)min(byte.MaxValue, formation.MaxRow);
+            unitSize = half2(formation.UnitSize);
+            spaceBetweenUnits = half(formation.SpaceBetweenUnits);
+
+            width = (byte)min(newWidth, maxRow);
+            depth = (byte)ceil(numUnitsAlive / max(1f,width));
+
+            direction2DForward = half2(direction.xz);
+        }
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝

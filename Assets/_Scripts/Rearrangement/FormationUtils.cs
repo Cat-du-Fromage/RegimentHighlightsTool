@@ -91,7 +91,7 @@ namespace KaizerWald
                                 int unitBehindIndex = GetUnitBehindInUnEvenLastLine(indexUnit, formation);
                                 indexUnit = formation.IsLastLineComplete ? min(indexUnit, lastUnitsIndex) : unitBehindIndex;
                             }
-                            if (IsUnitValid(units[indexUnit])) return indexUnit;
+                            if (IsInBounds(indexUnit, units.Length) && IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose = IsLeftRightClose(indexUnit, numUnits, lineWidth);
                             continue;
                         }
@@ -99,13 +99,13 @@ namespace KaizerWald
                         {
                             int x = min(coordX, lineWidth) - i;
                             indexUnit = GetIndex(int2(x, lineIndexChecked), width);
-                            if (IsUnitValid(units[indexUnit])) return indexUnit;
+                            if (IsInBounds(indexUnit, units.Length) && IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose.x = min(coordX, lineWidth) - i == 0;
                         }
                         if (!leftRightClose.y) //Check Right/Positiv Index
                         {
                             indexUnit = GetIndex(int2(coordX + i, lineIndexChecked), width);
-                            if(IsUnitValid(units[indexUnit])) return indexUnit;
+                            if(IsInBounds(indexUnit, units.Length) && IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose.y = coordX + i == lastLineIndexChecked;
                         }
                         if (all(leftRightClose)) break; //No more unit to check in this line
@@ -114,6 +114,8 @@ namespace KaizerWald
                 return -1;
             }
         }
+
+        private static bool IsInBounds(int unitIndex, int unitsCount) => unitIndex < unitsCount;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsUnitValidSafe(Unit unit) => unit != null && !unit.IsDead;

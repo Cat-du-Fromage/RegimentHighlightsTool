@@ -31,7 +31,7 @@ namespace KaizerWald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                     ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        
+    
         private void SetMarching() => SpeedModifier = MarchSpeed;
         private void SetRunning() => SpeedModifier = RunSpeed;
         
@@ -65,6 +65,9 @@ namespace KaizerWald
         {
             UpdateDestinationReach();
             AssignIndexToUnits(RegimentBlackboard.DestinationFormation);
+            
+            RegimentAttach.CurrentFormation.SetWidth(RegimentBlackboard.DestinationFormation.Width);
+            RegimentAttach.CurrentFormation.SetDirection(RegimentBlackboard.DestinationFormation.Direction3DForward);
         }
 
         public override void OnUpdate()
@@ -92,7 +95,7 @@ namespace KaizerWald
         private void UpdateDestinationReach()
         {
             if (LeaderReachDestination) return;
-            LeaderReachDestination = LeaderReachDestination || (distance(Position, RegimentBlackboard.Destination) <= 0.01f);
+            LeaderReachDestination = distance(Position, RegimentBlackboard.Destination) <= 0.01f;
         }
 
         private void MoveRegiment()

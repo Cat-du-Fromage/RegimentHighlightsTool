@@ -30,11 +30,7 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public override void RequestChangeState(Order order)
         {
-            EStates stateOrdered = order.StateOrdered;
-            States[stateOrdered].OnSetup(order);
-            CurrentState.OnExit();
-            State = stateOrdered;
-            CurrentState.OnEnter();
+            base.RequestChangeState(order);
         }
 
         private void Initializations()

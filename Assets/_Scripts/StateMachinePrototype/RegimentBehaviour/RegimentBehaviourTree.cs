@@ -61,9 +61,7 @@ namespace KaizerWald
         
         public override void RequestChangeState(Order order)
         {
-            EStates stateOrdered = order.StateOrdered;
-            States[stateOrdered].OnSetup(order);
-            State = stateOrdered;
+            base.RequestChangeState(order);
             //Propagate Order to Units
             foreach (UnitBehaviourTree unitBehaviourTree in UnitsBehaviourTrees)
             {

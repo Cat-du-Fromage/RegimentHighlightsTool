@@ -59,14 +59,20 @@ namespace KaizerWald
         //Callback On RegimentHighlightSystem
         public void OnMoveOrderEvent(int registerIndexUsed, int[] newFormationsWidth)
         {
-            Debug.Log($"Move NewFormation Ordered");
+            //Debug.Log($"Move NewFormation Ordered");
             bool keepSameFormation = newFormationsWidth.Length == 0;
             List<Tuple<Regiment, Order>> moveOrders = new (SelectedRegiments.Count);
             
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 Regiment regiment = SelectedRegiments[i];
+                if (regiment == null) continue;
+                
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
+                
+                int numUnitsAlive = regiment.CurrentFormation.NumUnitsAlive;
+                width = width > numUnitsAlive ? numUnitsAlive : width;
+                
                 MoveOrder order = PackOrder(registerIndexUsed, regiment, width);
                 moveOrders.Add(new Tuple<Regiment, Order>(regiment,order));
             }
@@ -129,19 +135,58 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        private (float3, FormationData) Test(Regiment regiment, int numHighlightToKeep/*, in float3 regimentFuturePosition*/)
+        {
+            //if (registerIndex != DynamicRegisterIndex) return (regimentFuturePosition, regiment.CurrentFormation);
+            int indexSelection = SelectedRegiments.IndexOf(regiment);
+            if(indexSelection == -1) return (regiment.transform.position, regiment.CurrentFormation);
+            int tempWidth = ((PlacementController)Controller).DynamicsTempWidth[indexSelection];
+            //Check par rapport au perte subi
+            tempWidth = numHighlightToKeep < tempWidth ? numHighlightToKeep : tempWidth;
+            float3 firstUnit = DynamicPlacementRegister[regiment.RegimentID][0].transform.position;
+            float3 lastUnit = DynamicPlacementRegister[regiment.RegimentID][tempWidth-1].transform.position;
+
+            //float3 depthDirection = normalizesafe(lastUnit - firstUnit);
+            
+            float3 depthDirection = -normalizesafe(cross(up(), normalizesafe(lastUnit - firstUnit)));
+            float3 leaderTempPosition = firstUnit + (lastUnit - firstUnit) / 2f;
+            FormationData tempFormation = new (regiment.CurrentFormation,numHighlightToKeep,tempWidth,depthDirection);
+            return (leaderTempPosition, tempFormation);
+        }
+        
         private void ResizeAndReformRegister(int registerIndex, Regiment regiment, int numHighlightToKeep, in float3 regimentFuturePosition)
         {
             if (!Registers[registerIndex].Records.ContainsKey(regiment.RegimentID)) return;
             HighlightBehaviour[] newRecordArray = Registers[registerIndex][regiment.RegimentID].Slice(0, numHighlightToKeep);
-            for (int i = 0; i < numHighlightToKeep; i++)
+            
+            if (numHighlightToKeep is 1)
             {
-                HighlightBehaviour highlight = newRecordArray[i];
-                Unit unitToAttach = regiment.Units[i];
-                highlight.AttachToUnit(unitToAttach);
+                newRecordArray[0].AttachToUnit(regiment.Units[0]);
+                newRecordArray[0].transform.position = regiment.transform.position;
+            }
+            else
+            {
+                for (int i = 0; i < numHighlightToKeep; i++)
+                {
+                    HighlightBehaviour highlight = newRecordArray[i];
+                    Unit unitToAttach = regiment.Units[i];
+                    highlight.AttachToUnit(unitToAttach);
                 
-                //Different from Preselection/Selection
-                Vector3 position = regiment.CurrentFormation.GetUnitRelativePositionToRegiment3D(i, regimentFuturePosition);
-                highlight.transform.position = position;
+                    //Different from Preselection/Selection
+                    //ATTENTION: dynamic need to stay in their preview positions
+                    if (registerIndex == DynamicRegisterIndex)
+                    {
+                        (float3 leaderPos, FormationData tmpFormation) = Test(regiment, numHighlightToKeep);
+                        Vector3 position = tmpFormation.GetUnitRelativePositionToRegiment3D(i, leaderPos);
+                        highlight.transform.position = position;
+                    }
+                    else
+                    {
+                        Vector3 position = regiment.CurrentFormation.GetUnitRelativePositionToRegiment3D(i, regimentFuturePosition);
+                        highlight.transform.position = position;
+                    }
+                }
             }
             Registers[registerIndex][regiment.RegimentID] = newRecordArray;
         }

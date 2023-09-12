@@ -61,14 +61,12 @@ namespace KaizerWald
 
         public override void OnSetup(Order order)
         {
-            //TryGetEnemyTarget(out Unit unit);
-            //UnitEnemyTarget = unit;
+            TryGetEnemyTarget(out Unit unit);
+            UnitEnemyTarget = unit;
         }
 
         public override void OnEnter()
         {
-            TryGetEnemyTarget(out Unit unit);
-            UnitEnemyTarget = unit;
             UnitAnimation.SetFullFireSequenceOn();
         }
 

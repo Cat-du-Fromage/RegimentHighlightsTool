@@ -75,6 +75,13 @@ namespace KaizerWald
             CurrentState.OnEnter();
         }
 
-        public virtual void RequestChangeState(Order order) { return; }
+        public virtual void RequestChangeState(Order order)
+        {
+            EStates stateOrdered = order.StateOrdered;
+            States[stateOrdered].OnSetup(order);
+            CurrentState.OnExit();
+            State = stateOrdered;
+            CurrentState.OnEnter();
+        }
     }
 }
