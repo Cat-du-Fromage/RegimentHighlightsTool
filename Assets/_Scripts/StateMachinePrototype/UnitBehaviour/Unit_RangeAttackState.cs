@@ -15,6 +15,11 @@ using static Unity.Collections.NativeArrayOptions;
 
 namespace KaizerWald
 {
+//------------------------------------------------------------------------------------------------------------------------------
+    //TODO : REVOIR le système de visé (tir absurde trop bas(tir e contre bas à 1m) ou trop haut (vise les nuages)
+    //TODO : (Optimisation) Potentiellement revoir la manière dont on tir, centralisé les évenement de tir dans une liste
+//------------------------------------------------------------------------------------------------------------------------------
+    
     public class Unit_RangeAttackState : UnitStateBase
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -38,8 +43,8 @@ namespace KaizerWald
         private Regiment RegimentEnemyTarget => RegimentBlackboard.EnemyTarget;
         public float3 TargetPosition => RegimentEnemyTarget.transform.position;
         private FormationData CurrentEnemyFormation => RegimentEnemyTarget.CurrentFormation;
-        private int MaxRange => UnitAttach.RegimentAttach.RegimentType.Range;
-        private int Accuracy => UnitAttach.RegimentAttach.RegimentType.Accuracy;
+        private int MaxRange => ParentRegiment.RegimentType.Range;
+        private int Accuracy => ParentRegiment.RegimentType.Accuracy;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
@@ -88,6 +93,11 @@ namespace KaizerWald
             return StateIdentity == RegimentState ? StateIdentity : RegimentState;
         }
         
+        public override void OnDestroy()
+        {
+            UnitAnimation.OnShootEvent -= OnFireEvent;
+        }
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -95,7 +105,6 @@ namespace KaizerWald
         private void Retarget()
         {
             if ((!HasEnemyFormationChange() && IsTargetValid()) || !TryGetEnemyTarget(out Unit unit)) return;
-            //if(!TryGetEnemyTarget(out Unit unit)) return;
             UnitEnemyTarget = unit;
         }
 
@@ -118,7 +127,7 @@ namespace KaizerWald
         private void OnFireEvent(AnimationEvent animationEvent)
         {
             //float3 position = UnitTransform.position;
-            Vector3 bulletPosition = UnitTransform.position + Vector3.up + UnitTransform.forward;
+            Vector3 bulletPosition = Position + up() + Forward;
             ProjectileComponent bullet = ProjectileManager.Instance.UnitRequestAmmo(UnitAttach, bulletPosition);
             bullet.Fire(bulletPosition,AimDirection);
             CurrentRandomAimDirection = randomState.NextFloat2Direction(); // Renew Random Direction
@@ -131,15 +140,15 @@ namespace KaizerWald
         private void UnitTakeAim()
         {
             if (UnitAnimation.IsPlayingReload) return;
-            float3 position = UnitTransform.position;
-            float3 vectorUnitToTarget = TargetPosition - position;
+            //float3 position = UnitTransform.position;
+            float3 vectorUnitToTarget = TargetPosition - Position;
             float3 directionUnitToTarget = normalizesafe(vectorUnitToTarget);
             
             //Only on x and y axis (forward(z) axis dont have any value)
             float3 randomDirection = new (CurrentRandomAimDirection * (Accuracy / 10f), 0);
-            float3 maxRangePosition = position + MaxRange * directionUnitToTarget;
+            float3 maxRangePosition = Position + MaxRange * directionUnitToTarget;
             float3 spreadEndPoint = maxRangePosition + randomDirection;
-            AimDirection = normalizesafe(spreadEndPoint - position);
+            AimDirection = normalizesafe(spreadEndPoint - Position);
             
             CheckUnitIsFiring();
         }

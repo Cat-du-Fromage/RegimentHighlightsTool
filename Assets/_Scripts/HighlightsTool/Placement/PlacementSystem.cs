@@ -120,15 +120,27 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void SwapDynamicToStatic()
         {
+            CleanNullSelection();
             foreach (Regiment regiment in SelectedRegiments)
             {
                 int regimentID = regiment.RegimentID;
+                //SOucis quand régiment mort mais toujours séléctionné
                 for (int i = 0; i < DynamicPlacementRegister.Records[regimentID].Length; i++)
                 {
                     Vector3 position = DynamicPlacementRegister[regimentID][i].transform.position;
                     Quaternion rotation = DynamicPlacementRegister[regimentID][i].transform.rotation;
                     StaticPlacementRegister[regimentID][i].transform.SetPositionAndRotation(position, rotation);
                 }
+            }
+        }
+
+        private void CleanNullSelection()
+        {
+            for (int i = SelectedRegiments.Count-1; i > -1; i--)
+            {
+                int regimentID = SelectedRegiments[i].RegimentID;
+                if(DynamicPlacementRegister.Records.ContainsKey(regimentID)) continue;
+                SelectedRegiments.RemoveAt(i);
             }
         }
         

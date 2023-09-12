@@ -67,6 +67,7 @@ namespace KaizerWald
             }
         }
         
+        //TODO CORRIGER PROBLEME OU 1 Highlight survie a la mort de la dernière troupe
         protected virtual void CleanUnusedHighlights(int registerIndex, int regimentIndex, int numToKeep)
         {
             if (!Registers[registerIndex].Records.ContainsKey(regimentIndex)) return;
@@ -80,5 +81,18 @@ namespace KaizerWald
             if (numToKeep > 0) return;
             Registers[registerIndex].Records.Remove(regimentIndex);
         }
+/*
+        protected void DestroyAllHighlights(int regimentIndex)
+        {
+            foreach (HighlightRegister register in Registers)
+            {
+                if (!register.Records.ContainsKey(regimentIndex)) continue;
+                foreach (HighlightBehaviour highlight in register.Records[regimentIndex])
+                {
+                    Destroy(highlight.gameObject);
+                }
+            }
+        }
+        */
     }
 }

@@ -27,5 +27,7 @@ namespace KaizerWald
         public abstract void OnExit();
         
         public abstract EStates ShouldExit();
+
+        public virtual void OnDestroy() { return; }
     }
 }

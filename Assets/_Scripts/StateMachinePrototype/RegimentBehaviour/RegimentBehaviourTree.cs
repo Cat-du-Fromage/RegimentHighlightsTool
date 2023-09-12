@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +26,15 @@ namespace KaizerWald
             RegimentBlackboard.UpdateInformation();
             base.OnUpdate();
         }
-        
+
+        private void OnDestroy()
+        {
+            foreach ((EStates _, StateBase state) in States)
+            {
+                state.OnDestroy();
+            }
+        }
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -38,24 +47,6 @@ namespace KaizerWald
         
         public void OnOrderReceived(Order order)
         {
-            /*
-            switch (order)
-            {
-                case MoveOrder moveOrder:
-                    RegimentBlackboard.SetDestination(moveOrder.LeaderDestination);
-                    RegimentBlackboard.SetDestinationFormation(moveOrder.FormationDestination);
-                    RegimentBlackboard.ResetTarget();
-                    break;
-                case RangeAttackOrder rangeAttackOrder:
-                    RegimentBlackboard.SetEnemyChase(rangeAttackOrder.TargetEnemyRegiment);
-                    break;
-                case MeleeAttackOrder meleeAttackOrder:
-                    RegimentBlackboard.SetEnemyChase(meleeAttackOrder.TargetEnemyRegiment);
-                    break;
-                default:
-                    break;
-            }
-            */
             RequestChangeState(order);
         }
         
@@ -72,7 +63,7 @@ namespace KaizerWald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void Initializations()
+        private void Initializations()
         {
             if (!TryGetComponent(out Regiment regimentAttach))
             {

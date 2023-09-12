@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace KaizerWald
 {
+//------------------------------------------------------------------------------------------------------------------------------
+    //TODO : "OnDeath" Desactiver la collision APRES la fin de l'animation
+//------------------------------------------------------------------------------------------------------------------------------
     public partial class Unit : MonoBehaviour
     {
         
@@ -55,50 +58,48 @@ namespace KaizerWald
 
         public void InitializeFormationMatrix(RegimentFormationMatrix regimentFormationMatrix, int index)
         {
-            //------------------------------------------
-            //DEBUG
+//------------------------------------------------------------------------------------------------------------------------------
+//DEBUG: TO BE REMOVED
             IndexInRegimentDebug = index;
-            //------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------
             FormationMatrix = new UnitMatrixElement(regimentFormationMatrix, index);
         }
         
         public void SetIndexInRegiment(int index)
         {
             FormationMatrix.SetIndexInRegiment(index);
-            //------------------------------------------
-            //DEBUG: TO BE REMOVED
+//------------------------------------------------------------------------------------------------------------------------------
+//DEBUG: TO BE REMOVED
             IndexInRegimentDebug = IndexInRegimentDebug;
-            //------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------
         }
 
         public void UpdateUnit()
         {
-            //StateMachine.OnUpdate();
             BehaviourTree.OnUpdate();
         }
 
-        //------------------------------------------
-        //DEBUG: TO BE REMOVED
+//------------------------------------------------------------------------------------------------------------------------------
+//DEBUG: TO BE REMOVED
         private void Update()
         {
             if (IndexInRegimentDebug == FormationMatrix.IndexInRegiment) return;
             IndexInRegimentDebug = FormationMatrix.IndexInRegiment;
         }
-        //------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Initialization Methods (Units are Initialize by their regiment) ◈◈◈◈◈◈                         ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public Unit Initialize(Regiment regiment/*, int indexInRegiment*/, int unitLayerIndex)
+        public Unit Initialize(Regiment regiment, int unitLayerIndex)
         {
-            InitializeProperties(regiment/*, indexInRegiment*/, unitLayerIndex);
+            InitializeProperties(regiment, unitLayerIndex);
             return this;
         }
 
-        private void InitializeProperties(Regiment regiment/*, int indexInRegiment*/, int unitLayerIndex)
+        private void InitializeProperties(Regiment regiment, int unitLayerIndex)
         {
             RegimentAttach = regiment;
-            //IndexInRegiment = indexInRegiment;
             gameObject.layer = unitLayerIndex;
         }
 

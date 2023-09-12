@@ -30,7 +30,7 @@ namespace KaizerWald
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         private EMoveType MoveType => IsRunning ? EMoveType.Run : EMoveType.March;
-        public float Speed => BehaviourTree.UnitAttach.RegimentAttach.RegimentType.Speed;
+        public float Speed => ParentRegiment.RegimentType.Speed;
         public float MoveSpeed => Speed * SpeedModifier;
         public bool IsRunning => SpeedModifier == RunSpeed;
         
@@ -61,14 +61,7 @@ namespace KaizerWald
         public override void OnEnter()
         {
             UpdateDestinationReach();
-            if (MoveType == EMoveType.Run)
-            {
-                SetRunning();
-            }
-            else
-            {
-                SetMarching();
-            }
+            SetAnimationSpeed(MoveType);
             AdaptSpeed();
         }
 
@@ -96,7 +89,7 @@ namespace KaizerWald
         private void UpdateDestinationReach()
         {
             if (UnitReachDestination) return;
-            UnitReachDestination = distancesq(BehaviourTree.Position, UnitDestination) <= 0.0125f;
+            UnitReachDestination = distancesq(Position, UnitDestination) <= 0.0125f;
         }
         
         private EStates TryReturnToRegimentState()
@@ -104,18 +97,21 @@ namespace KaizerWald
             if (StateIdentity == RegimentState || !UnitReachDestination) return StateIdentity;
             bool canEnterNextState = BehaviourTree.States[RegimentState].ConditionEnter();
             EStates nextState = canEnterNextState ? RegimentState : DefaultNextState;
-            /*
-            if (UnitAttach.RegimentAttach.OwnerID == 0 && RegimentState == EStates.Fire)
-            {
-                Debug.Log($"canEnterNextState: {canEnterNextState} || nextState: {nextState}");
-            }
-            */
             return nextState;
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ State Logic ◈◈◈◈◈◈                                                                                 ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        private void SetAnimationSpeed(EMoveType moveType)
+        {
+            if (moveType == EMoveType.Run)
+                SetRunning();
+            else
+                SetMarching();
+        }
+    
         private void SetMarching()
         {
             SpeedModifier = MarchSpeed;
@@ -131,15 +127,15 @@ namespace KaizerWald
         private void MoveUnit()
         {
             AdaptSpeed();
-            float3 direction = normalizesafe(UnitDestination - BehaviourTree.Position);
+            float3 direction = normalizesafe(UnitDestination - Position);
             float3 translation = Time.deltaTime * MoveSpeed * direction;
             UnitTransform.Translate(translation, Space.World);
-            UnitTransform.LookAt(BehaviourTree.Position + FormationDestination.Direction3DForward);
+            UnitTransform.LookAt(Position + FormationDestination.Direction3DForward);
         }
 
         private void AdaptSpeed()
         {
-            if (!IsRunning || distancesq(BehaviourTree.Position, UnitDestination) > 0.125f) return; 
+            if (!IsRunning || distancesq(Position, UnitDestination) > 0.125f) return; 
             SetMarching();
         }
     }

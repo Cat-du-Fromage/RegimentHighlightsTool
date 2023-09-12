@@ -37,21 +37,19 @@ namespace KaizerWald
         [field:SerializeField] public RegimentType RegimentType { get; private set; }
         
         public Formation CurrentFormation { get; private set; }
-        //public RegimentStateMachine StateMachine { get; private set; }
         public RegimentBehaviourTree BehaviourTree { get; private set; }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ ISelectable ◈◈◈◈◈◈                                                                             ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ ISelectable ◈◈◈◈◈◈                                                                                 ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         [field:SerializeField] public bool IsPreselected { get; set; }
         [field:SerializeField] public bool IsSelected { get; set; }
 
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public float3 RegimentPosition => RegimentTransform.position;
-        
         public List<Unit> Units => RegimentFormationMatrix.Units;
         public List<Transform> UnitsTransform => RegimentFormationMatrix.Transforms;
 
@@ -163,7 +161,6 @@ namespace KaizerWald
             
             if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
-            //Debug.Log(CurrentFormation);
             RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
         }
         
@@ -226,7 +223,7 @@ namespace KaizerWald
             
             void LastLineRearrangementOrder()
             {
-                if (futureFormation.IsLastLineComplete) return;
+                if (futureFormation.IsLastLineComplete || futureFormation.Depth == 1) return;
                 for (int i = futureFormation.LastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
                 {
                     Units[i].BehaviourTree.RequestChangeState(order);

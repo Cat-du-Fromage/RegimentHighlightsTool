@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 
 namespace KaizerWald
 {
@@ -16,10 +17,19 @@ namespace KaizerWald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        protected Regiment ParentRegiment => BehaviourTree.UnitAttach.RegimentAttach;
         protected Transform UnitTransform => BehaviourTree.CachedTransform;
         protected UnitAnimation UnitAnimation => UnitAttach.Animation;
         protected int IndexInRegiment => UnitAttach.IndexInRegiment;
         protected EStates RegimentState => BehaviourTree.RegimentState;
+        
+        
+        protected float3 Position => BehaviourTree.Position;
+        protected float3 Forward  => BehaviourTree.Forward;
+        protected float3 Back     => BehaviourTree.Back;
+        protected float3 Right    => BehaviourTree.Right;
+        protected float3 Left     => BehaviourTree.Left;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
@@ -35,10 +45,6 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
-        protected EStates GetRegimentState()
-        {
-            return BehaviourTree.RegimentState;
-        }
+        
     }
 }
