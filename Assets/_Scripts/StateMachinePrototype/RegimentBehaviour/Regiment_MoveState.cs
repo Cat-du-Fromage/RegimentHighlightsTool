@@ -66,6 +66,8 @@ namespace KaizerWald
             UpdateDestinationReach();
             AssignIndexToUnits(RegimentBlackboard.DestinationFormation);
             
+            
+            
             RegimentAttach.CurrentFormation.SetWidth(RegimentBlackboard.DestinationFormation.Width);
             RegimentAttach.CurrentFormation.SetDirection(RegimentBlackboard.DestinationFormation.Direction3DForward);
         }

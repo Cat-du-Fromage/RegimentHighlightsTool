@@ -75,17 +75,17 @@ namespace KaizerWald
             return false;
         }
         
-        public bool SetEnemyChase(int targetId)
+        public bool SetEnemyChase(int targetId, FormationData formationDestination)
         {
             IsChasing = SetEnemyTarget(targetId);
-            SetChaseDestination();
+            SetChaseDestination(formationDestination);
             return IsChasing;
         }
 
-        public bool SetEnemyChase(Regiment regimentTarget)
+        public bool SetEnemyChase(Regiment regimentTarget, FormationData formationDestination)
         {
             IsChasing = SetEnemyTarget(regimentTarget);
-            SetChaseDestination();
+            SetChaseDestination(formationDestination);
             return IsChasing;
         }
 
@@ -131,7 +131,7 @@ namespace KaizerWald
     //║ ◈◈◈◈◈◈ Check Enemies at Range ◈◈◈◈◈◈                                                                      ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        public void SetChaseDestination()
+        public void SetChaseDestination(FormationData formationDestination)
         {
             if (!HasTarget) return;
             float2 enemyCenterFormation = GetCenterEnemyFormation();
@@ -141,6 +141,7 @@ namespace KaizerWald
 
             float2 destinationCalculated = enemyCenterFormation + directionEnemyToRegiment * radiusAroundTarget;
             Destination = new float3(destinationCalculated.x, 0, destinationCalculated.y);
+            DestinationFormation = formationDestination;
         }
 
         private float2 GetCenterEnemyFormation()

@@ -23,6 +23,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1196978104414014004}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.88637483, y: -0.46296597, z: -0.0013830652, w: -0.00066276174}
   m_LocalPosition: {x: 0.5339239, y: 0.9735279, z: -0.046329837}
   m_LocalScale: {x: 0.99999976, y: 0.9999998, z: 0.99999994}
@@ -30,7 +31,6 @@ Transform:
   m_Children:
   - {fileID: 3931617762467416360}
   m_Father: {fileID: 667302407910403277}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4546918022380904158
 GameObject:
@@ -42,12 +42,12 @@ GameObject:
   m_Component:
   - component: {fileID: 667302407910403277}
   - component: {fileID: 7478438014941102519}
-  - component: {fileID: -8846600111057754138}
-  - component: {fileID: 1336959054119126770}
-  - component: {fileID: 2183325491190150511}
-  - component: {fileID: 3719022796314340183}
+  - component: {fileID: -5090278131348685998}
+  - component: {fileID: -1547081885076580238}
+  - component: {fileID: 4546918022380904159}
+  - component: {fileID: 8706171349944759336}
   m_Layer: 7
-  m_Name: WhiteSoldierWithRifle
+  m_Name: YellowSoldierWithRifle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -60,6 +60,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4546918022380904158}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -68,7 +69,6 @@ Transform:
   - {fileID: 4034826694279465992}
   - {fileID: 4912701484678671061}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &7478438014941102519
 Animator:
@@ -80,7 +80,7 @@ Animator:
   m_GameObject: {fileID: 4546918022380904158}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 320b1c2af77554f99a1658df4a6d3d5c, type: 3}
-  m_Controller: {fileID: 9100000, guid: 7fab0c36a0303ed4c9b3b45dcf8800b8, type: 2}
+  m_Controller: {fileID: 9100000, guid: 75bce379df04f97479ac27d0aa2092ba, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -91,7 +91,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!136 &-8846600111057754138
+--- !u!136 &-5090278131348685998
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -114,7 +114,7 @@ CapsuleCollider:
   m_Height: 1.75
   m_Direction: 1
   m_Center: {x: 0, y: 0.89, z: 0}
---- !u!54 &1336959054119126770
+--- !u!54 &-1547081885076580238
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -141,7 +141,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
---- !u!114 &2183325491190150511
+--- !u!114 &4546918022380904159
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -153,7 +153,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4819a490e80e2d642ba1242aa9959ae1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &3719022796314340183
+  <RegimentAttach>k__BackingField: {fileID: 0}
+  <Animation>k__BackingField: {fileID: 0}
+  <BehaviourTree>k__BackingField: {fileID: 0}
+  <IsDead>k__BackingField: 0
+  <IndexInRegimentDebug>k__BackingField: 0
+--- !u!114 &8706171349944759336
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -165,6 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f18c0f3ee8ffa9c40bc179ed61aaabca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DebugAnimationActive: 0
   MuzzleFlash: {fileID: 4835282344205678323}
   animationsSpeed: 0
   speedIdle: 0
@@ -195,13 +201,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5310246568390205671}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.47785208, y: -0.52120763, z: -0.47785208, w: 0.52120763}
   m_LocalPosition: {x: 0, y: 1.1426954, z: 0.027298741}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 667302407910403277}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!137 &2676479934251040181
 SkinnedMeshRenderer:
@@ -223,7 +229,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0aa851515cd3747d6b3b3e461199a2ed, type: 2}
+  - {fileID: 2100000, guid: 288d4d5e6b5f040408e01a95dec8d81c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

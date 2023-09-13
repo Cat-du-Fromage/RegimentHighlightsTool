@@ -78,7 +78,8 @@ namespace KaizerWald
         private bool MoveExit()
         {
             bool isChasing = RegimentBlackboard.IsChasing;
-            if (RegimentBlackboard.IsChasing) RegimentBlackboard.SetChaseDestination();
+            if (RegimentBlackboard.IsChasing) RegimentBlackboard.SetChaseDestination(RegimentAttach.CurrentFormation);
+            Debug.Log($"From IDLE Chase Exit: {isChasing}");
             return isChasing;
         }
     }

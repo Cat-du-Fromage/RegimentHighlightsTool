@@ -43,9 +43,8 @@ namespace KaizerWald
 
         public void OnAttackOrderEvent(Regiment enemyRegiment)
         {
-            Debug.Log($"Attack Ordered");
-            /*
-            AttackOrder order = new AttackOrder(enemyRegiment);
+            Debug.Log($"Attack Ordered, target enemy: {enemyRegiment.name}");
+            RangeAttackOrder order = new RangeAttackOrder(enemyRegiment);
             List<Tuple<Regiment, Order>> attackOrders = new (SelectedRegiments.Count);
             
             foreach (Regiment regiment in SelectedRegiments)
@@ -53,7 +52,7 @@ namespace KaizerWald
                 attackOrders.Add(new Tuple<Regiment, Order>(regiment, order));
             }
             MainSystem.OnCallback(this, attackOrders);
-            */
+            
         }
         
         //Callback On RegimentHighlightSystem

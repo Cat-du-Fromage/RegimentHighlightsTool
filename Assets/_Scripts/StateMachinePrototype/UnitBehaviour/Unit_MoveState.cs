@@ -53,13 +53,16 @@ namespace KaizerWald
             UnitReachDestination = false;
             MoveOrder moveOrder = (MoveOrder)order;
             SpeedModifier = moveOrder.MoveType == EMoveType.Run ? RunSpeed : MarchSpeed;
+            //Seems of
             FormationDestination = moveOrder.FormationDestination;
             LeaderDestination = moveOrder.LeaderDestination;
-            UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, LeaderDestination);
+            
+            //UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, LeaderDestination);
         }
 
         public override void OnEnter()
         {
+            UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, RegimentBlackboard.Destination);
             UpdateDestinationReach();
             SetAnimationSpeed(MoveType);
             AdaptSpeed();

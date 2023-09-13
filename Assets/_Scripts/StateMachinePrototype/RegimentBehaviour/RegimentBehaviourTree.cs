@@ -44,9 +44,15 @@ namespace KaizerWald
             UnitsBehaviourTrees.ExceptWith(DeadUnitsBehaviourTrees);
             DeadUnitsBehaviourTrees.Clear();
         }
-        
+
         public void OnOrderReceived(Order order)
         {
+            /*
+            if (order.StateOrdered == EStates.Fire)
+            {
+                ForceChangeState(order);
+            }
+*/
             RequestChangeState(order);
         }
         

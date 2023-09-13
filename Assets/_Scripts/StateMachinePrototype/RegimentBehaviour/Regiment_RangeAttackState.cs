@@ -30,7 +30,7 @@ namespace KaizerWald
         public override void OnSetup(Order order)
         {
             RangeAttackOrder rangeAttackOrder = (RangeAttackOrder)order;
-            RegimentBlackboard.SetEnemyChase(rangeAttackOrder.TargetEnemyRegiment);
+            RegimentBlackboard.SetEnemyChase(rangeAttackOrder.TargetEnemyRegiment, RegimentAttach.CurrentFormation);
         }
 
         public override void OnEnter() { return; }
@@ -61,7 +61,8 @@ namespace KaizerWald
         private bool ChaseExit()
         {
             bool isChasing = RegimentBlackboard.IsChasing;
-            if (isChasing) RegimentBlackboard.SetChaseDestination();
+            if (isChasing) RegimentBlackboard.SetChaseDestination(RegimentAttach.CurrentFormation);
+            Debug.Log($"From FIRE Chase Exit: {isChasing}");
             return isChasing;
         }
 

@@ -77,6 +77,18 @@ namespace KaizerWald
 
         public virtual void RequestChangeState(Order order)
         {
+            ForceChangeState(order);
+            /*
+            EStates stateOrdered = order.StateOrdered;
+            States[stateOrdered].OnSetup(order);
+            CurrentState.OnExit();
+            State = stateOrdered;
+            CurrentState.OnEnter();
+            */
+        }
+
+        public virtual void ForceChangeState(Order order)
+        {
             EStates stateOrdered = order.StateOrdered;
             States[stateOrdered].OnSetup(order);
             CurrentState.OnExit();
