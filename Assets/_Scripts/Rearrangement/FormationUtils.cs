@@ -47,12 +47,14 @@ namespace KaizerWald
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexAround(ReadOnlySpan<Unit> unitsSpan, int index, in FormationData formation)
+        public static int GetIndexAround(ReadOnlySpan<Unit> unitsSpan, int index, FormationData formation)
         {
             // --------------------------------------------------------------
             //Better to cache value in case we have to refactor FormationData
             (int width, int depth) = (formation.Width, formation.Depth);
             (int numUnits, int lastUnitsIndex) = (formation.NumUnitsAlive, formation.NumUnitsAlive-1);
+
+            //DebugFormation($"{index} formation.NumUnitsAlive: {formation.NumUnitsAlive} || lastUnitsIndex: {lastUnitsIndex}");
             // --------------------------------------------------------------
             
             int lastDepthIndex = depth - 1;
@@ -68,8 +70,10 @@ namespace KaizerWald
             int CheckLineBehinds(ReadOnlySpan<Unit> units, in FormationData formation)
             {
                 //int indexUnit = -1;
+                //DebugFormation("Passe in CheckLineBehinds ", index == 23);
                 for (int line = 1; line < numLineBehind; line++)
                 {
+                    //DebugFormation("Passe in CheckLineBehinds FOR1", index == 23);
                     int lineIndexChecked = coordY + line;
                     bool isCurrentLineCheckedLast = lineIndexChecked == lastDepthIndex;
                     
@@ -82,6 +86,7 @@ namespace KaizerWald
                     int indexUnit = -1;
                     for (int i = 0; i <= lineWidth; i++) // 0 because we check unit right behind
                     {
+                        //DebugFormation($"{i} Passe in CheckLineBehinds FOR2", index == 23);
                         if (i == 0) //Check Unit Behind
                         {
                             indexUnit = mad(lineIndexChecked, width, coordX);
@@ -90,8 +95,10 @@ namespace KaizerWald
                             {
                                 int unitBehindIndex = GetUnitBehindInUnEvenLastLine(indexUnit, formation);
                                 indexUnit = formation.IsLastLineComplete ? min(indexUnit, lastUnitsIndex) : unitBehindIndex;
+                                //DebugFormation($"{index} Check Unit Behind (lineIndexChecked == lastDepthIndex) | unitBehindIndex: {unitBehindIndex} IsLastLineComplete: {formation.IsLastLineComplete}", indexUnit >= units.Length);
                             }
-                            if (IsInBounds(indexUnit, units.Length) && IsUnitValid(units[indexUnit])) return indexUnit;
+                            //DebugFormation($"{index} Check Unit Behind || IsUnitValid: {indexUnit}", indexUnit >= units.Length);
+                            if (IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose = IsLeftRightClose(indexUnit, numUnits, lineWidth);
                             continue;
                         }
@@ -99,13 +106,18 @@ namespace KaizerWald
                         {
                             int x = min(coordX, lineWidth) - i;
                             indexUnit = GetIndex(int2(x, lineIndexChecked), width);
-                            if (IsInBounds(indexUnit, units.Length) && IsUnitValid(units[indexUnit])) return indexUnit;
+                            
+                            //DebugFormation($"{index} Check Left/Negative Index || IsUnitValid: {indexUnit}", indexUnit >= units.Length);
+                            if (IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose.x = min(coordX, lineWidth) - i == 0;
                         }
                         if (!leftRightClose.y) //Check Right/Positiv Index
                         {
                             indexUnit = GetIndex(int2(coordX + i, lineIndexChecked), width);
-                            if(IsInBounds(indexUnit, units.Length) && IsUnitValid(units[indexUnit])) return indexUnit;
+
+                            //DebugFormation($"{index} Check Right/Positiv Index || IsUnitValid: {indexUnit}", indexUnit >= units.Length);
+                            
+                            if(IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose.y = coordX + i == lastLineIndexChecked;
                         }
                         if (all(leftRightClose)) break; //No more unit to check in this line
@@ -113,6 +125,11 @@ namespace KaizerWald
                 }
                 return -1;
             }
+        }
+
+        private static void DebugFormation(string message, bool checkCondition = true)
+        {
+            if(checkCondition) Debug.Log(message);
         }
 
         private static bool IsInBounds(int unitIndex, int unitsCount) => unitIndex < unitsCount;
@@ -132,6 +149,7 @@ namespace KaizerWald
             {
                 int xToCheck = coordX + increment;
                 fullIndex = mad(coordY, formation.Width, xToCheck);
+                //DebugFormation($"Start was: {mad(coordY, formation.Width, coordX)} | RearrangeInline IsUnitValid: {fullIndex}", fullIndex >= units.Length);
                 if (IsUnitValid(units[fullIndex])) return fullIndex;
                 increment++;
             }
@@ -154,6 +172,7 @@ namespace KaizerWald
         {
             int nextYLine = yCoordLineChecked + 1;
             bool isOutOfBound = nextYLine > formation.Depth - 1;
+            //DebugFormation($"IsNextRowValid: {isOutOfBound} | nextYLine: {nextYLine} | formation.Depth - 1: {formation.Depth - 1}");
             if (isOutOfBound) return false;
             foreach (Unit unit in units)
             {

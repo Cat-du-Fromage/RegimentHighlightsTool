@@ -44,6 +44,11 @@ namespace KaizerWald
             RunSpeed = 3;
         }
 
+        public override bool ConditionEnter()
+        {
+            return base.ConditionEnter();
+        }
+
         public override void OnSetup(Order order)
         {
             LeaderReachDestination = false;
@@ -64,6 +69,14 @@ namespace KaizerWald
         public override void OnEnter()
         {
             UpdateDestinationReach();
+            
+            //SOIT on check qu'on est en "chasse" ici et on assign:
+            //RegimentBlackboard.SetDestination(moveOrder.LeaderDestination);
+            //RegimentBlackboard.SetDestinationFormation(moveOrder.FormationDestination);
+            
+            //SOIT il faut revoir comment l'ordre est donné
+            //vérifier distance etc..
+            
             AssignIndexToUnits(RegimentBlackboard.DestinationFormation);
             
             

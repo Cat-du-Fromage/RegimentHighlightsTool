@@ -38,6 +38,8 @@ namespace KaizerWald
         
         public event Action<Regiment> OnNewRegiment;
         public event Action<Regiment> OnDeadRegiment;
+        
+        private List<Tuple<Regiment, Order>> Orders = new (10);
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -57,22 +59,24 @@ namespace KaizerWald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Update | Late Update ◈◈◈◈◈◈                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        
+
+        private void FixedUpdate()
+        {
+            Regiments.ForEach(regiment => regiment.OnFixedUpdate());
+        }
+
         private void Update()
         {
-            foreach (Regiment regiment in Regiments)
-            {
-                regiment.OnUpdate();
-            }
+            ProcessOrders();
+            Regiments.ForEach(regiment => regiment.OnUpdate());
+            //foreach (Regiment regiment in Regiments) regiment.OnUpdate();
         }
 
         private void LateUpdate()
         {
             CleanupEmptyRegiments();
-            foreach (Regiment regiment in Regiments)
-            {
-                regiment.OnLateUpdate();
-            }
+            Regiments.ForEach(regiment => regiment.OnLateUpdate());
+            //foreach (Regiment regiment in Regiments) regiment.OnLateUpdate();
         }
 
         private void CleanupEmptyRegiments()
@@ -148,11 +152,21 @@ namespace KaizerWald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ PLAYER Highlight Orders ◈◈◈◈◈◈                                                                     ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        
+
+        private void ProcessOrders()
+        {
+            foreach ((Regiment regiment, Order order) in Orders)
+            {
+                regiment.BehaviourTree.OnOrderReceived(order);
+            }
+            Orders.Clear();
+        }
+    
         //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
         private void OnPlayerOrder(Regiment regiment, Order regimentMoveOrder)
         {
-            regiment.BehaviourTree.OnOrderReceived(regimentMoveOrder);
+            Orders.Add(new Tuple<Regiment, Order>(regiment, regimentMoveOrder));
+            //regiment.BehaviourTree.OnOrderReceived(regimentMoveOrder);
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐

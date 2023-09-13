@@ -152,7 +152,13 @@ namespace KaizerWald
             //if (registerIndex != DynamicRegisterIndex) return (regimentFuturePosition, regiment.CurrentFormation);
             int indexSelection = SelectedRegiments.IndexOf(regiment);
             if(indexSelection == -1) return (regiment.transform.position, regiment.CurrentFormation);
-            int tempWidth = ((PlacementController)Controller).DynamicsTempWidth[indexSelection];
+
+            PlacementController controller = (PlacementController)Controller;
+            
+            int tempWidth = controller.DynamicsTempWidth.Length > 0 
+                ? controller.DynamicsTempWidth[indexSelection] 
+                : regiment.BehaviourTree.RegimentBlackboard.DestinationFormation.Width;
+            
             //Check par rapport au perte subi
             tempWidth = numHighlightToKeep < tempWidth ? numHighlightToKeep : tempWidth;
             float3 firstUnit = DynamicPlacementRegister[regiment.RegimentID][0].transform.position;

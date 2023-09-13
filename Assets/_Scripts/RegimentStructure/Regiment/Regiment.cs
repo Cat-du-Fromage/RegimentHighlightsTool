@@ -51,6 +51,9 @@ namespace KaizerWald
 
         public float3 RegimentPosition => RegimentTransform.position;
         public List<Unit> Units => RegimentFormationMatrix.Units;
+        
+        //[field:SerializeField] public List<Unit> UnitsListDebug { get; private set; }
+        
         public List<Transform> UnitsTransform => RegimentFormationMatrix.Transforms;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -70,6 +73,12 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        public void OnFixedUpdate()
+        {
+            //Rearrangement();
+        }
+
         public void OnUpdate()
         {
             Rearrangement();
@@ -79,6 +88,8 @@ namespace KaizerWald
 
         public void OnLateUpdate()
         {
+            //if (UnitsListDebug == Units) return;
+            //UnitsListDebug = Units;
             //if (!ClearDeadUnits()) return;
             //Debug.Log($"Regiment LateUpdate: Clear Units");
         }
@@ -91,7 +102,6 @@ namespace KaizerWald
             InitializeProperties(ownerID, teamID, currentSpawner.RegimentType, direction, regimentName);
             CreateAndRegisterUnits(unitFactory);
             BehaviourTree = this.GetOrAddComponent<RegimentBehaviourTree>();
-            //InitializeStateMachine();
         }
 
         private void InitializeProperties(ulong ownerID, int teamID, RegimentType regimentType, Vector3 direction, string regimentName = default)
@@ -111,14 +121,8 @@ namespace KaizerWald
             //almost impossible a regiment loose more than 20% of it's member during a frame
             DeadUnits = new SortedSet<int>();
         }
-
-        /*
-        private void InitializeStateMachine()
-        {
-            StateMachine = this.GetOrAddComponent<RegimentStateMachine>();
-            StateMachine.Initialize();
-        }
-*/
+        
+        
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -127,6 +131,7 @@ namespace KaizerWald
         public void OnDeadUnit(Unit unit)
         {
             DeadUnits.Add(unit.IndexInRegiment);
+            //Debug.Log($"NumDead: {DeadUnits.Count} | Dead Added: {unit.IndexInRegiment} | Current Alive: {CurrentFormation.NumUnitsAlive}");
             // -------------------------------------------------------
             // Seems Wrong place but not better Idea for State Machine...
             BehaviourTree.DeadUnitsBehaviourTrees.Add(unit.BehaviourTree);
@@ -158,7 +163,6 @@ namespace KaizerWald
             float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : BehaviourTree.RegimentBlackboard.Destination;
             Rearrange(cacheNumDead, regimentPosition);
             ResizeFormation(cacheNumDead);
-            
             if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
             RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
@@ -168,13 +172,16 @@ namespace KaizerWald
         {
             RegimentFormationMatrix.Resize(numToRemove);
             CurrentFormation.DecreaseBy(numToRemove);
+            
+            //CAUSE DU BUG!!! Il va falloir changer le moment ou on met a jour ce merdier
+            BehaviourTree.RegimentBlackboard.SetDestinationFormation(CurrentFormation);
         }
 
         private void Rearrange(int cacheNumDead, in float3 regimentPosition)
         {
             //CAREFULL IF IN MOVEMENT
-            FormationData currentFormationData = CurrentFormation;
-            //FormationData currentFormationData = BehaviourTree.IsMoving ? BehaviourTree.RegimentBlackboard.DestinationFormation : CurrentFormation;
+            //FormationData currentFormationData = CurrentFormation;
+            FormationData currentFormationData = BehaviourTree.IsMoving ? BehaviourTree.RegimentBlackboard.DestinationFormation : CurrentFormation;
             FormationData futureFormation = new (currentFormationData,  currentFormationData.NumUnitsAlive - cacheNumDead);
             MoveOrder order = new MoveOrder(futureFormation, regimentPosition);
             
@@ -192,7 +199,6 @@ namespace KaizerWald
                 int deadIndex = DeadUnits.Min;
                 //Here we use Current Formation because units are not consider "Dead" Yet
                 int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, currentFormationData);
-            
                 if (swapIndex == -1)
                 {
                     DeadUnits.Remove(deadIndex);
@@ -211,13 +217,12 @@ namespace KaizerWald
 
                 DeadUnits.Remove(deadIndex);
                 DeadUnits.Add(swapIndex);
-
                 int deadYCoord = deadIndex / futureFormation.Width;
                 int swappedYCoord = swapIndex / futureFormation.Width;
                 bool2 areUnitsOnLastLine = new(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
-            
+
                 if (all(areUnitsOnLastLine)) return;
-                // IL FAUT FORCER LE REARRANGEMENT
+                // PROBLEME avec move et blackboard: il faut update position in regiment Sans incidence sur le mouvement
                 unitToSwapWith.BehaviourTree.RequestChangeState(order);
             }
             
@@ -226,6 +231,7 @@ namespace KaizerWald
                 if (futureFormation.IsLastLineComplete || futureFormation.Depth == 1) return;
                 for (int i = futureFormation.LastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
                 {
+                    if (i >= Units.Count) continue;
                     Units[i].BehaviourTree.RequestChangeState(order);
                 }
             }

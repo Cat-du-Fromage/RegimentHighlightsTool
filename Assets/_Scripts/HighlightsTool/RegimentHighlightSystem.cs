@@ -35,6 +35,7 @@ namespace KaizerWald
         public event Action OnSelectionEvent;
         public event Action<Regiment, Order> OnPlacementEvent;
         //public event Action<Regiment, MoveOrder> OnPlacementEvent;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -84,6 +85,16 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        /*
+        private void ProcessOrders()
+        {
+            foreach ((Regiment regiment, Order order) in Orders)
+            {
+                regiment.BehaviourTree
+            }
+        }
+        */
         
         public void OnCallback(HighlightSystem system, List<Tuple<Regiment, Order>> orders)
         {
@@ -93,10 +104,8 @@ namespace KaizerWald
                     //1) Placement-Drag => MoveOrder
                     //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
                     //3) Placement-NoDrag + Enemy Preselected => AttackOrder
-                    foreach ((Regiment regiment, Order order) in orders)
-                    {
-                        OnPlacementEvent?.Invoke(regiment, order);
-                    }
+                    orders.ForEach(regimentOrder => OnPlacementEvent?.Invoke(regimentOrder.Item1, regimentOrder.Item2));
+                    //foreach ((Regiment regiment, Order order) in orders) OnPlacementEvent?.Invoke(regiment, order);
                     return;
                 case SelectionSystem: // Indication (UI Regiment Preselected)
                     OnSelectionEvent?.Invoke();

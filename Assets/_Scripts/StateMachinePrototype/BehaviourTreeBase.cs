@@ -70,6 +70,7 @@ namespace KaizerWald
         {
             EStates nextState = CurrentState.ShouldExit();
             if (nextState == EStates.None || nextState == CurrentState.StateIdentity) return;
+            //Debug.Log($"CurrentState: {State} NEXT State: {nextState}");
             CurrentState.OnExit();
             State = nextState;
             CurrentState.OnEnter();
@@ -77,14 +78,11 @@ namespace KaizerWald
 
         public virtual void RequestChangeState(Order order)
         {
-            ForceChangeState(order);
-            /*
             EStates stateOrdered = order.StateOrdered;
             States[stateOrdered].OnSetup(order);
             CurrentState.OnExit();
             State = stateOrdered;
             CurrentState.OnEnter();
-            */
         }
 
         public virtual void ForceChangeState(Order order)

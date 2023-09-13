@@ -23,8 +23,13 @@ namespace KaizerWald
 
         public override void OnUpdate()
         {
+            //if (RegimentAttach.IsSelected) Debug.Log($"BEFORE update BT: {State}");
+
+            CleanUpNullUnitsStateMachine();
             RegimentBlackboard.UpdateInformation();
             base.OnUpdate();
+            
+            //if (RegimentAttach.IsSelected) Debug.Log($"AFTER update BT: {State}");
         }
 
         private void OnDestroy()
@@ -47,12 +52,7 @@ namespace KaizerWald
 
         public void OnOrderReceived(Order order)
         {
-            /*
-            if (order.StateOrdered == EStates.Fire)
-            {
-                ForceChangeState(order);
-            }
-*/
+            //UTILISER LES CONDITION D'ENTREE DES REGIMENT STATE! Comme fait pour unit fire State!
             RequestChangeState(order);
         }
         

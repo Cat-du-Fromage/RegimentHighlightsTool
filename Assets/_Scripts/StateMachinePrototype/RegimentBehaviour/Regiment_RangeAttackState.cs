@@ -22,15 +22,25 @@ namespace KaizerWald
     {
         private Formation CurrentEnemyFormation => RegimentBlackboard.EnemyTarget.CurrentFormation;
         private int AttackRange => RegimentAttach.RegimentType.Range;
-        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public Regiment_RangeAttackState(RegimentBehaviourTree behaviourTree, Blackboard blackboard) : base(behaviourTree, blackboard, EStates.Fire)
         {
+        }
+        
+        public override bool ConditionEnter()
+        {
+            //
+            return base.ConditionEnter();
         }
 
         public override void OnSetup(Order order)
         {
             RangeAttackOrder rangeAttackOrder = (RangeAttackOrder)order;
-            RegimentBlackboard.SetEnemyChase(rangeAttackOrder.TargetEnemyRegiment, RegimentAttach.CurrentFormation);
+            RegimentBlackboard.SetEnemyTarget(rangeAttackOrder.TargetEnemyRegiment);
+            //RegimentBlackboard.SetChaseEnemyTarget(rangeAttackOrder.TargetEnemyRegiment, RegimentAttach.CurrentFormation);
+            //Debug.Log($"Setup Fire State: {rangeAttackOrder.TargetEnemyRegiment.name}");
         }
 
         public override void OnEnter() { return; }
@@ -55,6 +65,7 @@ namespace KaizerWald
 
         private bool IdleExit()
         {
+            
             return !RegimentBlackboard.HasTarget;
         }
         

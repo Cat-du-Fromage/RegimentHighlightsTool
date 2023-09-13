@@ -48,41 +48,39 @@ namespace KaizerWald
         public bool SetEnemyTarget(int targetId)
         {
             IsChasing = false;
-            bool isTargetValid = targetId != -1;
-            if (isTargetValid)
+            if(!Instance.RegimentsByID.ContainsKey(targetId))
             {
-                HasTarget = Instance.RegimentsByID.ContainsKey(targetId);
-                if(HasTarget)
-                {
-                    TargetedRegimentID = targetId;
-                    EnemyTarget = Instance.RegimentsByID[targetId];
-                    CacheEnemyFormation = EnemyTarget.CurrentFormation;
-                    return true;
-                }
+                ResetTarget();
             }
-            ResetTarget();
-            return false;
+            else
+            {
+                SetTarget(Instance.RegimentsByID[targetId]);
+            }
+            return HasTarget;
         }
         
         public bool SetEnemyTarget(Regiment regimentTarget)
         {
             IsChasing = false;
-            TargetedRegimentID = regimentTarget.RegimentID;
-            EnemyTarget = regimentTarget;
-            CacheEnemyFormation = regimentTarget.CurrentFormation;
-            if (Instance.RegimentsByID.ContainsKey(TargetedRegimentID)) return true;
-            ResetTarget();
-            return false;
+            if (regimentTarget == null)
+            {
+                ResetTarget();
+            }
+            else
+            {
+                SetTarget(regimentTarget);
+            }
+            return HasTarget;
         }
         
-        public bool SetEnemyChase(int targetId, FormationData formationDestination)
+        public bool SetChaseEnemyTarget(int targetId, FormationData formationDestination)
         {
             IsChasing = SetEnemyTarget(targetId);
             SetChaseDestination(formationDestination);
             return IsChasing;
         }
 
-        public bool SetEnemyChase(Regiment regimentTarget, FormationData formationDestination)
+        public bool SetChaseEnemyTarget(Regiment regimentTarget, FormationData formationDestination)
         {
             IsChasing = SetEnemyTarget(regimentTarget);
             SetChaseDestination(formationDestination);
@@ -98,6 +96,8 @@ namespace KaizerWald
         public Blackboard(Regiment regiment)
         {
             RegimentReference = regiment;
+            Destination = regiment.RegimentPosition;
+            DestinationFormation = regiment.CurrentFormation;
             HasTarget = false;
             IsChasing = false;
             TargetedRegimentID = -1;
@@ -127,6 +127,14 @@ namespace KaizerWald
             EnemyTarget = null;
         }
         
+        private void SetTarget(Regiment regimentTarget)
+        {
+            EnemyTarget = regimentTarget;
+            TargetedRegimentID = regimentTarget.RegimentID;
+            CacheEnemyFormation = regimentTarget.CurrentFormation;
+            HasTarget = true;
+        }
+        
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Check Enemies at Range ◈◈◈◈◈◈                                                                      ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -134,7 +142,8 @@ namespace KaizerWald
         public void SetChaseDestination(FormationData formationDestination)
         {
             if (!HasTarget) return;
-            float2 enemyCenterFormation = GetCenterEnemyFormation();
+            //float2 enemyCenterFormation = GetCenterEnemyFormation();
+            float2 enemyCenterFormation = EnemyTarget.RegimentPosition.xz;
             float2 directionEnemyToRegiment = enemyCenterFormation.DirectionTo(RegimentReference.RegimentPosition.xz);
 
             int radiusAroundTarget = RegimentReference.RegimentType.Range;

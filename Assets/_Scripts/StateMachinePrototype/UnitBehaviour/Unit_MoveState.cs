@@ -70,13 +70,14 @@ namespace KaizerWald
 
         public override void OnUpdate()
         {
-            if (UnitReachDestination) return;
+            if (UnitReachDestination || UnitAttach.IsDead) return;
+            //UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, RegimentBlackboard.Destination);
             MoveUnit();
         }
 
         public override void OnExit()
         {
-            //
+            UnitReachDestination = false;
         }
 
         public override EStates ShouldExit()
