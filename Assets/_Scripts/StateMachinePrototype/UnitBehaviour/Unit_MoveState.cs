@@ -56,7 +56,6 @@ namespace KaizerWald
             //Seems of
             FormationDestination = moveOrder.FormationDestination;
             LeaderDestination = moveOrder.LeaderDestination;
-            
             //UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, LeaderDestination);
         }
 
