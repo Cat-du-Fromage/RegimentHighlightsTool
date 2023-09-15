@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.Collections;
 using UnityEngine;
 
 namespace KaizerWald
@@ -15,8 +16,6 @@ namespace KaizerWald
             return Comparer<KeyValuePair<TKey, TValue>>.Create((a, b) => 
                 a.Value.CompareTo(b.Value));
         }
-        
-        
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Swap<T>(ref T leftElement, ref T rightElement)

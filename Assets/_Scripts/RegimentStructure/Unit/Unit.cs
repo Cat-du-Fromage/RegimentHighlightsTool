@@ -8,9 +8,8 @@ namespace KaizerWald
 //------------------------------------------------------------------------------------------------------------------------------
     //TODO : "OnDeath" Desactiver la collision APRES la fin de l'animation
 //------------------------------------------------------------------------------------------------------------------------------
-    public partial class Unit : MonoBehaviour
+    public partial class Unit : MonoBehaviour, IComparable<Unit>
     {
-        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                 ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -20,15 +19,33 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        //[field: SerializeField] public int IndexInRegiment { get; private set; }
+
+        public UnitMatrixElement FormationMatrix { get; private set; }
         [field: SerializeField] public Regiment RegimentAttach { get; private set; }
         [field: SerializeField] public UnitAnimation Animation { get; private set; }
         [field: SerializeField] public UnitBehaviourTree BehaviourTree { get; private set; }
         [field: SerializeField] public bool IsDead { get; private set; }
         
+//------------------------------------------------------------------------------------------------------------------------------
+//DEBUG: TO BE REMOVED
+        [field:SerializeField]public int IndexInRegimentDebug { get; private set; }
+//------------------------------------------------------------------------------------------------------------------------------
+        
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                     ║
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    
+        public int IndexInRegiment => FormationMatrix.IndexInRegiment;
+    
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Getters ◇◇◇◇◇◇                                                                                     │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        
+        
+        
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Setters ◇◇◇◇◇◇                                                                                     │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
         public UnitBehaviourTree SetBehaviourTree(RegimentBehaviourTree regimentBt) => BehaviourTree = this.GetOrAddComponent<UnitBehaviourTree>();
         
@@ -50,11 +67,7 @@ namespace KaizerWald
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Interface Methods ◈◈◈◈◈◈                                                                       ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        //DEBUG
-        [field:SerializeField]public int IndexInRegimentDebug { get; private set; }
-        //DEBUG
-        public UnitMatrixElement FormationMatrix { get; private set; }
-        public int IndexInRegiment => FormationMatrix.IndexInRegiment;
+        
 
         public void InitializeFormationMatrix(RegimentFormationMatrix regimentFormationMatrix, int index)
         {
@@ -122,6 +135,12 @@ namespace KaizerWald
         public void TriggerDeath()
         {
             RegimentAttach.OnDeadUnit(this);
+        }
+
+        public int CompareTo(Unit other)
+        {
+            if (other == null) return -1;
+            return this.FormationMatrix.CompareTo(other.FormationMatrix);
         }
     }
 }

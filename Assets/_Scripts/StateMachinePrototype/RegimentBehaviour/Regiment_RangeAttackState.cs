@@ -38,7 +38,8 @@ namespace KaizerWald
         public override void OnSetup(Order order)
         {
             RangeAttackOrder rangeAttackOrder = (RangeAttackOrder)order;
-            RegimentBlackboard.SetEnemyTarget(rangeAttackOrder.TargetEnemyRegiment);
+            //RegimentBlackboard.OnOrder(order);
+            //RegimentBlackboard.SetEnemyTarget(rangeAttackOrder.TargetEnemyRegiment);
             //RegimentBlackboard.SetChaseEnemyTarget(rangeAttackOrder.TargetEnemyRegiment, RegimentAttach.CurrentFormation);
             //Debug.Log($"Setup Fire State: {rangeAttackOrder.TargetEnemyRegiment.name}");
         }
@@ -53,7 +54,8 @@ namespace KaizerWald
         {
             if (IdleExit()) return EStates.Idle;
             
-            bool isEnemyInRange = StateExtension.CheckEnemiesAtRange(RegimentAttach, RegimentBlackboard.EnemyTarget, AttackRange);
+            bool isEnemyInRange = StateExtension.IsTargetRegimentInRange(RegimentAttach, RegimentBlackboard.EnemyTarget, AttackRange);
+            
             if (!isEnemyInRange) return ChaseExit() ? EStates.Move : EStates.Idle;
             
             return StateIdentity;
@@ -65,7 +67,6 @@ namespace KaizerWald
 
         private bool IdleExit()
         {
-            
             return !RegimentBlackboard.HasTarget;
         }
         
@@ -73,7 +74,7 @@ namespace KaizerWald
         {
             bool isChasing = RegimentBlackboard.IsChasing;
             if (isChasing) RegimentBlackboard.SetChaseDestination(RegimentAttach.CurrentFormation);
-            Debug.Log($"From FIRE Chase Exit: {isChasing}");
+            Debug.Log($"ChaseExit From FIRE Chase Exit: {isChasing}");
             return isChasing;
         }
 

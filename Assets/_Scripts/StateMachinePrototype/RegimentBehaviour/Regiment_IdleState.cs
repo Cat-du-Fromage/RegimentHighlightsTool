@@ -81,7 +81,7 @@ namespace KaizerWald
             if (RegimentBlackboard.IsChasing)
             {
                 RegimentBlackboard.SetChaseDestination(RegimentAttach.CurrentFormation);
-                Debug.Log($"From IDLE Chase Exit: {isChasing} Formation: {RegimentAttach.CurrentFormation}");
+                //Debug.Log($"From IDLE Chase Exit: {isChasing} Formation: {RegimentAttach.CurrentFormation}");
             }
             return isChasing;
         }

@@ -10,6 +10,7 @@ using UnityEngine.Jobs;
 
 using static UnityEngine.Quaternion;
 using static Unity.Mathematics.math;
+using static KaizerWald.FormationUtils;
 
 namespace KaizerWald
 {
@@ -51,9 +52,6 @@ namespace KaizerWald
 
         public float3 RegimentPosition => RegimentTransform.position;
         public List<Unit> Units => RegimentFormationMatrix.Units;
-        
-        //[field:SerializeField] public List<Unit> UnitsListDebug { get; private set; }
-        
         public List<Transform> UnitsTransform => RegimentFormationMatrix.Transforms;
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -63,25 +61,25 @@ namespace KaizerWald
         private void Awake()
         {
             RegimentTransform = transform;
-            
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                       ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public void OnFixedUpdate()
         {
-            //Rearrangement();
+            //Seems there is less buggy by making rearrangement strictly before Update
+            //Maybe because it's on the same update than bullet collision?
+            Rearrangement();
         }
 
         public void OnUpdate()
         {
-            Rearrangement();
             BehaviourTree.OnUpdate();
             Units.ForEach(unit => unit.UpdateUnit());
         }
@@ -94,9 +92,10 @@ namespace KaizerWald
             //Debug.Log($"Regiment LateUpdate: Clear Units");
         }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                      ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    
         public void Initialize(ulong ownerID, int teamID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
         {
             InitializeProperties(ownerID, teamID, currentSpawner.RegimentType, direction, regimentName);
@@ -122,7 +121,6 @@ namespace KaizerWald
             DeadUnits = new SortedSet<int>();
         }
         
-        
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -131,7 +129,6 @@ namespace KaizerWald
         public void OnDeadUnit(Unit unit)
         {
             DeadUnits.Add(unit.IndexInRegiment);
-            //Debug.Log($"NumDead: {DeadUnits.Count} | Dead Added: {unit.IndexInRegiment} | Current Alive: {CurrentFormation.NumUnitsAlive}");
             // -------------------------------------------------------
             // Seems Wrong place but not better Idea for State Machine...
             BehaviourTree.DeadUnitsBehaviourTrees.Add(unit.BehaviourTree);
@@ -148,7 +145,6 @@ namespace KaizerWald
             }
             return true;
         }
-        
 
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Rearrangement ◇◇◇◇◇◇                                                                               │
@@ -159,10 +155,10 @@ namespace KaizerWald
         private void Rearrangement()
         {
             if (!ConfirmDeaths(out int cacheNumDead)) return;
-            //float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : ((Regiment_MoveState)BehaviourTree.CurrentState).Destination;
             float3 regimentPosition = !BehaviourTree.IsMoving ? RegimentPosition : BehaviourTree.RegimentBlackboard.Destination;
             Rearrange(cacheNumDead, regimentPosition);
             ResizeFormation(cacheNumDead);
+            
             if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
             RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
@@ -174,68 +170,66 @@ namespace KaizerWald
             CurrentFormation.DecreaseBy(numToRemove);
             
             //CAUSE DU BUG!!! Il va falloir changer le moment ou on met a jour ce merdier
-            BehaviourTree.RegimentBlackboard.SetDestinationFormation(CurrentFormation);
+            //BehaviourTree.RegimentBlackboard.SetDestinationFormation(CurrentFormation);
         }
 
         private void Rearrange(int cacheNumDead, in float3 regimentPosition)
         {
             //CAREFULL IF IN MOVEMENT
-            //FormationData currentFormationData = CurrentFormation;
             FormationData currentFormationData = BehaviourTree.IsMoving ? BehaviourTree.RegimentBlackboard.DestinationFormation : CurrentFormation;
             FormationData futureFormation = new (currentFormationData,  currentFormationData.NumUnitsAlive - cacheNumDead);
             MoveOrder order = new MoveOrder(futureFormation, regimentPosition);
             
             while (DeadUnits.Count > 0)
             {
-                SwapRearrange();
+                SwapRearrange(currentFormationData, futureFormation, order);
             }
-            LastLineRearrangementOrder();
-            
-            //------------------------------------------
-            // INTERNAL METHODS
-            //------------------------------------------
-            void SwapRearrange()
-            {
-                int deadIndex = DeadUnits.Min;
-                //Here we use Current Formation because units are not consider "Dead" Yet
-                int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, currentFormationData);
-                if (swapIndex == -1)
-                {
-                    DeadUnits.Remove(deadIndex);
-                    return;
-                }
-                Unit unitToSwapWith = Units[swapIndex];
-
-                // ----------------------------------------------------------------------
-                // (1) we need the position "unitToSwapWith" will go
-                // we can't use dead unit as reference because:
-                // * it's unstable because of the death animation
-                // * Very Unstable when applying to Last Line because with vary a lot
-                // ==> We need to calculate position in regiment (using formationExtension?)
-                // ----------------------------------------------------------------------
-                RegimentFormationMatrix.SwapIndexInRegiment(deadIndex, swapIndex);
-
-                DeadUnits.Remove(deadIndex);
-                DeadUnits.Add(swapIndex);
-                int deadYCoord = deadIndex / futureFormation.Width;
-                int swappedYCoord = swapIndex / futureFormation.Width;
-                bool2 areUnitsOnLastLine = new(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
-
-                if (all(areUnitsOnLastLine)) return;
-                // PROBLEME avec move et blackboard: il faut update position in regiment Sans incidence sur le mouvement
-                unitToSwapWith.BehaviourTree.RequestChangeState(order);
-            }
-            
-            void LastLineRearrangementOrder()
-            {
-                if (futureFormation.IsLastLineComplete || futureFormation.Depth == 1) return;
-                for (int i = futureFormation.LastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
-                {
-                    if (i >= Units.Count) continue;
-                    Units[i].BehaviourTree.RequestChangeState(order);
-                }
-            }
+            LastLineRearrangementOrder(futureFormation, order);
         }
         
+        private void SwapRearrange(in FormationData currentFormationData, in FormationData futureFormation, Order order)
+        {
+            int deadIndex = DeadUnits.Min;
+            //Here we use Current Formation because units are not consider "Dead" Yet
+            int swapIndex = FormationUtils.GetIndexAround(Units, deadIndex, currentFormationData);
+            if (swapIndex == -1)
+            {
+                DeadUnits.Remove(deadIndex);
+                return;
+            }
+            Unit unitToSwapWith = Units[swapIndex];
+
+            // ----------------------------------------------------------------------
+            // (1) we need the position "unitToSwapWith" will go
+            // we can't use dead unit as reference because:
+            // * it's unstable because of the death animation
+            // * Very Unstable when applying to Last Line because with vary a lot
+            // ==> We need to calculate position in regiment (using formationExtension?)
+            // ----------------------------------------------------------------------
+            RegimentFormationMatrix.SwapIndexInRegiment(deadIndex, swapIndex);
+            SwapDead(deadIndex, swapIndex);
+            
+            (int deadYCoord, int swappedYCoord) = (deadIndex / futureFormation.Width, swapIndex / futureFormation.Width);
+            bool2 deadUnitOnLastLine = new bool2(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
+            if (all(deadUnitOnLastLine)) return;
+            
+            unitToSwapWith.BehaviourTree.RequestChangeState(order);
+        }
+
+        private void SwapDead(int deadIndex, int swapIndex)
+        {
+            DeadUnits.Remove(deadIndex);
+            DeadUnits.Add(swapIndex);
+        }
+
+        private void LastLineRearrangementOrder(in FormationData futureFormation, Order order)
+        {
+            if (futureFormation.IsLastLineComplete || futureFormation.Depth == 1) return;
+            for (int i = futureFormation.LastRowFirstIndex; i < futureFormation.NumUnitsAlive; i++)
+            {
+                if (i >= Units.Count) continue;
+                Units[i].BehaviourTree.RequestChangeState(order);
+            }
+        }
     }
 }

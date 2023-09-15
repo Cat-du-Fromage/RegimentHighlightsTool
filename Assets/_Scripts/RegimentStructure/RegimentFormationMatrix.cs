@@ -6,7 +6,7 @@ using UnityEngine.Jobs;
 
 namespace KaizerWald
 {
-    public class UnitMatrixElement
+    public class UnitMatrixElement : IComparable<UnitMatrixElement>
     {
         public int IndexInRegiment { get; private set; }
         public RegimentFormationMatrix RegimentFormationMatrix { get; private set; }
@@ -28,8 +28,20 @@ namespace KaizerWald
         }
 
         public void SetFormationMatrix(RegimentFormationMatrix formationMatrix) => RegimentFormationMatrix = formationMatrix;
+        public int CompareTo(UnitMatrixElement other)
+        {
+            if (other != null) return this.IndexInRegiment.CompareTo(other.IndexInRegiment);
+            Debug.LogError("UnitMatrixElement null Comparer");
+            return int.MaxValue;
+        }
     }
     
+//======================================================================================================================
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ LIMITS ◆◆◆◆◆◆                                                   ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+//======================================================================================================================
+
     public class RegimentFormationMatrix
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -62,8 +74,12 @@ namespace KaizerWald
 //║                                               ◆◆◆◆◆◆ METHODS ◆◆◆◆◆◆                                                ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public int Count => Units.Count;
-        
         public Unit this[int index] => Units[index];
+        
+        private void SetIndexInRegiment(int index, int value)
+        {
+            UnitMatrixElements[index].SetIndexInRegiment(this, value);
+        }
 
         public void SwapIndexInRegiment(int currentIndex ,int indexToSwapWith)
         {
@@ -78,6 +94,22 @@ namespace KaizerWald
         public void SetIndexIndexInRegiment(int currentIndex, int indexToSwapWith)
         {
             SwapIndexInRegiment(currentIndex, indexToSwapWith);
+        }
+
+        public void SetAllIndices(int[] indices)
+        {
+            if (indices.Length != Units.Count) return;
+            for (int i = 0; i < indices.Length; i++)
+            {
+                SetIndexInRegiment(i, indices[i]);
+            }
+            Units.Sort();
+            
+            for (int i = 0; i < Units.Count; i++)
+            {
+                UnitMatrixElements[i] = Units[i].FormationMatrix;
+                Transforms[i] = Units[i].transform;
+            }
         }
         
         public void Add(Unit unit)
@@ -98,15 +130,6 @@ namespace KaizerWald
             UnitMatrixElements.RemoveRange(startIndex, numToRemove);
             Transforms.RemoveRange(startIndex, numToRemove);
             Units.RemoveRange(startIndex, numToRemove);
-            
-            /*
-            for (int i = 0; i < numToRemove; i++)
-            {
-                UnitMatrixElements.RemoveAt(UnitMatrixElements.Count - 1);
-                Transforms.RemoveAt(Transforms.Count - 1);
-                Units.RemoveAt(Units.Count - 1);
-            }
-            */
         }
         
         /// <summary>

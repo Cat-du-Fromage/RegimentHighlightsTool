@@ -22,7 +22,7 @@ namespace KaizerWald
     {
         // CHECK STILL IN RANGE
         
-        public static bool CheckEnemiesAtRange(Regiment regimentAttach, Regiment regimentTargeted, int attackRange)
+        public static bool IsTargetRegimentInRange(Regiment regimentAttach, Regiment regimentTargeted, int attackRange)
         {
             float2 position = regimentAttach.RegimentTransform.position.xz();
             float3 forward = regimentAttach.RegimentTransform.forward;

@@ -1,8 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
-
 using static KaizerWald.RegimentManager;
 
 namespace KaizerWald
@@ -23,7 +23,6 @@ namespace KaizerWald
         public int TargetedRegimentID { get; private set; }
         public float3 Destination { get; private set; }
         
-        //public FormationData CurrentFormation { get; private set; }
         public FormationData DestinationFormation { get; private set; }
         public FormationData CacheEnemyFormation { get; private set; }
         
@@ -31,65 +30,21 @@ namespace KaizerWald
         public HashSet<Regiment> Aggressors { get; private set; } = new (10);
         public HashSet<Unit> UnitsInMelee { get; private set; }
         
-        
-        
-    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
+        public RegimentType RegimentStats => RegimentReference.RegimentType;
         public FormationData CurrentFormation => RegimentReference.CurrentFormation;
         public FormationData EnemyFormation => EnemyTarget.CurrentFormation;
         
-    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Setter ◈◈◈◈◈◈                                                                                  ║
-    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public void SetIsChasing(bool value) => IsChasing = value;
-        public void SetTargetedRegimentID(int value) => TargetedRegimentID = value;
+        //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        //│  ◇◇◇◇◇◇ Setters ◇◇◇◇◇◇                                                                                     │
+        //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
-        public bool SetEnemyTarget(int targetId)
-        {
-            IsChasing = false;
-            if(!Instance.RegimentsByID.ContainsKey(targetId))
-            {
-                ResetTarget();
-            }
-            else
-            {
-                SetTarget(Instance.RegimentsByID[targetId]);
-            }
-            return HasTarget;
-        }
-        
-        public bool SetEnemyTarget(Regiment regimentTarget)
-        {
-            IsChasing = false;
-            if (regimentTarget == null)
-            {
-                ResetTarget();
-            }
-            else
-            {
-                SetTarget(regimentTarget);
-            }
-            return HasTarget;
-        }
-        
-        public bool SetChaseEnemyTarget(int targetId, FormationData formationDestination)
-        {
-            IsChasing = SetEnemyTarget(targetId);
-            SetChaseDestination(formationDestination);
-            return IsChasing;
-        }
-
-        public bool SetChaseEnemyTarget(Regiment regimentTarget, FormationData formationDestination)
-        {
-            IsChasing = SetEnemyTarget(regimentTarget);
-            SetChaseDestination(formationDestination);
-            return IsChasing;
-        }
-
         public void SetDestination(float3 value) => Destination = value;
         public void SetDestinationFormation(FormationData destinationFormation) => DestinationFormation = destinationFormation;
-        
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -111,6 +66,7 @@ namespace KaizerWald
         public void UpdateInformation()
         {
             UpdateEnemyInfos();
+            UpdateDestinationInfos();
         }
 
         private void UpdateEnemyInfos()
@@ -118,21 +74,99 @@ namespace KaizerWald
             if (!HasTarget || EnemyTarget != null) return;
             ResetTarget();
         }
-
-        public void ResetTarget()
+        
+        private void UpdateDestinationInfos()
         {
-            TargetedRegimentID = -1;
-            HasTarget = false;
-            IsChasing = false;
-            EnemyTarget = null;
+            if (CurrentFormation.NumUnitsAlive == DestinationFormation.NumUnitsAlive) return;
+            DestinationFormation = new FormationData(CurrentFormation, CurrentFormation.NumUnitsAlive);
         }
         
-        private void SetTarget(Regiment regimentTarget)
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Order ◈◈◈◈◈◈                                                                                       ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public Order OnOrder(Order order)
         {
+            return order switch
+            {
+                MoveOrder moveOrder        => OnMoveOrder(moveOrder),
+                RangeAttackOrder fireOrder => OnRangeAttackOrder(fireOrder),
+                _ => order
+            };
+        }
+
+        private Order OnMoveOrder(MoveOrder moveOrder)
+        {
+            Destination = moveOrder.LeaderDestination;
+            DestinationFormation = moveOrder.FormationDestination;
+            ResetTarget();
+            return moveOrder;
+        }
+
+        private Order OnRangeAttackOrder(RangeAttackOrder rangeAttackOrder)
+        {
+            SetChaseEnemyTarget(rangeAttackOrder.TargetEnemyRegiment);
+            bool isTargetInRange = StateExtension.IsTargetRegimentInRange(RegimentReference, EnemyTarget, RegimentStats.Range);
+            if (!isTargetInRange)
+            {
+                SetChaseDestination(CurrentFormation);
+                //UPDATE PLACEMENT HERE??
+                Instance.RegimentHighlightSystem.UpdatePlacements(RegimentReference);
+                MoveOrder moveOrder = new MoveOrder(CurrentFormation, Destination);
+                return moveOrder;
+            }
+            return rangeAttackOrder;
+        }
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Target Attribution ◈◈◈◈◈◈                                                                          ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    
+        
+        public bool SetEnemyTarget(int targetId)
+        {
+            return Instance.RegimentExist(targetId) ? SetTarget(Instance.RegimentsByID[targetId]) : ResetTarget();
+        }
+        
+        //we still check regiment is registered after checking it is not null
+        public bool SetEnemyTarget(Regiment regimentTarget)
+        {
+            return regimentTarget != null ? SetEnemyTarget(regimentTarget.RegimentID) : ResetTarget();
+        }
+            
+        public bool SetChaseEnemyTarget(int targetId, FormationData formationDestination)
+        {
+            IsChasing = SetEnemyTarget(targetId);
+            SetChaseDestination(formationDestination);
+            return IsChasing;
+        }
+
+        public bool SetChaseEnemyTarget(Regiment regimentTarget, FormationData formationDestination)
+        {
+            IsChasing = SetEnemyTarget(regimentTarget);
+            SetChaseDestination(formationDestination);
+            return IsChasing;
+        }
+            
+        public bool SetChaseEnemyTarget(int targetId) => SetChaseEnemyTarget(targetId, CurrentFormation);
+        public bool SetChaseEnemyTarget(Regiment regimentTarget) => SetChaseEnemyTarget(regimentTarget, CurrentFormation);
+    
+        public bool ResetTarget()
+        {
+            IsChasing = false; //we want to reset it by default
+            HasTarget = false;
+            EnemyTarget = null;
+            TargetedRegimentID = -1;
+            return HasTarget;
+        }
+        
+        private bool SetTarget(Regiment regimentTarget)
+        {
+            IsChasing = false; //we want to reset it by default
+            HasTarget = true;
             EnemyTarget = regimentTarget;
             TargetedRegimentID = regimentTarget.RegimentID;
             CacheEnemyFormation = regimentTarget.CurrentFormation;
-            HasTarget = true;
+            return HasTarget;
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -146,9 +180,12 @@ namespace KaizerWald
             float2 enemyCenterFormation = EnemyTarget.RegimentPosition.xz;
             float2 directionEnemyToRegiment = enemyCenterFormation.DirectionTo(RegimentReference.RegimentPosition.xz);
 
-            int radiusAroundTarget = RegimentReference.RegimentType.Range;
+            //FAUX : il faut prendre les 4 coins (voire + les milieux de chaque côtés) de la formation
+            //ET trouver le points le plus proche ET ensite calculer la destination
+            int radiusAroundTarget = RegimentStats.Range;
 
             float2 destinationCalculated = enemyCenterFormation + directionEnemyToRegiment * radiusAroundTarget;
+            //TODO: Determiner la valeur de Y
             Destination = new float3(destinationCalculated.x, 0, destinationCalculated.y);
             DestinationFormation = formationDestination;
         }

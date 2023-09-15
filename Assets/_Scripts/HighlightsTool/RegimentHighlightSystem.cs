@@ -19,7 +19,6 @@ namespace KaizerWald
                 return instance;
             }
         }
-        //public static RegimentHighlightSystem Instance { get; private set; }
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -34,7 +33,6 @@ namespace KaizerWald
 
         public event Action OnSelectionEvent;
         public event Action<Regiment, Order> OnPlacementEvent;
-        //public event Action<Regiment, MoveOrder> OnPlacementEvent;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
@@ -57,11 +55,9 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Update()
         {
-            if (Controllers.Count is 0) return;
-            foreach (HighlightController controller in Controllers)
-            {
-                controller.OnUpdate();
-            }
+            //if (Controllers.Count is 0) return;
+            Controllers.ForEach(controller => controller.OnUpdate());
+            //foreach (HighlightController controller in Controllers) { controller.OnUpdate(); }
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -82,19 +78,10 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public List<Regiment> PreselectedRegiments => Selection.PreselectionRegister.ActiveHighlights;
         public List<Regiment> SelectedRegiments => Selection.SelectionRegister.ActiveHighlights;
+        
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Callback ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-
-        /*
-        private void ProcessOrders()
-        {
-            foreach ((Regiment regiment, Order order) in Orders)
-            {
-                regiment.BehaviourTree
-            }
-        }
-        */
         
         public void OnCallback(HighlightSystem system, List<Tuple<Regiment, Order>> orders)
         {
@@ -142,6 +129,16 @@ namespace KaizerWald
         {
             Selection.RemoveRegiment(regiment);
             Placement.RemoveRegiment(regiment);
+        }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ OUTSIDES UPDATES ◈◈◈◈◈◈                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public void UpdatePlacements(Regiment regiment)
+        {
+            //Placement.StaticPlacementRegister.Records[regiment.RegimentID]
+            Placement.UpdateDestinationPlacements(regiment);
         }
         
         public override void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition)

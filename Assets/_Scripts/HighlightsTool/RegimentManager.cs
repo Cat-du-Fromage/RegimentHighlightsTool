@@ -114,6 +114,8 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
+        public bool RegimentExist(int regimentID) => RegimentsByID.ContainsKey(regimentID);
+
         public int GetEnemiesTeamNumUnits(int friendlyTeamID)
         {
             int numUnits = 0;
@@ -153,6 +155,15 @@ namespace KaizerWald
     //║ ◈◈◈◈◈◈ PLAYER Highlight Orders ◈◈◈◈◈◈                                                                     ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
+        public void UpdatePlacements(Regiment regiment)
+        {
+            
+        }
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ PLAYER Highlight Orders ◈◈◈◈◈◈                                                                     ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+
         private void ProcessOrders()
         {
             foreach ((Regiment regiment, Order order) in Orders)
@@ -166,7 +177,6 @@ namespace KaizerWald
         private void OnPlayerOrder(Regiment regiment, Order regimentMoveOrder)
         {
             Orders.Add(new Tuple<Regiment, Order>(regiment, regimentMoveOrder));
-            //regiment.BehaviourTree.OnOrderReceived(regimentMoveOrder);
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐

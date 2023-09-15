@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
+using static UnityEngine.Physics;
 using static Unity.Mathematics.math;
+using static Unity.Mathematics.quaternion;
 
 namespace KaizerWald
 {
@@ -16,14 +19,16 @@ namespace KaizerWald
         public static readonly int StaticRegisterIndex = 0;
         public static readonly int DynamicRegisterIndex = 1;
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public List<Regiment> PreselectedRegiments => MainSystem.PreselectedRegiments;
         public List<Regiment> SelectedRegiments => MainSystem.SelectedRegiments;
         
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
+
+        public PlacementController PlacementController => (PlacementController)Controller;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
@@ -61,17 +66,13 @@ namespace KaizerWald
             //Debug.Log($"Move NewFormation Ordered");
             bool keepSameFormation = newFormationsWidth.Length == 0;
             List<Tuple<Regiment, Order>> moveOrders = new (SelectedRegiments.Count);
-            
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 Regiment regiment = SelectedRegiments[i];
                 if (regiment == null) continue;
-                
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
-                
                 int numUnitsAlive = regiment.CurrentFormation.NumUnitsAlive;
                 width = width > numUnitsAlive ? numUnitsAlive : width;
-                
                 MoveOrder order = PackOrder(registerIndexUsed, regiment, width);
                 moveOrders.Add(new Tuple<Regiment, Order>(regiment,order));
             }
@@ -80,7 +81,6 @@ namespace KaizerWald
 
         private MoveOrder PackOrder(int registerIndexUsed, Regiment regiment, int width)
         {
-            //PROBLEME QUAND UNE UNITE
             float3 firstUnit = Registers[registerIndexUsed][regiment.RegimentID][0].transform.position;
             float3 lastUnit = Registers[registerIndexUsed][regiment.RegimentID][width-1].transform.position;
             float3 direction = normalizesafe(cross(down(), lastUnit - firstUnit));
@@ -123,7 +123,6 @@ namespace KaizerWald
             foreach (Regiment regiment in SelectedRegiments)
             {
                 int regimentID = regiment.RegimentID;
-                //SOucis quand régiment mort mais toujours séléctionné
                 for (int i = 0; i < DynamicPlacementRegister.Records[regimentID].Length; i++)
                 {
                     Vector3 position = DynamicPlacementRegister[regimentID][i].transform.position;
@@ -143,32 +142,30 @@ namespace KaizerWald
             }
         }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                           ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                               ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        private (float3, FormationData) Test(Regiment regiment, int numHighlightToKeep/*, in float3 regimentFuturePosition*/)
+        // When holding preview formation we want it to be updated when units die
+        // We need to access Controller current Informations about temporary with used for those preview
+        private (float3, FormationData) GetPlacementPreviewFormation(Regiment regiment, int numHighlightToKeep)
         {
-            //if (registerIndex != DynamicRegisterIndex) return (regimentFuturePosition, regiment.CurrentFormation);
             int indexSelection = SelectedRegiments.IndexOf(regiment);
-            if(indexSelection == -1) return (regiment.transform.position, regiment.CurrentFormation);
-
-            PlacementController controller = (PlacementController)Controller;
+            if(indexSelection == -1) return (regiment.RegimentPosition, regiment.CurrentFormation);
             
-            int tempWidth = controller.DynamicsTempWidth.Length > 0 
-                ? controller.DynamicsTempWidth[indexSelection] 
+            int tempWidth = PlacementController.DynamicsTempWidth.Length > 0 
+                ? PlacementController.DynamicsTempWidth[indexSelection] 
                 : regiment.BehaviourTree.RegimentBlackboard.DestinationFormation.Width;
             
             //Check par rapport au perte subi
             tempWidth = numHighlightToKeep < tempWidth ? numHighlightToKeep : tempWidth;
             float3 firstUnit = DynamicPlacementRegister[regiment.RegimentID][0].transform.position;
             float3 lastUnit = DynamicPlacementRegister[regiment.RegimentID][tempWidth-1].transform.position;
-
-            //float3 depthDirection = normalizesafe(lastUnit - firstUnit);
             
+            //Get leader position in the placement preview
             float3 depthDirection = -normalizesafe(cross(up(), normalizesafe(lastUnit - firstUnit)));
             float3 leaderTempPosition = firstUnit + (lastUnit - firstUnit) / 2f;
-            FormationData tempFormation = new (regiment.CurrentFormation,numHighlightToKeep,tempWidth,depthDirection);
+            FormationData tempFormation = new (regiment.CurrentFormation,numHighlightToKeep, tempWidth, depthDirection);
             return (leaderTempPosition, tempFormation);
         }
         
@@ -194,7 +191,7 @@ namespace KaizerWald
                     //ATTENTION: dynamic need to stay in their preview positions
                     if (registerIndex == DynamicRegisterIndex)
                     {
-                        (float3 leaderPos, FormationData tmpFormation) = Test(regiment, numHighlightToKeep);
+                        (float3 leaderPos, FormationData tmpFormation) = GetPlacementPreviewFormation(regiment, numHighlightToKeep);
                         Vector3 position = tmpFormation.GetUnitRelativePositionToRegiment3D(i, leaderPos);
                         highlight.transform.position = position;
                     }
@@ -217,6 +214,29 @@ namespace KaizerWald
             {
                 CleanUnusedHighlights(i, regimentID, numUnitsAlive);
                 ResizeAndReformRegister(i, regiment, numUnitsAlive, regimentFuturePosition);
+            }
+        }
+
+        //Use in <see cref="Blackboard.cs"/> to update destinations token on move forces by regiment chasing a target
+        public void UpdateDestinationPlacements(Regiment regiment)
+        {
+            if(!StaticPlacementRegister.Records.ContainsKey(regiment.RegimentID)) return;
+            //Blackboard blackboard = regiment.BehaviourTree.RegimentBlackboard;
+            FormationData destinationFormation = regiment.BehaviourTree.RegimentBlackboard.DestinationFormation;
+            float3 leaderDestination = regiment.BehaviourTree.RegimentBlackboard.Destination;
+            using NativeArray<float2> newPositions = destinationFormation.GetUnitsPositionRelativeToRegiment(leaderDestination.xz);
+
+            //RaycastHit[] hit = new RaycastHit[1];
+            for (int i = 0; i < StaticPlacementRegister[regiment.RegimentID].Length; i++)
+            {
+                float2 position2D = newPositions[i];
+                Vector3 origin = new Vector3(position2D.x, 1000, position2D.y);
+                Ray ray = new Ray(origin, Vector3.down);
+                bool isHit = Raycast(ray, out RaycastHit hit, 2000, Coordinator.TerrainLayerMask);
+                
+                Vector3 tokenPosition = (isHit ? hit.point : origin) + (hit.normal * 0.05f);
+                Quaternion newRotation = LookRotationSafe(destinationFormation.Direction3DForward, hit.normal);
+                StaticPlacementRegister[regiment.RegimentID][i].transform.SetPositionAndRotation(tokenPosition, newRotation);
             }
         }
     }

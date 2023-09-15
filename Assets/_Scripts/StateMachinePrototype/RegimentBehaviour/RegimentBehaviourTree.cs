@@ -7,6 +7,9 @@ namespace KaizerWald
 {
     public class RegimentBehaviourTree : BehaviourTreeBase
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public Blackboard RegimentBlackboard { get; private set; }
         public Regiment RegimentAttach { get; private set; }
         public HashSet<UnitBehaviourTree> UnitsBehaviourTrees { get; private set; }
@@ -24,11 +27,9 @@ namespace KaizerWald
         public override void OnUpdate()
         {
             //if (RegimentAttach.IsSelected) Debug.Log($"BEFORE update BT: {State}");
-
             CleanUpNullUnitsStateMachine();
             RegimentBlackboard.UpdateInformation();
             base.OnUpdate();
-            
             //if (RegimentAttach.IsSelected) Debug.Log($"AFTER update BT: {State}");
         }
 
@@ -53,7 +54,8 @@ namespace KaizerWald
         public void OnOrderReceived(Order order)
         {
             //UTILISER LES CONDITION D'ENTREE DES REGIMENT STATE! Comme fait pour unit fire State!
-            RequestChangeState(order);
+            Order processedOrder = RegimentBlackboard.OnOrder(order);
+            RequestChangeState(processedOrder);
         }
         
         public override void RequestChangeState(Order order)
@@ -86,9 +88,7 @@ namespace KaizerWald
                 foreach (Unit unit in RegimentAttach.Units)
                 {
                     UnitBehaviourTree unitBt = unit.SetBehaviourTree(this);
-                    //Debug.Log("Added to Unit");
                     UnitsBehaviourTrees.Add(unitBt);
-                    //unit.StateMachine.Initialize();
                 }
             }
         }

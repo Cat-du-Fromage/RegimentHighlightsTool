@@ -63,11 +63,11 @@ namespace KaizerWald
             if (coordY == lastDepthIndex) return RearrangeInline(unitsSpan, coordX, coordY, formation);
             
             int numLineBehind = depth - coordY;
-            return CheckLineBehinds(unitsSpan, formation);
+            return CheckLineBehinds(unitsSpan/*, formation*/);
             // ---------------------------------------------
             // INTERNAL METHODS
             // ---------------------------------------------
-            int CheckLineBehinds(ReadOnlySpan<Unit> units, in FormationData formation)
+            int CheckLineBehinds(ReadOnlySpan<Unit> units/*, in FormationData formation*/)
             {
                 //int indexUnit = -1;
                 //DebugFormation("Passe in CheckLineBehinds ", index == 23);
