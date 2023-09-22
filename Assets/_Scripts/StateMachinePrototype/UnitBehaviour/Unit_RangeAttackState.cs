@@ -41,7 +41,7 @@ namespace KaizerWald
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         private Regiment RegimentEnemyTarget => RegimentBlackboard.EnemyTarget;
-        public float3 TargetPosition => RegimentEnemyTarget.transform.position;
+        public float3 UnitTargetPosition => UnitEnemyTarget.transform.position;
         private FormationData CurrentEnemyFormation => RegimentEnemyTarget.CurrentFormation;
         private int MaxRange => ParentRegiment.RegimentType.Range;
         private int Accuracy => ParentRegiment.RegimentType.Accuracy;
@@ -53,6 +53,7 @@ namespace KaizerWald
         public Unit_RangeAttackState(UnitBehaviourTree behaviourTree) : base(behaviourTree, EStates.Fire)
         {
             randomState = Random.CreateFromIndex((uint)(abs(UnitAttach.GetInstanceID()) + UnitAttach.IndexInRegiment));
+            
             CurrentRandomAimDirection = randomState.NextFloat2Direction();
             UnitAnimation.OnShootEvent += OnFireEvent;
         }
@@ -141,7 +142,7 @@ namespace KaizerWald
         {
             if (UnitAnimation.IsPlayingReload) return;
             //float3 position = UnitTransform.position;
-            float3 vectorUnitToTarget = TargetPosition - Position;
+            float3 vectorUnitToTarget = UnitTargetPosition - Position;
             float3 directionUnitToTarget = normalizesafe(vectorUnitToTarget);
             
             //Only on x and y axis (forward(z) axis dont have any value)

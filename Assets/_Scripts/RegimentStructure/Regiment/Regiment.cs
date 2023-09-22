@@ -168,9 +168,6 @@ namespace KaizerWald
         {
             RegimentFormationMatrix.Resize(numToRemove);
             CurrentFormation.DecreaseBy(numToRemove);
-            
-            //CAUSE DU BUG!!! Il va falloir changer le moment ou on met a jour ce merdier
-            //BehaviourTree.RegimentBlackboard.SetDestinationFormation(CurrentFormation);
         }
 
         private void Rearrange(int cacheNumDead, in float3 regimentPosition)
