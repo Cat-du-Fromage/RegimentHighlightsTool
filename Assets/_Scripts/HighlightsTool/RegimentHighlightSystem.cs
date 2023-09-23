@@ -55,7 +55,6 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Update()
         {
-            //if (Controllers.Count is 0) return;
             Controllers.ForEach(controller => controller.OnUpdate());
             //foreach (HighlightController controller in Controllers) { controller.OnUpdate(); }
         }
@@ -137,7 +136,6 @@ namespace KaizerWald
         
         public void UpdatePlacements(Regiment regiment)
         {
-            //Placement.StaticPlacementRegister.Records[regiment.RegimentID]
             Placement.UpdateDestinationPlacements(regiment);
         }
         

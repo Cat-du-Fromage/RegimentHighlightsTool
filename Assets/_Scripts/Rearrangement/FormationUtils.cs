@@ -28,26 +28,24 @@ namespace KaizerWald
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 GetLastLineOffset(this Formation formation)
         {
-            return GetLastLineOffset(formation.IsLastLineComplete, formation.Width, formation.NumUnitsLastLine, 
-                formation.SpaceBetweenUnits, formation.DirectionLine);
+            return GetLastLineOffset(formation.IsLastLineComplete, formation.Width, formation.NumUnitsLastLine, formation.SpaceBetweenUnits, formation.DirectionLine);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 GetLastLineOffset(this FormationData formation, float spaceSize)
         {
-            return GetLastLineOffset(formation.IsLastLineComplete, formation.Width, 
-                formation.NumUnitsLastLine, spaceSize, formation.Direction3DLine);
+            return GetLastLineOffset(formation.IsLastLineComplete, formation.Width, formation.NumUnitsLastLine, spaceSize, formation.Direction3DLine);
         }
 
-
+/*
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetIndexAround(List<Unit> units, int index, in FormationData formation)
         {
             return GetIndexAround(units.ToArray(), index, formation);
         }
-
+*/
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndexAround(ReadOnlySpan<Unit> unitsSpan, int index, FormationData formation)
+        public static int GetIndexAround(List<Unit> unitsSpan, int index, FormationData formation)
         {
             // --------------------------------------------------------------
             //Better to cache value in case we have to refactor FormationData
@@ -63,11 +61,11 @@ namespace KaizerWald
             if (coordY == lastDepthIndex) return RearrangeInline(unitsSpan, coordX, coordY, formation);
             
             int numLineBehind = depth - coordY;
-            return CheckLineBehinds(unitsSpan/*, formation*/);
+            return CheckLineBehinds(unitsSpan);
             // ---------------------------------------------
             // INTERNAL METHODS
             // ---------------------------------------------
-            int CheckLineBehinds(ReadOnlySpan<Unit> units/*, in FormationData formation*/)
+            int CheckLineBehinds(List<Unit> units)
             {
                 //int indexUnit = -1;
                 //DebugFormation("Passe in CheckLineBehinds ", index == 23);
@@ -106,7 +104,6 @@ namespace KaizerWald
                         {
                             int x = min(coordX, lineWidth) - i;
                             indexUnit = GetIndex(int2(x, lineIndexChecked), width);
-                            
                             //DebugFormation($"{index} Check Left/Negative Index || IsUnitValid: {indexUnit}", indexUnit >= units.Length);
                             if (IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose.x = min(coordX, lineWidth) - i == 0;
@@ -114,9 +111,7 @@ namespace KaizerWald
                         if (!leftRightClose.y) //Check Right/Positiv Index
                         {
                             indexUnit = GetIndex(int2(coordX + i, lineIndexChecked), width);
-
                             //DebugFormation($"{index} Check Right/Positiv Index || IsUnitValid: {indexUnit}", indexUnit >= units.Length);
-                            
                             if(IsUnitValid(units[indexUnit])) return indexUnit;
                             leftRightClose.y = coordX + i == lastLineIndexChecked;
                         }
@@ -141,7 +136,7 @@ namespace KaizerWald
         private static bool IsUnitValid(Unit unit) => !unit.IsDead;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int RearrangeInline(ReadOnlySpan<Unit> units, int coordX, int coordY, in FormationData formation)
+        private static int RearrangeInline(List<Unit> units, int coordX, int coordY, in FormationData formation)
         {
             int increment = 1;
             int fullIndex = mad(coordY, formation.Width, coordX);
@@ -168,27 +163,20 @@ namespace KaizerWald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsNextRowValid(ReadOnlySpan<Unit> units, int yCoordLineChecked, in FormationData formation)
+        private static bool IsNextRowValid(List<Unit> units, int yCoordLineChecked, in FormationData formation)
         {
             int nextYLine = yCoordLineChecked + 1;
             bool isOutOfBound = nextYLine > formation.Depth - 1;
             //DebugFormation($"IsNextRowValid: {isOutOfBound} | nextYLine: {nextYLine} | formation.Depth - 1: {formation.Depth - 1}");
             if (isOutOfBound) return false;
-            foreach (Unit unit in units)
-            {
-                if (IsUnitValid(unit)) return true;
-            }
+            foreach (Unit unit in units) { if (IsUnitValid(unit)) return true; }
             return false;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool2 IsLeftRightClose(int index, int numUnits, int lineWidth)
         {
-            return new bool2
-            {
-                x = index == numUnits - lineWidth,
-                y = index == numUnits - 1
-            };
+            return new bool2 { x = index == numUnits - lineWidth, y = index == numUnits - 1 };
         }
     }
 }

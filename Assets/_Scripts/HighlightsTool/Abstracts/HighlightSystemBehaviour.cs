@@ -12,7 +12,6 @@ namespace KaizerWald
 
         protected virtual void Awake()
         {
-            //AllRegiments = new HashSet<Regiment>(2);
             RegimentManager = FindAnyObjectByType<T>();
             Coordinator = (HighlightCoordinator)RegimentManager;
         }
