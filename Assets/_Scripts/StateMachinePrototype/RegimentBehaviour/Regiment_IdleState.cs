@@ -27,12 +27,12 @@ namespace KaizerWald
         public bool AutoFire { get; private set; }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private int AttackRange => RegimentAttach.RegimentType.Range;
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                     ║
+    //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                          ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void AutoFireOn() => AutoFire = true;
         public void AutoFireOff() => AutoFire = false;
@@ -68,7 +68,6 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         private bool FireExit()
         {
-            
             //if (!AutoFire) return false;
             bool enemyInRange = CheckEnemiesAtRange(RegimentAttach, AttackRange, out int targetId);
             if (enemyInRange) RegimentBlackboard.SetEnemyTarget(targetId);

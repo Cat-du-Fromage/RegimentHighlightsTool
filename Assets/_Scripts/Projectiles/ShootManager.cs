@@ -67,11 +67,7 @@ namespace KaizerWald
             }
             */
         }
-
         
-
-
-
         private void LateUpdate()
         {
             if (!results.IsCreated && !commands.IsCreated) return;
@@ -331,7 +327,7 @@ namespace KaizerWald
             int lastLineNumUnit = TargetRegiment.CurrentFormation.BaseNumUnits - (numCompleteLine * TargetRegiment.CurrentFormation.Width);
             return lastLineNumUnit;
         }
-
+/*
         private void GetTarget()
         {
             Vector3 offset = new Vector3(0, 0.5f, 0);
@@ -359,7 +355,7 @@ namespace KaizerWald
             
             targetHandle = SpherecastCommand.ScheduleBatch(commands, results, regiment.CurrentFormation.Width);
         }
-
+*/
         
     }
     
