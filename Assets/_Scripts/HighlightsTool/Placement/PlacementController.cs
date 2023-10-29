@@ -124,7 +124,7 @@ namespace KaizerWald
         {
             if (!PlacementsVisible) return;
             Vector3 lastPosition = MouseEnd;
-            if (!GetMouseEnd(Mouse.current.position.value)) return;
+            if (!UpdateMouseEnd(Mouse.current.position.value)) return;
             if (MouseEnd == lastPosition) return;
             mouseDistance = UpdateMouseDistance();
             PlaceRegiments();
@@ -137,12 +137,12 @@ namespace KaizerWald
         {
             if (SelectedRegiments.Count is 0) return;
             PlacementCancel = false;
-            MouseStartValid = GetMouseStart(context.ReadValue<Vector2>());
+            MouseStartValid = UpdateMouseStart(context.ReadValue<Vector2>());
         }
 
         private void OnRightMouseClickAndMovePerform(CallbackContext context)
         {
-            if (SelectedRegiments.Count is 0 || !MouseStartValid || !GetMouseEnd(context.ReadValue<Vector2>())) return;
+            if (SelectedRegiments.Count is 0 || !MouseStartValid || !UpdateMouseEnd(context.ReadValue<Vector2>())) return;
             mouseDistance = UpdateMouseDistance();
             tempWidths = PlaceRegiments();
         }
@@ -238,6 +238,7 @@ namespace KaizerWald
                 return PlaceSingleUnitRegiment();
             }
             
+            //Here! order is "random" fixe this! must keep formation OR reversed if direction is reversed
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth.x;
             NativeArray<int> newWidths = GetUpdatedFormationWidths(ref unitsToAddLength);
             NativeArray<float2> starts = GetStartsPosition(unitsToAddLength, newWidths);
@@ -413,7 +414,7 @@ namespace KaizerWald
         //│  ◇◇◇◇◇ Mouses Positions ◇◇◇◇◇                                                                              │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
         
-        private bool GetMouseStart(in Vector2 mouseInput)
+        private bool UpdateMouseStart(in Vector2 mouseInput)
         {
             Ray singleRay = PlayerCamera.ScreenPointToRay(mouseInput);
             bool isHit = Raycast(singleRay, out RaycastHit hit, Infinity, TerrainLayer);
@@ -421,7 +422,7 @@ namespace KaizerWald
             return isHit;
         }
 
-        private bool GetMouseEnd(in Vector2 mouseInput)
+        private bool UpdateMouseEnd(in Vector2 mouseInput)
         {
             Ray singleRay = PlayerCamera.ScreenPointToRay(mouseInput);
             bool isHit = Raycast(singleRay, out RaycastHit hit, Infinity, TerrainLayer);
