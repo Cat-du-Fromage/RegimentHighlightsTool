@@ -31,8 +31,8 @@ namespace KaizerWald
 
         protected override void Awake()
         {
-            factoryTransform = transform;
             base.Awake();
+            factoryTransform = transform;
             unitFactory = GetComponent<UnitFactory>();
         }
 
@@ -40,8 +40,7 @@ namespace KaizerWald
         {
             CreateRegiments();
         }
-
-
+        
         private void CreateRegiments()
         {
             Dictionary<int, List<RegimentSpawner>> spawnerByTeam = DivideSpawnOrdersByTeam();
