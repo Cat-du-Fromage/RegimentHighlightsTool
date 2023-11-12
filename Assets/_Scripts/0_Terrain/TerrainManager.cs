@@ -14,7 +14,7 @@ using int2 = Unity.Mathematics.int2;
 namespace KaizerWald
 {
     [RequireComponent(typeof(MeshRenderer), typeof(MeshFilter), typeof(MeshCollider))]
-    public class TerrainManager : MonoBehaviourSingleton<TerrainManager>, IGameService
+    public class TerrainManager : MonoBehaviourSingleton<TerrainManager>
     {
         private enum ECardinal
         {
@@ -100,32 +100,32 @@ namespace KaizerWald
                 _ => Vector3Int.zero,
             };
             
-            Vector3 offset = dirOffset.x is 0 ? (Vector3)dirOffset * halfSizeXY.y : (Vector3)dirOffset * halfSizeXY.x;
+            Vector3 offset = (Vector3)dirOffset * (dirOffset.x == 0 ? halfSizeXY.y : halfSizeXY.x);
             offset -= (Vector3)dirOffset * (spawnerSizeY / 2f + borderOffset);
             offset += Vector3.up * 0.01f;
             return offset;
         }
         
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Spawner ◈◈◈◈◈◈                                                                                          ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Spawner ◈◈◈◈◈◈                                                                                      ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public Transform GetSpawnerTransform(int spawnIndex)
         {
-            return spawnIndex is 0 ? PlayerOneSpawn.transform : PlayerTwoSpawn.transform;
+            return spawnIndex == 0 ? PlayerOneSpawn.transform : PlayerTwoSpawn.transform;
         }
 
         public Vector3 GetPlayerFirstSpawnPosition(int spawnIndex)
         {
             if (spawnIndex is < 0 or > 1) return Vector3.zero;
-            Transform spawnerTransform = spawnIndex is 0 ? PlayerOneSpawn.transform : PlayerTwoSpawn.transform;
+            Transform spawnerTransform = spawnIndex == 0 ? PlayerOneSpawn.transform : PlayerTwoSpawn.transform;
             float spawnHorizontalSize = spawnerTransform.parent.localScale.x / 2f;
             Vector3 firstSpawnPoint = spawnerTransform.position - spawnerTransform.right * spawnHorizontalSize;
             return Vector3.Scale(firstSpawnPoint, new Vector3(1f,0,1f));
         }
 
-        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Grid System ◈◈◈◈◈◈                                                                                      ║
-        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Grid System ◈◈◈◈◈◈                                                                                  ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
     }
 }

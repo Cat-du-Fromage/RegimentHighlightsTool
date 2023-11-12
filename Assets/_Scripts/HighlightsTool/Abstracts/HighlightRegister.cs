@@ -10,10 +10,25 @@ namespace KaizerWald
 {
     public class HighlightRegister
     {
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         protected HighlightSystem System { get; private set; }
         protected GameObject Prefab { get; private set; }
         public Dictionary<int, HighlightBehaviour[]> Records { get; protected set; }
         public List<Regiment> ActiveHighlights { get; protected set; }
+        
+        public HighlightBehaviour[] this[int index]
+        {
+            get => !Records.TryGetValue(index, out _) ? Empty<HighlightBehaviour>() : Records[index];
+            set => Records[index] = value;
+        }
+
+        public int CountAt(int regimentIndex) => this[regimentIndex].Length;
+        
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         public HighlightRegister(HighlightSystem system, GameObject highlightPrefab)
         {
@@ -27,14 +42,10 @@ namespace KaizerWald
             ActiveHighlights = new List<Regiment>();
         }
         
-        public HighlightBehaviour[] this[int index]
-        {
-            get => !Records.TryGetValue(index, out _) ? Empty<HighlightBehaviour>() : Records[index];
-            set => Records[index] = value;
-        }
-
-        public int CountAt(int regimentIndex) => this[regimentIndex].Length;
-
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        
         private void PopulateRecords(Regiment selectableRegiment, GameObject prefab)
         {
             Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[selectableRegiment.UnitsTransform.Count];
@@ -63,6 +74,5 @@ namespace KaizerWald
             }
             Records.Remove(selectableRegiment.RegimentID);
         }
-        
     }
 }

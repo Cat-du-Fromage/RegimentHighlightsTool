@@ -7,17 +7,12 @@ namespace KaizerWald
 {
 
     
-    public class UnitManager : MonoBehaviour
+    public class UnitManager : MonoBehaviourSingleton<UnitManager>
     {
         //TODO: GROS PROJETS DE CONVERSION
         //List de TOUTE LES UNITES
         //UNITES PAR REGIMENTS Avec leur TransformAccessArray respectif et leur dictionaire de correspondance
         //NULL OBJECT PATTERN (Crée lors du AWAKE)
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                          ◆◆◆◆◆◆ STATIC PROPERTIES ◆◆◆◆◆◆                                           ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public static UnitManager Instance { get; private set; }
-        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -31,11 +26,14 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         
         
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        private void Awake()
+
+        protected override void Awake()
         {
+            base.Awake();
             Initialize();
         }
 
@@ -44,22 +42,11 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                       ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Initialize()
         {
-            InitializeSingleton();
             if (SharedAnimator == null) SharedAnimator = FindFirstObjectByType<Unit>().GetComponent<Animator>();
-        }
-        
-        private void InitializeSingleton()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-            Instance = this;
         }
 
         private void GetAllCLips()
