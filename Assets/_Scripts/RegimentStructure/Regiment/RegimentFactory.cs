@@ -47,7 +47,6 @@ namespace KaizerWald
             foreach ((int teamId, List<RegimentSpawner> spawners) in spawnerByTeam)
             {
                 float offsetPosition = 0;
-
                 for (int i = 0; i < spawners.Count; i++)
                 {
                     (Transform spawnerTransform, Vector3 instancePosition) = GetInstancePosition(teamId);
