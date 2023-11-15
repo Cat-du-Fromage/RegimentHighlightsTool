@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace KaizerWald
 {
-    //CHAOTIQUE! a restructurer d'urgence!
+    //FAIRE de régiment manager une partie intégrante de l'outil "HighlightRegimentManager"
     public partial class RegimentManager : HighlightCoordinator
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
