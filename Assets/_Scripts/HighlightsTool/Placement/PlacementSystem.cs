@@ -20,10 +20,10 @@ namespace KaizerWald
         public static readonly int DynamicRegisterIndex = 1;
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public List<Regiment> PreselectedRegiments => MainSystem.PreselectedRegiments;
-        public List<Regiment> SelectedRegiments => MainSystem.SelectedRegiments;
+        public List<Regiment> PreselectedRegiments => Coordinator.PreselectedRegiments;
+        public List<Regiment> SelectedRegiments => Coordinator.SelectedRegiments;
         
         public HighlightRegister StaticPlacementRegister => Registers[StaticRegisterIndex];
         public HighlightRegister DynamicPlacementRegister => Registers[DynamicRegisterIndex];
@@ -33,9 +33,10 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        protected override void Awake()
+        public PlacementSystem(HighlightRegimentManager manager) : base(manager)
         {
-            base.Awake();
+            InitializeController();
+            InitializeRegisters();
         }
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -43,7 +44,7 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Orders Callback ◈◈◈◈◈◈                                                                         ║
+        //║ ◈◈◈◈◈◈ Orders Callback ◈◈◈◈◈◈                                                                              ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public void OnAttackOrderEvent(Regiment enemyRegiment)
@@ -56,8 +57,7 @@ namespace KaizerWald
             {
                 attackOrders.Add(new Tuple<Regiment, Order>(regiment, order));
             }
-            MainSystem.OnCallback(this, attackOrders);
-            
+            Coordinator.OnCallback(this, attackOrders);
         }
         
         //Callback On RegimentHighlightSystem
@@ -76,7 +76,7 @@ namespace KaizerWald
                 MoveOrder order = PackOrder(registerIndexUsed, regiment, width);
                 moveOrders.Add(new Tuple<Regiment, Order>(regiment,order));
             }
-            MainSystem.OnCallback(this, moveOrders);
+            Coordinator.OnCallback(this, moveOrders);
         }
 
         private MoveOrder PackOrder(int registerIndexUsed, Regiment regiment, int width)
@@ -92,7 +92,7 @@ namespace KaizerWald
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                       ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         protected override void InitializeController()
         {
@@ -115,7 +115,7 @@ namespace KaizerWald
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                   ║
+        //║ ◈◈◈◈◈◈ Regiment Update Event ◈◈◈◈◈◈                                                                        ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void SwapDynamicToStatic()
         {
@@ -143,7 +143,7 @@ namespace KaizerWald
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                               ║
+    //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                                    ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         // When holding preview formation we want it to be updated when units die
@@ -176,7 +176,7 @@ namespace KaizerWald
             
             if (numHighlightToKeep is 1)
             {
-                newRecordArray[0].AttachToUnit(regiment.Units[0]);
+                newRecordArray[0].AttachToUnit(regiment.Units[0].gameObject);
                 newRecordArray[0].transform.position = regiment.transform.position;
             }
             else
@@ -185,7 +185,7 @@ namespace KaizerWald
                 {
                     HighlightBehaviour highlight = newRecordArray[i];
                     Unit unitToAttach = regiment.Units[i];
-                    highlight.AttachToUnit(unitToAttach);
+                    highlight.AttachToUnit(unitToAttach.gameObject);
                 
                     //Different from Preselection/Selection
                     //ATTENTION: dynamic need to stay in their preview positions
@@ -239,5 +239,7 @@ namespace KaizerWald
                 StaticPlacementRegister[regiment.RegimentID][i].transform.SetPositionAndRotation(tokenPosition, newRotation);
             }
         }
+
+        
     }
 }

@@ -14,19 +14,19 @@ namespace KaizerWald
         public static readonly int SelectionRegisterIndex = 1;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+        //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                    ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        public List<Regiment> Regiments => MainSystem.RegimentManager.RegimentsByPlayerID[MainSystem.RegimentManager.PlayerID];
+        public List<Regiment> Regiments => Coordinator.RegimentsByPlayerID[Coordinator.PlayerID];
         public HighlightRegister PreselectionRegister => Registers[PreselectionRegisterIndex];
         public HighlightRegister SelectionRegister => Registers[SelectionRegisterIndex];
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        
-        protected override void Awake()
+        public SelectionSystem(HighlightRegimentManager manager) : base(manager)
         {
-            base.Awake();
+            InitializeController();
+            InitializeRegisters();
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -34,7 +34,7 @@ namespace KaizerWald
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                  ║
+        //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                       ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         protected override void InitializeController()
         {
@@ -51,8 +51,19 @@ namespace KaizerWald
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Behaviours Methods ◈◈◈◈◈◈                                                                      ║
+        //║ ◈◈◈◈◈◈ Behaviours Methods ◈◈◈◈◈◈                                                                           ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ NEW HIGHLIGHT REGIMENT ◈◈◈◈◈◈                                                                       ║
+        public override void AddRegiment(HighlightRegiment regiment, List<GameObject> units)
+        {
+            PreselectionRegister.RegisterRegiment(regiment, units);
+            if (regiment.OwnerID != Coordinator.PlayerID) return;
+            SelectionRegister.RegisterRegiment(regiment, units);
+        }
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         public override void AddRegiment(Regiment regiment)
         {
             PreselectionRegister.RegisterRegiment(regiment);
@@ -78,12 +89,11 @@ namespace KaizerWald
             {
                 ((ISelectable)regiment).SetSelectableProperty(registerIndex, false);
             }
-            //Registers[registerIndex].ActiveHighlights.ForEach(regiment => ((ISelectable)regiment).SetSelectableProperty(registerIndex, false));
             base.HideAll(registerIndex);
         }
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Orders Callback ◈◈◈◈◈◈                                                                         ║
+        //║ ◈◈◈◈◈◈ Orders Callback ◈◈◈◈◈◈                                                                              ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public void OnAttackOrderEvent()
@@ -91,7 +101,7 @@ namespace KaizerWald
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                           ║
+        //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void ResizeAndReformRegister(int registerIndex, Regiment regiment, int numHighlightToKeep)
         {
@@ -101,7 +111,7 @@ namespace KaizerWald
             {
                 HighlightBehaviour highlight = newRecordArray[i];
                 Unit unitToAttach = regiment.Units[i];
-                highlight.AttachToUnit(unitToAttach);
+                highlight.AttachToUnit(unitToAttach.gameObject);
             }
             Registers[registerIndex][regiment.RegimentID] = newRecordArray;
         }

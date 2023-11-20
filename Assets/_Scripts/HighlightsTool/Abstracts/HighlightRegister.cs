@@ -46,6 +46,32 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ NEW HIGHLIGHT REGIMENT ◈◈◈◈◈◈                                                                       ║
+        private void PopulateRecords(HighlightRegiment selectableRegiment, List<GameObject> units, GameObject prefab)
+        {
+            Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[units.Count];
+            for (int i = 0; i < Records[selectableRegiment.RegimentID].Length; i++)
+            {
+                GameObject highlightObj = Object.Instantiate(prefab);
+                Records[selectableRegiment.RegimentID][i] = highlightObj.GetComponent<HighlightBehaviour>();
+                Records[selectableRegiment.RegimentID][i].InitializeHighlight(units[i].gameObject);
+            }
+        }
+        
+        private void PopulateRecords<T>(HighlightRegiment selectableRegiment, List<T> units, GameObject prefab)
+        where T : MonoBehaviour
+        {
+            Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[units.Count];
+            for (int i = 0; i < Records[selectableRegiment.RegimentID].Length; i++)
+            {
+                GameObject highlightObj = Object.Instantiate(prefab);
+                Records[selectableRegiment.RegimentID][i] = highlightObj.GetComponent<HighlightBehaviour>();
+                Records[selectableRegiment.RegimentID][i].InitializeHighlight(units[i].gameObject);
+            }
+        }
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         private void PopulateRecords(Regiment selectableRegiment, GameObject prefab)
         {
             Records[selectableRegiment.RegimentID] ??= new HighlightBehaviour[selectableRegiment.UnitsTransform.Count];
@@ -53,10 +79,28 @@ namespace KaizerWald
             {
                 GameObject highlightObj = Object.Instantiate(prefab);
                 Records[selectableRegiment.RegimentID][i] = highlightObj.GetComponent<HighlightBehaviour>();
-                Records[selectableRegiment.RegimentID][i].InitializeHighlight(selectableRegiment.Units[i]);
+                Records[selectableRegiment.RegimentID][i].InitializeHighlight(selectableRegiment.Units[i].gameObject);
             }
         }
-
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ NEW HIGHLIGHT REGIMENT ◈◈◈◈◈◈                                                                       ║
+        public void RegisterRegiment(HighlightRegiment selectableRegiment, List<GameObject> units, GameObject prefabOverride = null)
+        {
+            GameObject highlightPrefab = prefabOverride == null ? Prefab : prefabOverride;
+            Records.TryAdd(selectableRegiment.RegimentID, new HighlightBehaviour[units.Count]);
+            PopulateRecords(selectableRegiment, units, highlightPrefab);
+        }
+        
+        public void RegisterRegiment<T>(HighlightRegiment selectableRegiment, List<T> units, GameObject prefabOverride = null)
+        where T : MonoBehaviour
+        {
+            GameObject highlightPrefab = prefabOverride == null ? Prefab : prefabOverride;
+            Records.TryAdd(selectableRegiment.RegimentID, new HighlightBehaviour[units.Count]);
+            PopulateRecords(selectableRegiment, units, highlightPrefab);
+        }
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         public void RegisterRegiment(Regiment selectableRegiment, GameObject prefabOverride = null)
         {
             GameObject highlightPrefab = prefabOverride == null ? Prefab : prefabOverride;

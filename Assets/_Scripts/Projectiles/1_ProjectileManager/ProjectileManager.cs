@@ -69,13 +69,14 @@ namespace KaizerWald
 
         private void OnDisable()
         {
-            RegimentManager.Instance.OnNewRegiment -= RegisterPool;
+            if (HighlightRegimentManager.Instance == null) return;
+            HighlightRegimentManager.Instance.OnNewRegiment -= RegisterPool;
         }
 
         private void RegisterEvent()
         {
-            if (RegimentManager.Instance == null || initialized) return;
-            RegimentManager.Instance.OnNewRegiment += RegisterPool;
+            if (HighlightRegimentManager.Instance == null || initialized) return;
+            HighlightRegimentManager.Instance.OnNewRegiment += RegisterPool;
             initialized = true;
         }
 
@@ -121,7 +122,7 @@ namespace KaizerWald
         {
             GameObject prefab = regiment.RegimentType.BulletPrefab;
             int unitCount = regiment.CurrentFormation.BaseNumUnits;
-            RegimentBulletsPool.Add(regiment.RegimentID, new ObjectPool<ProjectileComponent>(prefab, CallOnPull, unitCount));
+            RegimentBulletsPool.TryAdd(regiment.RegimentID, new ObjectPool<ProjectileComponent>(prefab, CallOnPull, unitCount));
         }
         
         private void CallOnPull(ProjectileComponent projectile)

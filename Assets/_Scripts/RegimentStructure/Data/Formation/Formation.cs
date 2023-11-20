@@ -80,7 +80,7 @@ namespace KaizerWald
         public int NumUnitsLastLine => IsLastLineComplete ? Width : CountUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                 ║
+        //║ ◈◈◈◈◈◈ Setters ◈◈◈◈◈◈                                                                                      ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public void Increment() => Add(1);
         public void Decrement() => DecreaseBy(1);

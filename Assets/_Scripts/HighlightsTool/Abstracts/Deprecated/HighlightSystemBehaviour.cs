@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace KaizerWald
 {
+    /*
     public abstract class HighlightSystemBehaviour<T> : MonoBehaviour
     where T : HighlightCoordinator
     {
@@ -22,4 +23,5 @@ namespace KaizerWald
 
         public abstract void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition);
     }
+    */
 }

@@ -10,21 +10,47 @@ using Object = UnityEngine.Object;
 namespace KaizerWald
 {
     //FAIRE de régiment manager une partie intégrante de l'outil "HighlightRegimentManager"
-    public partial class RegimentManager : HighlightCoordinator
+    public partial class HighlightRegimentManager : MonoBehaviourSingleton<HighlightRegimentManager>
     {
-//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-//║                                          ◆◆◆◆◆◆ STATIC PROPERTIES ◆◆◆◆◆◆                                           ║
-//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public static RegimentManager Instance { get; private set; }
-        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         private RegimentFactory factory;
-        private RegimentHighlightSystem regimentHighlightSystem;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        [field:SerializeField] public ulong PlayerID { get; private set; }
+        
+        [field:Header("Layer Masks")]
+        [field:SerializeField] public LayerMask TerrainLayerMask { get; private set; }
+        [field:SerializeField] public LayerMask UnitLayerMask { get; private set; }
+        
+        [field:Header("Default Prefabs")]
+        [field:SerializeField] public GameObject PreselectionDefaultPrefab { get; private set; }
+        [field:SerializeField] public GameObject SelectionDefaultPrefab { get; private set; }
+        [field:SerializeField] public GameObject PlacementDefaultPrefab { get; private set; }
+        
+        public PlayerControls HighlightControls { get; private set; }
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Highlights ◈◈◈◈◈◈                                                                                       ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public SelectionSystem Selection { get; private set; }
+        public PlacementSystem Placement { get; private set; }
+        
+        private List<HighlightController> Controllers = new List<HighlightController>();
+        public List<Regiment> PreselectedRegiments => Selection.PreselectionRegister.ActiveHighlights;
+        public List<Regiment> SelectedRegiments => Selection.SelectionRegister.ActiveHighlights;
+        
+        public event Action OnSelectionEvent;
+        public event Action<Regiment, Order> OnPlacementEvent;
+        
+    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+    //║ ◈◈◈◈◈◈ Containers ◈◈◈◈◈◈                                                                                       ║
+    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
         public List<Regiment> Regiments { get; private set; } = new ();
         
@@ -51,33 +77,39 @@ namespace KaizerWald
 
         protected override void Awake()
         {
-            InitializeSingleton();
             base.Awake();
-            factory = FindObjectOfType<RegimentFactory>();
-            regimentHighlightSystem = GetComponent<RegimentHighlightSystem>();
+            factory = FindFirstObjectByType<RegimentFactory>();
+            
+            HighlightControls = new PlayerControls();
+            Selection = new SelectionSystem(this);
+            Placement = new PlacementSystem(this);
+            Controllers = new List<HighlightController>() { Selection.Controller, Placement.Controller };
         }
-        
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Update | Late Update ◈◈◈◈◈◈                                                                             ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         private void FixedUpdate()
         {
+            //OUT OF PLACE!
             Regiments.ForEach(regiment => regiment.OnFixedUpdate());
         }
 
         private void Update()
         {
+            Controllers.ForEach(controller => controller.OnUpdate());
+            
+            //OUT OF PLACE!
             ProcessOrders();
             Regiments.ForEach(regiment => regiment.OnUpdate());
-            //foreach (Regiment regiment in Regiments) regiment.OnUpdate();
         }
 
         private void LateUpdate()
         {
             CleanupEmptyRegiments();
+            
+            //OUT OF PLACE!
             Regiments.ForEach(regiment => regiment.OnLateUpdate());
-            //foreach (Regiment regiment in Regiments) regiment.OnLateUpdate();
         }
 
         private void CleanupEmptyRegiments()
@@ -96,25 +128,27 @@ namespace KaizerWald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Enable | Disable ◈◈◈◈◈◈                                                                                 ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void OnEnable()
+    
+        public void OnEnable()
         {
+            Controllers?.ForEach(controller => controller.OnEnable());
             factory.OnRegimentCreated += RegisterRegiment;
-            regimentHighlightSystem.OnPlacementEvent += OnPlayerOrder;
         }
 
-        private void OnDisable()
+        public void OnDisable()
         {
+            Controllers?.ForEach(controller => controller.OnDisable());
             factory.OnRegimentCreated -= RegisterRegiment;
-            regimentHighlightSystem.OnPlacementEvent -= OnPlayerOrder;
-            
             OnNewRegiment?.GetInvocationList().ForEachSafe(action => OnNewRegiment -= (Action<Regiment>)action);
             OnDeadRegiment?.GetInvocationList().ForEachSafe(action => OnDeadRegiment -= (Action<Regiment>)action);
         }
-        
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
+        public void SetPlayerID(ulong playerID) => PlayerID = playerID;
+        
         public bool RegimentExist(int regimentID) => RegimentsByID.ContainsKey(regimentID);
 
         public int GetEnemiesTeamNumUnits(int friendlyTeamID)
@@ -137,19 +171,6 @@ namespace KaizerWald
                 numUnits += regiments.Count;
             }
             return numUnits;
-        }
-
-    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                           ║
-    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        private void InitializeSingleton()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-            Instance = this;
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -175,24 +196,67 @@ namespace KaizerWald
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-        public override void RegisterRegiment(Regiment regiment)
+        public void RegisterRegiment(Regiment regiment)
         {
             Regiments.Add(regiment);
-            RegimentsByID.Add(regiment.RegimentID, regiment);
+            RegimentsByID.TryAdd(regiment.RegimentID, regiment);
             RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
             RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
-            RegimentHighlightSystem.RegisterRegiment(regiment);
+            
+            Selection.AddRegiment(regiment);
+            Placement.AddRegiment(regiment);
             OnNewRegiment?.Invoke(regiment); //MAYBE USELESS
         }
         
-        public override void UnRegisterRegiment(Regiment regiment)
+        public void UnRegisterRegiment(Regiment regiment)
         {
             OnDeadRegiment?.Invoke(regiment); //MAYBE USELESS
-            RegimentHighlightSystem.UnregisterRegiment(regiment);
+            Selection.RemoveRegiment(regiment);
+            Placement.RemoveRegiment(regiment);
+            
             Regiments.Remove(regiment);
             RegimentsByID.Remove(regiment.RegimentID);
             RegimentsByPlayerID[regiment.OwnerID].Remove(regiment);
             RegimentsByTeamID[regiment.TeamID].Remove(regiment);
+        }
+        
+        public void OnCallback(HighlightSystem system, List<Tuple<Regiment, Order>> orders)
+        {
+            switch (system)
+            {
+                case PlacementSystem: // ORDRE
+                    //1) Placement-Drag => MoveOrder
+                    //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
+                    //3) Placement-NoDrag + Enemy Preselected => AttackOrder
+                    foreach ((Regiment regiment, Order order) in orders)
+                    {
+                        OnPlayerOrder(regiment, order);
+                        OnPlacementEvent?.Invoke(regiment, order);
+                    }
+                    //orders.ForEach(regimentOrder => OnPlacementEvent?.Invoke(regimentOrder.Item1, regimentOrder.Item2));
+                    //foreach ((Regiment regiment, Order order) in orders) OnPlacementEvent?.Invoke(regiment, order);
+                    return;
+                case SelectionSystem: // Indication (UI Regiment Preselected)
+                    OnSelectionEvent?.Invoke();
+                    return;
+                default:
+                    return;
+            }
+        }
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ OUTSIDES UPDATES ◈◈◈◈◈◈                                                                             ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+        public void UpdatePlacements(Regiment regiment)
+        {
+            Placement.UpdateDestinationPlacements(regiment);
+        }
+        
+        public void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition)
+        {
+            Selection.ResizeRegister(regiment);
+            Placement.ResizeRegister(regiment, regimentFuturePosition);
         }
     }
 }

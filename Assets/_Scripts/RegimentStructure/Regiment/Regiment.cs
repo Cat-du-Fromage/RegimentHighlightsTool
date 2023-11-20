@@ -40,13 +40,13 @@ namespace KaizerWald
         public RegimentBehaviourTree BehaviourTree { get; private set; }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ ISelectable ◈◈◈◈◈◈                                                                                 ║
+    //║ ◈◈◈◈◈◈ ISelectable ◈◈◈◈◈◈                                                                                      ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         [field:SerializeField] public bool IsPreselected { get; set; }
         [field:SerializeField] public bool IsSelected { get; set; }
 
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         public float3 RegimentPosition => RegimentTransform.position;
@@ -92,7 +92,7 @@ namespace KaizerWald
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                      ║
+    //║ ◈◈◈◈◈◈ Initialization Methods ◈◈◈◈◈◈                                                                           ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
     
         public void Initialize(ulong ownerID, int teamID, UnitFactory unitFactory, RegimentSpawner currentSpawner, Vector3 direction, string regimentName = default)
@@ -116,6 +116,11 @@ namespace KaizerWald
         {
             List<Unit> units = unitFactory.CreateRegimentsUnit(this, CurrentFormation.BaseNumUnits, RegimentType.UnitPrefab);
             RegimentFormationMatrix = new RegimentFormationMatrix(units);
+            
+            //==============================================================================
+            // WE WILL REGISTER HERE!
+            //==============================================================================
+            
             //almost impossible a regiment loose more than 20% of it's member during a frame
             DeadUnits = new SortedSet<int>();
         }
@@ -160,7 +165,7 @@ namespace KaizerWald
             
             if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
-            RegimentManager.Instance.RegimentHighlightSystem.ResizeHighlightsRegisters(this, regimentPosition);
+            HighlightRegimentManager.Instance.ResizeHighlightsRegisters(this, regimentPosition);
         }
         
         private void ResizeFormation(int numToRemove)

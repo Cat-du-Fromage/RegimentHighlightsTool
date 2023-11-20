@@ -243,7 +243,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &287464671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -772,8 +772,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1490866060}
-  - component: {fileID: 1490866059}
-  - component: {fileID: 1490866061}
+  - component: {fileID: 1490866063}
   - component: {fileID: 1490866062}
   m_Layer: 0
   m_Name: RegimentManagerV2Test
@@ -782,30 +781,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1490866059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1490866058}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2716e651f58e554fa7f878eddc7c74e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <TerrainLayerMask>k__BackingField:
-    serializedVersion: 2
-    m_Bits: 256
-  <UnitLayerMask>k__BackingField:
-    serializedVersion: 2
-    m_Bits: 128
-  <PreselectionDefaultPrefab>k__BackingField: {fileID: 4612140642301560438, guid: c87b9e4d6a9bd564d84e6024ac479255,
-    type: 3}
-  <SelectionDefaultPrefab>k__BackingField: {fileID: 5453810541774106665, guid: 4f6746a49ef20b4409c0fb561b86ada3,
-    type: 3}
-  <PlacementDefaultPrefab>k__BackingField: {fileID: 6969508022250319429, guid: 5f28dfd2826d70e408b33fe4d04df0f2,
-    type: 3}
 --- !u!4 &1490866060
 Transform:
   m_ObjectHideFlags: 0
@@ -821,18 +796,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1490866061
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1490866058}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 257ba050014f7b74abfc470969a42749, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1490866062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -845,6 +808,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b877bcc735c13c842b8ea993edfa5a1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1490866063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1490866058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2716e651f58e554fa7f878eddc7c74e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <PlayerID>k__BackingField: 0
+  <TerrainLayerMask>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 256
+  <UnitLayerMask>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 128
+  <PreselectionDefaultPrefab>k__BackingField: {fileID: 4612140642301560438, guid: c87b9e4d6a9bd564d84e6024ac479255,
+    type: 3}
+  <SelectionDefaultPrefab>k__BackingField: {fileID: 5453810541774106665, guid: 4f6746a49ef20b4409c0fb561b86ada3,
+    type: 3}
+  <PlacementDefaultPrefab>k__BackingField: {fileID: 6969508022250319429, guid: 5f28dfd2826d70e408b33fe4d04df0f2,
+    type: 3}
 --- !u!1 &1541405075
 GameObject:
   m_ObjectHideFlags: 0

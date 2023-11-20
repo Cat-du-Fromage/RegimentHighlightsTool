@@ -14,14 +14,14 @@ namespace KaizerWald
             projector = GetComponent<DecalProjector>();
         }
 
-        public override void InitializeHighlight(Unit unitAttached)
+        public override void InitializeHighlight(GameObject unitAttached)
         {
             positionConstraint = GetComponent<PositionConstraint>();
             AttachToUnit(unitAttached);
             Hide();
         }
 
-        public override void AttachToUnit(Unit unit)
+        public override void AttachToUnit(GameObject unit)
         {
             base.AttachToUnit(unit);
             UnlockConstraint();

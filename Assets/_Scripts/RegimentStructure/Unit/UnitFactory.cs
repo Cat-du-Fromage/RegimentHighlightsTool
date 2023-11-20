@@ -10,7 +10,7 @@ using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
-    public class UnitFactory : MonoBehaviour
+    public class UnitFactory : MonoBehaviourSingleton<MonoBehaviour>
     {
         private const int RAYCAST_RANGE = 2000;
         private const int RAYCAST_UP_ORIGIN = 1000;
@@ -21,6 +21,11 @@ namespace KaizerWald
         private int TerrainLayerIndex => floorlog2(TerrainLayer.value);
         private int UnitLayerIndex => floorlog2(UnitLayer.value);
         
+        protected override void Awake()
+        {
+            base.Awake();
+        }
+        
         public List<Unit> CreateRegimentsUnit(Regiment regiment, int baseNumUnits, GameObject unitPrefab)
         {
             float3 regimentPosition = regiment.transform.position;
@@ -28,8 +33,6 @@ namespace KaizerWald
             
             for (int i = 0; i < baseNumUnits; i++)
             {
-                //Vector2 positionInRegiment = GetPositionInRegiment(i, regimentPosition.xz, regiment.CurrentFormation);
-                //Vector3 unitPosition = GetUnitPosition(positionInRegiment);
                 Vector3 unitPosition = regiment.CurrentFormation.GetUnitRelativePositionToRegiment3D(i, regimentPosition);
                 GameObject unitGameObject = Instantiate(unitPrefab, unitPosition, regiment.transform.localRotation);
                 units.Add(InitializeUnitComponent(regiment, unitGameObject, i));

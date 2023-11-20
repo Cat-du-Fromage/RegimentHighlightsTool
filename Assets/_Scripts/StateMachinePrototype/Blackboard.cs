@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
-using static KaizerWald.RegimentManager;
+using static KaizerWald.HighlightRegimentManager;
 
 namespace KaizerWald
 {
@@ -110,7 +110,7 @@ namespace KaizerWald
             {
                 SetChaseDestination(CurrentFormation);
                 //UPDATE PLACEMENT HERE??
-                Instance.RegimentHighlightSystem.UpdatePlacements(RegimentReference);
+                HighlightRegimentManager.Instance.UpdatePlacements(RegimentReference);
                 MoveOrder moveOrder = new MoveOrder(CurrentFormation, Destination);
                 return moveOrder;
             }
@@ -124,7 +124,7 @@ namespace KaizerWald
         
         public bool SetEnemyTarget(int targetId)
         {
-            return Instance.RegimentExist(targetId) ? SetTarget(Instance.RegimentsByID[targetId]) : ResetTarget();
+            return HighlightRegimentManager.Instance.RegimentExist(targetId) ? SetTarget(HighlightRegimentManager.Instance.RegimentsByID[targetId]) : ResetTarget();
         }
         
         //we still check regiment is registered after checking it is not null

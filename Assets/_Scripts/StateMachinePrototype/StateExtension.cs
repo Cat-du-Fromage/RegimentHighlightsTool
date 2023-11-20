@@ -188,9 +188,9 @@ namespace KaizerWald
         
         private static NativeParallelMultiHashMap<int, float3> GetEnemiesPositions(Regiment regimentAttach)
         {
-            int numEnemyUnits = RegimentManager.Instance.GetEnemiesTeamNumUnits(regimentAttach.TeamID);
+            int numEnemyUnits = HighlightRegimentManager.Instance.GetEnemiesTeamNumUnits(regimentAttach.TeamID);
             NativeParallelMultiHashMap<int, float3> temp = new(numEnemyUnits, Temp);
-            foreach ((int teamID, List<Regiment> regiments) in RegimentManager.Instance.RegimentsByTeamID)
+            foreach ((int teamID, List<Regiment> regiments) in HighlightRegimentManager.Instance.RegimentsByTeamID)
             {
                 if (teamID == regimentAttach.TeamID) continue;
                 foreach (Regiment regiment in regiments)

@@ -1,30 +1,42 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace KaizerWald
 {
     /// <summary>
     /// HIGHLIGHT SYSTEM
     /// </summary>
-    public abstract class HighlightSystem : MonoBehaviour
+    public abstract class HighlightSystem //: MonoBehaviour
     {
-        protected HighlightCoordinator Coordinator;
-        protected RegimentHighlightSystem MainSystem { get; private set; }
+        protected HighlightRegimentManager Coordinator { get; private set; }
         
         protected HighlightRegister[] Registers = new HighlightRegister[2];
         public HighlightController Controller { get; protected set; }
 
-        protected virtual void Awake()
+        protected HighlightSystem(HighlightRegimentManager manager)
         {
-            MainSystem = GetComponent<RegimentHighlightSystem>();
-            Coordinator = FindFirstObjectByType<HighlightCoordinator>();
-            InitializeController();
-            InitializeRegisters();
+            Coordinator = manager;
         }
 
         protected abstract void InitializeController();
         protected abstract void InitializeRegisters();
-
+        
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ NEW HIGHLIGHT REGIMENT ◈◈◈◈◈◈                                                                       ║
+        public virtual void AddRegiment(HighlightRegiment regiment, List<GameObject> units)
+        {
+            Array.ForEach(Registers, register => register.RegisterRegiment(regiment, units));
+        }
+        
+        public virtual void AddRegiment<T>(HighlightRegiment regiment, List<T> units) 
+        where T : MonoBehaviour
+        {
+            Array.ForEach(Registers, register => register.RegisterRegiment(regiment, units));
+        }
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
         public virtual void AddRegiment(Regiment regiment)
         {
             Array.ForEach(Registers, register => register.RegisterRegiment(regiment));
@@ -76,7 +88,7 @@ namespace KaizerWald
             
             for (int i = numToKeep; i < registerLength; i++)
             {
-                Destroy(Registers[registerIndex][regimentIndex][i].gameObject);
+                Object.Destroy(Registers[registerIndex][regimentIndex][i].gameObject);
             }
             if (numToKeep > 0) return;
             Registers[registerIndex].Records.Remove(regimentIndex);

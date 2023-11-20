@@ -14,18 +14,21 @@ namespace KaizerWald
         {
             get
             {
-                if (instance) return instance;
-                instance = new GameObject().AddComponent<T>();
-                instance.name = instance.GetType().ToString();
-                DontDestroyOnLoad(instance.gameObject);
+                if (instance != null) return instance;
+                instance = FindFirstObjectByType<T>();
                 return instance;
             }
         }
 
         protected virtual void Awake()
         {
-            instance = FindAnyObjectByType<T>();
+            instance = GetComponent<T>();
+            if (instance == null)
+            {
+                Debug.LogError($"NO SINGLETON FOUND");
+                return;
+            }
+            DontDestroyOnLoad(instance.gameObject);
         }
-        // implement your Awake, Start, Update, or other methods here...
     }
 }

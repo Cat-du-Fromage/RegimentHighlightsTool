@@ -9,6 +9,7 @@ using static Unity.Mathematics.math;
 
 namespace KaizerWald
 {
+    /*
     public abstract class HighlightCoordinator : MonoBehaviour 
     {
         public ulong PlayerID { get; protected set; }
@@ -48,4 +49,5 @@ namespace KaizerWald
             RegimentHighlightSystem.UnregisterRegiment(regiment);
         }
     }
+    */
 }

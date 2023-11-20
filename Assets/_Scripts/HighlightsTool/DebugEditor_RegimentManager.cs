@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace KaizerWald
 {
-    public partial class RegimentManager : HighlightCoordinator
+    public partial class HighlightRegimentManager : MonoBehaviourSingleton<HighlightRegimentManager>
     {
         private void OnGUI()
         {

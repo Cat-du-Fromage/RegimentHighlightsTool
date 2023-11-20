@@ -8,7 +8,7 @@ namespace KaizerWald
 {
     public class RegimentAbilityManager : MonoBehaviour
     {
-        private RegimentManager regimentManager;
+        private HighlightRegimentManager highlightRegimentManager;
         public RegimentAbilityControls Controls { get; private set; }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -20,7 +20,7 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private void Awake()
         {
-            regimentManager = GetComponent<RegimentManager>();
+            highlightRegimentManager = GetComponent<HighlightRegimentManager>();
             Controls ??= new RegimentAbilityControls();
         }
         

@@ -14,7 +14,7 @@ namespace KaizerWald
             Hide();
         }
 
-        public override void InitializeHighlight(Unit unitAttached)
+        public override void InitializeHighlight(GameObject unitAttached)
         {
             AttachToUnit(unitAttached);
             meshRenderer = GetComponent<MeshRenderer>();
@@ -23,7 +23,7 @@ namespace KaizerWald
             Hide();
         }
 
-        public override void AttachToUnit(Unit unit)
+        public override void AttachToUnit(GameObject unit)
         {
             base.AttachToUnit(unit);
         }
