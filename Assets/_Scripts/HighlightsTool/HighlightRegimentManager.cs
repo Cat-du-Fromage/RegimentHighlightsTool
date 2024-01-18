@@ -16,11 +16,12 @@ namespace KaizerWald
 //║                                                ◆◆◆◆◆◆ FIELD ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        private RegimentFactory factory;
+        //private RegimentFactory factory;
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         [field:SerializeField] public ulong PlayerID { get; private set; }
         
         [field:Header("Layer Masks")]
@@ -41,32 +42,28 @@ namespace KaizerWald
         public SelectionSystem Selection { get; private set; }
         public PlacementSystem Placement { get; private set; }
         
-        private List<HighlightController> Controllers = new List<HighlightController>();
-        public List<Regiment> PreselectedRegiments => Selection.PreselectionRegister.ActiveHighlights;
-        public List<Regiment> SelectedRegiments => Selection.SelectionRegister.ActiveHighlights;
+        private List<HighlightController> Controllers = new (2);
+        public List<HighlightRegiment> PreselectedRegiments => Selection.PreselectionRegister.ActiveHighlights;
+        public List<HighlightRegiment> SelectedRegiments => Selection.SelectionRegister.ActiveHighlights;
         
         public event Action OnSelectionEvent;
-        public event Action<Regiment, Order> OnPlacementEvent;
+        public event Action<GameObject, Order> OnPlacementEvent;
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Containers ◈◈◈◈◈◈                                                                                       ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
-        public List<Regiment> Regiments { get; private set; } = new ();
+        public List<HighlightRegiment> Regiments { get; private set; } = new ();
         
         //Allow to retrieve regiment By it's Instance ID
-        public Dictionary<int, Regiment> RegimentsByID { get; private set; } = new ();
+        public Dictionary<int, HighlightRegiment> RegimentsByID { get; private set; } = new ();
         
         //Allow to retrieve regiments of a player
-        public Dictionary<ulong, List<Regiment>> RegimentsByPlayerID { get; private set; } = new ();
+        public Dictionary<ulong, List<HighlightRegiment>> RegimentsByPlayerID { get; private set; } = new ();
         
         //Allow to retrieve regiments of a team
-        public Dictionary<int, List<Regiment>> RegimentsByTeamID { get; private set; } = new ();
+        public Dictionary<int, List<HighlightRegiment>> RegimentsByTeamID { get; private set; } = new ();
         
-        public event Action<Regiment> OnNewRegiment;
-        public event Action<Regiment> OnDeadRegiment;
-        
-        private List<Tuple<Regiment, Order>> Orders = new (10);
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ UNITY EVENTS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -78,7 +75,7 @@ namespace KaizerWald
         protected override void Awake()
         {
             base.Awake();
-            factory = FindFirstObjectByType<RegimentFactory>();
+            //factory = FindFirstObjectByType<RegimentFactory>();
             
             HighlightControls = new PlayerControls();
             Selection = new SelectionSystem(this);
@@ -89,27 +86,14 @@ namespace KaizerWald
     //║ ◈◈◈◈◈◈ Update | Late Update ◈◈◈◈◈◈                                                                             ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
-        private void FixedUpdate()
-        {
-            //OUT OF PLACE!
-            Regiments.ForEach(regiment => regiment.OnFixedUpdate());
-        }
-
         private void Update()
         {
             Controllers.ForEach(controller => controller.OnUpdate());
-            
-            //OUT OF PLACE!
-            ProcessOrders();
-            Regiments.ForEach(regiment => regiment.OnUpdate());
         }
 
         private void LateUpdate()
         {
             CleanupEmptyRegiments();
-            
-            //OUT OF PLACE!
-            Regiments.ForEach(regiment => regiment.OnLateUpdate());
         }
 
         private void CleanupEmptyRegiments()
@@ -117,7 +101,7 @@ namespace KaizerWald
             if (Regiments.Count == 0) return;
             for (int i = Regiments.Count - 1; i > -1; i--)
             {
-                Regiment regiment = Regiments[i];
+                HighlightRegiment regiment = Regiments[i];
                 if (regiment.CurrentFormation.NumUnitsAlive > 0) continue;
                 Debug.Log($"Regiment destroyed: {regiment.name}");
                 UnRegisterRegiment(regiment);
@@ -132,15 +116,11 @@ namespace KaizerWald
         public void OnEnable()
         {
             Controllers?.ForEach(controller => controller.OnEnable());
-            factory.OnRegimentCreated += RegisterRegiment;
         }
 
         public void OnDisable()
         {
             Controllers?.ForEach(controller => controller.OnDisable());
-            factory.OnRegimentCreated -= RegisterRegiment;
-            OnNewRegiment?.GetInvocationList().ForEachSafe(action => OnNewRegiment -= (Action<Regiment>)action);
-            OnDeadRegiment?.GetInvocationList().ForEachSafe(action => OnDeadRegiment -= (Action<Regiment>)action);
         }
 
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -154,7 +134,7 @@ namespace KaizerWald
         public int GetEnemiesTeamNumUnits(int friendlyTeamID)
         {
             int numUnits = 0;
-            foreach ((int teamID, List<Regiment> regiments) in RegimentsByTeamID)
+            foreach ((int teamID, List<HighlightRegiment> regiments) in RegimentsByTeamID)
             {
                 if (teamID == friendlyTeamID) continue;
                 numUnits += regiments.Count;
@@ -165,52 +145,39 @@ namespace KaizerWald
         public int GetTeamNumUnits(int searchedTeamID)
         {
             int numUnits = 0;
-            foreach ((int teamId, List<Regiment> regiments) in RegimentsByTeamID)
+            foreach ((int teamId, List<HighlightRegiment> regiments) in RegimentsByTeamID)
             {
                 if (teamId != searchedTeamID) continue;
                 numUnits += regiments.Count;
             }
             return numUnits;
         }
-        
-    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ PLAYER Highlight Orders ◈◈◈◈◈◈                                                                          ║
-    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-
-        private void ProcessOrders()
-        {
-            foreach ((Regiment regiment, Order order) in Orders)
-            {
-                regiment.BehaviourTree.OnOrderReceived(order);
-            }
-            Orders.Clear();
-        }
     
-        //Remplace Par "Order" Generic paramètre List => le tris des ordre est fait Ici
-        private void OnPlayerOrder(Regiment regiment, Order regimentMoveOrder)
-        {
-            Orders.Add(new Tuple<Regiment, Order>(regiment, regimentMoveOrder));
-        }
-        
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
         //│  ◇◇◇◇◇◇ Regiment Update Event ◇◇◇◇◇◇                                                                       │
         //└────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-        public void RegisterRegiment(Regiment regiment)
+        public void RegisterRegiment<T>(ulong ownerID, int teamID, GameObject regimentGameObject, List<T> units, int2 minMaxRow, float2 unitSize, float spaceBetweenUnit, float3 direction) 
+        where T : MonoBehaviour
+        {
+            HighlightRegiment newHighlightRegiment = regimentGameObject.AddComponent<HighlightRegiment>();
+            newHighlightRegiment.InitializeProperties(ownerID, teamID, units, minMaxRow, unitSize, spaceBetweenUnit, direction);
+            RegisterRegiment(newHighlightRegiment, units);
+        }
+        
+        public void RegisterRegiment<T>(HighlightRegiment regiment, List<T> units) where T : MonoBehaviour
         {
             Regiments.Add(regiment);
             RegimentsByID.TryAdd(regiment.RegimentID, regiment);
             RegimentsByPlayerID.AddSafe(regiment.OwnerID, regiment);
             RegimentsByTeamID.AddSafe(regiment.TeamID, regiment);
             
-            Selection.AddRegiment(regiment);
-            Placement.AddRegiment(regiment);
-            OnNewRegiment?.Invoke(regiment); //MAYBE USELESS
+            Selection.AddRegiment(regiment,units);
+            Placement.AddRegiment(regiment,units);
         }
         
-        public void UnRegisterRegiment(Regiment regiment)
+        public void UnRegisterRegiment(HighlightRegiment regiment)
         {
-            OnDeadRegiment?.Invoke(regiment); //MAYBE USELESS
             Selection.RemoveRegiment(regiment);
             Placement.RemoveRegiment(regiment);
             
@@ -220,7 +187,8 @@ namespace KaizerWald
             RegimentsByTeamID[regiment.TeamID].Remove(regiment);
         }
         
-        public void OnCallback(HighlightSystem system, List<Tuple<Regiment, Order>> orders)
+        //TODO: Rework callbacks, il faut quelque chose de plus général!
+        public void OnCallback(HighlightSystem system, List<Tuple<GameObject, Order>> orders)
         {
             switch (system)
             {
@@ -228,13 +196,11 @@ namespace KaizerWald
                     //1) Placement-Drag => MoveOrder
                     //2) Placement-NoDrag + No Enemy Preselected => MoveOrder
                     //3) Placement-NoDrag + Enemy Preselected => AttackOrder
-                    foreach ((Regiment regiment, Order order) in orders)
+                    foreach ((GameObject regiment, Order order) in orders)
                     {
-                        OnPlayerOrder(regiment, order);
+                        //OnPlayerOrder(regiment, order);
                         OnPlacementEvent?.Invoke(regiment, order);
                     }
-                    //orders.ForEach(regimentOrder => OnPlacementEvent?.Invoke(regimentOrder.Item1, regimentOrder.Item2));
-                    //foreach ((Regiment regiment, Order order) in orders) OnPlacementEvent?.Invoke(regiment, order);
                     return;
                 case SelectionSystem: // Indication (UI Regiment Preselected)
                     OnSelectionEvent?.Invoke();
@@ -248,12 +214,12 @@ namespace KaizerWald
         //║ ◈◈◈◈◈◈ OUTSIDES UPDATES ◈◈◈◈◈◈                                                                             ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
-        public void UpdatePlacements(Regiment regiment)
+        public void UpdatePlacements(HighlightRegiment regiment)
         {
             Placement.UpdateDestinationPlacements(regiment);
         }
         
-        public void ResizeHighlightsRegisters(Regiment regiment, in float3 regimentFuturePosition)
+        public void ResizeHighlightsRegisters(HighlightRegiment regiment, in float3 regimentFuturePosition)
         {
             Selection.ResizeRegister(regiment);
             Placement.ResizeRegister(regiment, regimentFuturePosition);

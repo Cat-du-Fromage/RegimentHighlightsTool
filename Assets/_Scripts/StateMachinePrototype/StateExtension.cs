@@ -190,7 +190,7 @@ namespace KaizerWald
         {
             int numEnemyUnits = HighlightRegimentManager.Instance.GetEnemiesTeamNumUnits(regimentAttach.TeamID);
             NativeParallelMultiHashMap<int, float3> temp = new(numEnemyUnits, Temp);
-            foreach ((int teamID, List<Regiment> regiments) in HighlightRegimentManager.Instance.RegimentsByTeamID)
+            foreach ((int teamID, List<Regiment> regiments) in RegimentManager.Instance.RegimentsByTeamID)
             {
                 if (teamID == regimentAttach.TeamID) continue;
                 foreach (Regiment regiment in regiments)

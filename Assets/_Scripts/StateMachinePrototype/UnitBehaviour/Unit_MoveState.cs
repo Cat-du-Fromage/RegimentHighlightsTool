@@ -69,7 +69,32 @@ namespace KaizerWald
 
         public override void OnUpdate()
         {
+            
             if (UnitReachDestination || UnitAttach.IsDead) return;
+            if (!LeaderDestination.approximately(ParentRegiment.Highlight.DestinationLeaderPosition))
+            {
+                LeaderDestination = ParentRegiment.Highlight.DestinationLeaderPosition;
+                /*
+                // ======================================================================
+                bool destFormation = FormationDestination == default;
+                Debug.Log($"FormationDestination null ? {destFormation}");
+                
+                bool parentNull = ParentRegiment == null;
+                Debug.Log($"parentNull ? {parentNull}");
+                if (!parentNull)
+                {
+                    bool highlightNull = ParentRegiment.Highlight == null;
+                    Debug.Log($"parentNull ? {highlightNull}");
+                    if (!highlightNull)
+                    {
+                        bool destinationFormationNull = ParentRegiment.Highlight.DestinationFormation == null;
+                        Debug.Log($"ParentRegiment.Highlight.DestinationFormation null ? {destinationFormationNull}");
+                    }
+                }
+                // ======================================================================
+                */
+                FormationDestination = ParentRegiment.Highlight.DestinationFormation;
+            }
             //UnitDestination = FormationDestination.GetUnitRelativePositionToRegiment3D(IndexInRegiment, RegimentBlackboard.Destination);
             MoveUnit();
         }

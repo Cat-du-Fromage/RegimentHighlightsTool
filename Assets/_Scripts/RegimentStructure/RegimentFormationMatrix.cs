@@ -27,7 +27,11 @@ namespace KaizerWald
             IndexInRegiment = index;
         }
 
-        public void SetFormationMatrix(RegimentFormationMatrix formationMatrix) => RegimentFormationMatrix = formationMatrix;
+        public void SetFormationMatrix(RegimentFormationMatrix formationMatrix)
+        {
+            RegimentFormationMatrix = formationMatrix;
+        }
+
         public int CompareTo(UnitMatrixElement other)
         {
             if (other != null) return this.IndexInRegiment.CompareTo(other.IndexInRegiment);

@@ -60,7 +60,7 @@ namespace KaizerWald
     //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
-        private List<Regiment> SelectedRegiments => PlacementSystem.SelectedRegiments;
+        private List<HighlightRegiment> SelectedRegiments => PlacementSystem.SelectedRegiments;
         private int NumSelections => PlacementSystem.SelectedRegiments.Count;
         
         private HighlightRegister DynamicRegister => PlacementSystem.DynamicPlacementRegister;
@@ -146,7 +146,7 @@ namespace KaizerWald
             mouseDistance = UpdateMouseDistance();
             tempWidths = PlaceRegiments();
         }
-        
+        /*
         private void OnAttackCallback()
         {
             //Prevent order attack while trying to order place
@@ -158,7 +158,7 @@ namespace KaizerWald
             if (preselectedRegiment.TeamID == 0) return;
             PlacementSystem.OnAttackOrderEvent(preselectedRegiment);
         }
-
+*/
         private void OnMoveCallback(int registerIndex)
         {
             PlacementSystem.OnMoveOrderEvent(registerIndex, tempWidths);
@@ -175,7 +175,7 @@ namespace KaizerWald
                 }
                 else
                 {
-                    OnAttackCallback();
+                    //OnAttackCallback();
                 }
             }
             else
@@ -334,7 +334,7 @@ namespace KaizerWald
         {
             float3 depthDirection = DepthDirection;
             int numUnitsRegimentBefore = 0;
-            foreach (Regiment regiment in SelectedRegiments)
+            foreach (HighlightRegiment regiment in SelectedRegiments)
             {
                 int regimentId = regiment.RegimentID;
                 int numToken = regiment.CurrentFormation.NumUnitsAlive;

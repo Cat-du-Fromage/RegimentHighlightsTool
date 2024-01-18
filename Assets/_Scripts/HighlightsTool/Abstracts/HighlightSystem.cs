@@ -36,7 +36,7 @@ namespace KaizerWald
             Array.ForEach(Registers, register => register.RegisterRegiment(regiment, units));
         }
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        
+        /*
         public virtual void AddRegiment(Regiment regiment)
         {
             Array.ForEach(Registers, register => register.RegisterRegiment(regiment));
@@ -46,8 +46,13 @@ namespace KaizerWald
         {
             Array.ForEach(Registers, register => register.UnregisterRegiment(regiment));
         }
+        */
+        public virtual void RemoveRegiment(HighlightRegiment regiment)
+        {
+            Array.ForEach(Registers, register => register.UnregisterRegiment(regiment));
+        }
         
-        public virtual void OnShow(Regiment regiment, int registerIndex)
+        public virtual void OnShow(HighlightRegiment regiment, int registerIndex)
         {
             if (regiment == null) return;
             if (!Registers[registerIndex].Records.TryGetValue(regiment.RegimentID, out HighlightBehaviour[] highlights)) return;
@@ -59,7 +64,7 @@ namespace KaizerWald
             Registers[registerIndex].ActiveHighlights.Add(regiment);
         }
         
-        public virtual void OnHide(Regiment regiment, int registerIndex)
+        public virtual void OnHide(HighlightRegiment regiment, int registerIndex)
         {
             if (regiment == null) return;
             if (!Registers[registerIndex].Records.TryGetValue(regiment.RegimentID, out HighlightBehaviour[] highlights)) return;

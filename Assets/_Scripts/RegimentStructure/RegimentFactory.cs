@@ -27,7 +27,7 @@ namespace KaizerWald
         private Transform factoryTransform;
         [field: SerializeField] public RegimentSpawner[] CreationOrders { get; private set; }
 
-        public event Action<Regiment> OnRegimentCreated; 
+        //public event Action<Regiment> OnRegimentCreated; 
 
         protected override void Awake()
         {
@@ -47,22 +47,22 @@ namespace KaizerWald
             foreach ((int teamId, List<RegimentSpawner> spawners) in spawnerByTeam)
             {
                 float offsetPosition = 0;
-                for (int i = 0; i < spawners.Count; i++)
+                for (int spawnerIndex = 0; spawnerIndex < spawners.Count; spawnerIndex++)
                 {
                     (Transform spawnerTransform, Vector3 instancePosition) = GetInstancePosition(teamId);
                 
-                    RegimentSpawner currentSpawner = spawners[i];
-                    RegimentSpawner previousSpawner = i is 0 ? currentSpawner : spawners[i-1];
+                    RegimentSpawner currentSpawner = spawners[spawnerIndex];
+                    RegimentSpawner previousSpawner = spawnerIndex is 0 ? currentSpawner : spawners[spawnerIndex-1];
 
-                    float offset = GetOffset(currentSpawner, i) + GetOffset(previousSpawner, i);
+                    float offset = GetOffset(currentSpawner, spawnerIndex) + GetOffset(previousSpawner, spawnerIndex);
                     offsetPosition += offset;
                 
-                    for (int j = 0; j < currentSpawner.Number; j++) //same regiment creation
+                    for (int unitSpawnerIndex = 0; unitSpawnerIndex < currentSpawner.Number; unitSpawnerIndex++) //same regiment creation
                     {
-                        offsetPosition += OffsetSameRegiment(j, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
+                        offsetPosition += OffsetSameRegiment(unitSpawnerIndex, currentSpawner.RegimentType.RegimentClass) + SPACE_BETWEEN_REGIMENT; //Careful it adds the const even if j=0!
                         Regiment regiment = InstantiateRegiment(spawnerTransform, instancePosition, offsetPosition);
-                        regiment.Initialize(currentSpawner.OwnerID, currentSpawner.TeamID, unitFactory, currentSpawner, regiment.transform.forward);
-                        OnRegimentCreated?.Invoke(regiment);
+                        ulong ownerId = currentSpawner.OwnerID;
+                        regiment.Initialize(ownerId, currentSpawner.TeamID, unitFactory, currentSpawner, regiment.transform.forward);
                     }
                 }
             }
@@ -85,14 +85,6 @@ namespace KaizerWald
             return (TerrainManager.Instance.GetSpawnerTransform(teamId), instancePosition);
         }
         
-        private (Transform, Vector3) GetInstancePosition(ulong ownerId)
-        {
-            int playerIndex = (int)ownerId;
-            if (playerIndex is < 0 or > 1) return (factoryTransform, factoryTransform.position);
-            Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(playerIndex);
-            return (TerrainManager.Instance.GetSpawnerTransform(playerIndex), instancePosition);
-        }
-
         private Regiment InstantiateRegiment(Transform spawnerTransform, Vector3 instancePosition, float offsetPosition)
         {
             Vector3 position = instancePosition + offsetPosition * spawnerTransform.right;
@@ -121,6 +113,14 @@ namespace KaizerWald
 }
 
 /*
+private (Transform, Vector3) GetInstancePosition(ulong ownerId)
+{
+    int playerIndex = (int)ownerId;
+    if (playerIndex is < 0 or > 1) return (factoryTransform, factoryTransform.position);
+    Vector3 instancePosition = TerrainManager.Instance.GetPlayerFirstSpawnPosition(playerIndex);
+    return (TerrainManager.Instance.GetSpawnerTransform(playerIndex), instancePosition);
+}
+ 
 //ISSUE! we introduce team BUT offset still apply to each regiment as if they were all from the same team
 //Need to separate creations by team OR find a way to store different offset(1 by team)
 public void CreateRegiments()

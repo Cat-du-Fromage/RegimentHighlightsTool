@@ -16,7 +16,7 @@ namespace KaizerWald
         protected HighlightSystem System { get; private set; }
         protected GameObject Prefab { get; private set; }
         public Dictionary<int, HighlightBehaviour[]> Records { get; protected set; }
-        public List<Regiment> ActiveHighlights { get; protected set; }
+        public List<HighlightRegiment> ActiveHighlights { get; protected set; }
         
         public HighlightBehaviour[] this[int index]
         {
@@ -39,7 +39,7 @@ namespace KaizerWald
             System = system;
             Prefab = highlightPrefab;
             Records = new Dictionary<int, HighlightBehaviour[]>();
-            ActiveHighlights = new List<Regiment>();
+            ActiveHighlights = new List<HighlightRegiment>();
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -109,6 +109,17 @@ namespace KaizerWald
         }
         
         public void UnregisterRegiment(Regiment selectableRegiment)
+        {
+            if (!Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
+            foreach (HighlightBehaviour highlight in highlights)
+            {
+                if (highlight == null) continue;
+                Object.Destroy(highlight);
+            }
+            Records.Remove(selectableRegiment.RegimentID);
+        }
+        
+        public void UnregisterRegiment(HighlightRegiment selectableRegiment)
         {
             if (!Records.TryGetValue(selectableRegiment.RegimentID, out HighlightBehaviour[] highlights)) return;
             foreach (HighlightBehaviour highlight in highlights)

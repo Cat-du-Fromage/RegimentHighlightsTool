@@ -17,11 +17,14 @@ namespace KaizerWald
 //║                                             ◆◆◆◆◆◆ ARRAY ◆◆◆◆◆◆                                                    ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        /*[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForEachWithIndex<T>(this T[] array, Func<int, T> action)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ForEachWithIndex<T>(this T[] array, Action<int> action)
         {
-            for (int i = 0; i < array.Length; i++)action(i);
-        }*/
+            for (int i = 0; i < array.Length; i++)
+            {
+                action(i);
+            }
+        }
         
         
         //Exemple Microsoft
@@ -124,6 +127,15 @@ namespace KaizerWald
             list[right] = temp;
             */
             (list[left], list[right]) = (list[right], list[left]);
+        }
+        
+        /// <summary>
+        /// Exchanges the values of a and b.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Swap<T>(ref T a, ref T b)
+        {
+            (a, b) = (b, a);
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

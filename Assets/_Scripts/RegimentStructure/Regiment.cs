@@ -13,7 +13,7 @@ using static KaizerWald.FormationUtils;
 
 namespace KaizerWald
 {
-    public partial class Regiment : MonoBehaviour, ISelectable
+    public partial class Regiment : MonoBehaviour
     {
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                          ◆◆◆◆◆◆ STATIC PROPERTIES ◆◆◆◆◆◆                                           ║
@@ -39,16 +39,12 @@ namespace KaizerWald
         public Formation CurrentFormation { get; private set; }
         public RegimentBehaviourTree BehaviourTree { get; private set; }
         
-    //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ ISelectable ◈◈◈◈◈◈                                                                                      ║
-    //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-        [field:SerializeField] public bool IsPreselected { get; set; }
-        [field:SerializeField] public bool IsSelected { get; set; }
+        public HighlightRegiment Highlight { get; private set; }
 
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-
+    
         public float3 RegimentPosition => RegimentTransform.position;
         public List<Unit> Units => RegimentFormationMatrix.Units;
         public List<Transform> UnitsTransform => RegimentFormationMatrix.Transforms;
@@ -61,7 +57,12 @@ namespace KaizerWald
         {
             RegimentTransform = transform;
         }
-        
+
+        private void Start()
+        {
+            Highlight = GetComponent<HighlightRegiment>();
+        }
+
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -85,10 +86,7 @@ namespace KaizerWald
 
         public void OnLateUpdate()
         {
-            //if (UnitsListDebug == Units) return;
-            //UnitsListDebug = Units;
-            //if (!ClearDeadUnits()) return;
-            //Debug.Log($"Regiment LateUpdate: Clear Units");
+            return;
         }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
@@ -99,6 +97,9 @@ namespace KaizerWald
         {
             InitializeProperties(ownerID, teamID, currentSpawner.RegimentType, direction, regimentName);
             CreateAndRegisterUnits(unitFactory);
+            RegimentManager.Instance.RegisterRegiment(this);
+            
+            HighlightInitialization(ownerID, teamID, currentSpawner.RegimentType, direction);
             BehaviourTree = this.GetOrAddComponent<RegimentBehaviourTree>();
         }
 
@@ -116,13 +117,17 @@ namespace KaizerWald
         {
             List<Unit> units = unitFactory.CreateRegimentsUnit(this, CurrentFormation.BaseNumUnits, RegimentType.UnitPrefab);
             RegimentFormationMatrix = new RegimentFormationMatrix(units);
-            
-            //==============================================================================
-            // WE WILL REGISTER HERE!
-            //==============================================================================
-            
             //almost impossible a regiment loose more than 20% of it's member during a frame
             DeadUnits = new SortedSet<int>();
+        }
+
+        private void HighlightInitialization(ulong ownerID, int teamID, RegimentType regimentType, float3 direction)
+        {
+            RegimentClass regimentClass = regimentType.RegimentClass;
+            int2 minMaxRow = new int2(regimentClass.MinRow, regimentClass.MaxRow);
+            float2 unitSize = new float2(regimentClass.Category.UnitSize.x, regimentClass.Category.UnitSize.z);
+            float spaceBetweenUnits = regimentClass.SpaceBetweenUnits;
+            HighlightRegimentManager.Instance.RegisterRegiment(ownerID, teamID, gameObject, Units, minMaxRow, unitSize, spaceBetweenUnits, direction);
         }
         
         //┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -165,7 +170,8 @@ namespace KaizerWald
             
             if (CurrentFormation.NumUnitsAlive == 0) return;
             //ATTENTION! SEUL LE JOUEUR A DES PLACEMENTS ET SELECTION
-            HighlightRegimentManager.Instance.ResizeHighlightsRegisters(this, regimentPosition);
+            HighlightRegiment highlightRegiment = GetComponent<HighlightRegiment>();
+            HighlightRegimentManager.Instance.ResizeHighlightsRegisters(highlightRegiment, regimentPosition);
         }
         
         private void ResizeFormation(int numToRemove)
@@ -211,6 +217,8 @@ namespace KaizerWald
             SwapDead(deadIndex, swapIndex);
             
             (int deadYCoord, int swappedYCoord) = (deadIndex / futureFormation.Width, swapIndex / futureFormation.Width);
+            //bool deadUnitOnLastLine = deadYCoord == futureFormation.Depth - 1 && deadYCoord == swappedYCoord;
+            //pourquoi avoir passé par un bool2?
             bool2 deadUnitOnLastLine = new bool2(deadYCoord == futureFormation.Depth - 1, deadYCoord == swappedYCoord);
             if (all(deadUnitOnLastLine)) return;
             

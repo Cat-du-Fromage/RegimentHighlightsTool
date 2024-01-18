@@ -70,13 +70,13 @@ namespace KaizerWald
         private void OnDisable()
         {
             if (HighlightRegimentManager.Instance == null) return;
-            HighlightRegimentManager.Instance.OnNewRegiment -= RegisterPool;
+            RegimentManager.Instance.OnNewRegiment -= RegisterPool;
         }
 
         private void RegisterEvent()
         {
             if (HighlightRegimentManager.Instance == null || initialized) return;
-            HighlightRegimentManager.Instance.OnNewRegiment += RegisterPool;
+            RegimentManager.Instance.OnNewRegiment += RegisterPool;
             initialized = true;
         }
 

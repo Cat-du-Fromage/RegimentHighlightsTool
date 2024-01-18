@@ -110,7 +110,7 @@ namespace KaizerWald
             {
                 SetChaseDestination(CurrentFormation);
                 //UPDATE PLACEMENT HERE??
-                HighlightRegimentManager.Instance.UpdatePlacements(RegimentReference);
+                //RegimentManager.Instance.UpdatePlacements(RegimentReference);
                 MoveOrder moveOrder = new MoveOrder(CurrentFormation, Destination);
                 return moveOrder;
             }
@@ -124,7 +124,7 @@ namespace KaizerWald
         
         public bool SetEnemyTarget(int targetId)
         {
-            return HighlightRegimentManager.Instance.RegimentExist(targetId) ? SetTarget(HighlightRegimentManager.Instance.RegimentsByID[targetId]) : ResetTarget();
+            return HighlightRegimentManager.Instance.RegimentExist(targetId) ? SetTarget(RegimentManager.Instance.RegimentsByID[targetId]) : ResetTarget();
         }
         
         //we still check regiment is registered after checking it is not null

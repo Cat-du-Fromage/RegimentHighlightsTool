@@ -12,7 +12,7 @@ using half = Unity.Mathematics.half;
 
 namespace KaizerWald
 {
-    [System.Serializable]
+    [Serializable]
     public struct FormationData
     {
         //Taille actuelle 18 Bytes/Octets
@@ -30,7 +30,7 @@ namespace KaizerWald
         private readonly byte   depth;
         private readonly half2  direction2DForward;
       //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-      //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                               ║
+      //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                    ║
       //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public readonly float SpaceBetweenUnits => spaceBetweenUnits;
         public readonly float2 UnitSize => unitSize;
@@ -201,14 +201,14 @@ namespace KaizerWald
         public int LastRowFirstIndex => NumUnitsAlive - NumUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Direction ◈◈◈◈◈◈                                                                               ║
+        //║ ◈◈◈◈◈◈ Direction ◈◈◈◈◈◈                                                                                    ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public readonly float3 Direction3DForward => new (direction2DForward.x,0,direction2DForward.y);
         public readonly float3 Direction3DBack => -Direction3DForward;
         public readonly float3 Direction3DLine => cross(up(), Direction3DForward);
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                           ║
+        //║ ◈◈◈◈◈◈ Rearrangement ◈◈◈◈◈◈                                                                                ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         private readonly int CountUnitsLastLine => numUnitsAlive - NumCompleteLine * width;
 
@@ -218,7 +218,7 @@ namespace KaizerWald
         public readonly int NumUnitsLastLine => IsLastLineComplete ? width : CountUnitsLastLine;
         
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                               ║
+        //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                                    ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -246,7 +246,7 @@ namespace KaizerWald
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-        //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                               ║
+        //║ ◈◈◈◈◈◈ Overrides ◈◈◈◈◈◈                                                                                    ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         
         public bool Equals(FormationData other)

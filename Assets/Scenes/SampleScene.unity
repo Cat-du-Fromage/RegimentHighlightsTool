@@ -774,6 +774,7 @@ GameObject:
   - component: {fileID: 1490866060}
   - component: {fileID: 1490866063}
   - component: {fileID: 1490866062}
+  - component: {fileID: 1490866064}
   m_Layer: 0
   m_Name: RegimentManagerV2Test
   m_TagString: Untagged
@@ -833,6 +834,18 @@ MonoBehaviour:
     type: 3}
   <PlacementDefaultPrefab>k__BackingField: {fileID: 6969508022250319429, guid: 5f28dfd2826d70e408b33fe4d04df0f2,
     type: 3}
+--- !u!114 &1490866064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1490866058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 662780428aa995d47bd1906c01ed193c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1541405075
 GameObject:
   m_ObjectHideFlags: 0
@@ -972,7 +985,7 @@ GameObject:
   - component: {fileID: 1939307579}
   - component: {fileID: 1939307580}
   m_Layer: 0
-  m_Name: Test
+  m_Name: TestFlock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
