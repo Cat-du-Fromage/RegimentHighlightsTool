@@ -35,7 +35,7 @@ namespace KaizerWald
 
         private void OnDestroy()
         {
-            foreach ((EStates _, StateBase state) in States)
+            foreach (StateBase state in States.Values)
             {
                 state.OnDestroy();
             }

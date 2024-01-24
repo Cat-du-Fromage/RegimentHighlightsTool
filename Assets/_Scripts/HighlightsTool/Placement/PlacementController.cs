@@ -240,6 +240,12 @@ namespace KaizerWald
             
             //Here! order is "random" fixe this! must keep formation OR reversed if direction is reversed
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth.x;
+
+            for (int i = 1; i < SelectedRegiments.Count; i++)
+            {
+                unitsToAddLength -= SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
+            }
+            
             NativeArray<int> newWidths = GetUpdatedFormationWidths(ref unitsToAddLength);
             NativeArray<float2> starts = GetStartsPosition(unitsToAddLength, newWidths);
             NativeList<JobHandle> jhs = GetInitialTokensPosition(starts, newWidths, out NativeArray<float2> initialTokensPositions);
