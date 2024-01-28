@@ -17,27 +17,31 @@ using int2 = Unity.Mathematics.int2;
 using Kaizerwald;
 using static Kaizerwald.KzwMath;
 
-namespace Kaizerwald
+namespace KaizerWald
 {
-    public static class NativeHungarianAlgorithm
+    public static class StandardHungarianAlgorithm
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int[] NativeFindAssignments(NativeArray<float> costs, int width)
+        public static int[] StandardFindAssignments(float[] costs, int width)
         {
             int height = costs.Length / width;
             
             for (int y = 0; y < height; y++)
             {
-                int minIndex = y * width;
-                float minValue = FindMinValue(costs.Slice(minIndex, width));
+                float minValue = float.MaxValue;
                 for (int x = 0; x < width; x++)
                 {
-                    int currentIndex = minIndex + x;
-                    costs[currentIndex] -= minValue;
+                    int index = GetIndex(x, y, width);
+                    minValue = min(minValue, costs[index]);
+                }
+                for (int x = 0; x < width; x++)
+                {
+                    int index = GetIndex(x, y, width);
+                    costs[index] -= minValue;
                 }
             }
             
-            NativeArray<byte> masks = new (costs.Length, Temp, ClearMemory);
+            byte[] masks = new byte[costs.Length];
             NativeArray<bool> rowsCovered = new (height,Temp, ClearMemory);
             NativeArray<bool> colsCovered = new (width,Temp, ClearMemory);
 
@@ -86,7 +90,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int RunStep1(NativeArray<byte> masks, NativeArray<bool> colsCovered, int width, int height)
+        private static int RunStep1(byte[] masks, NativeArray<bool> colsCovered, int width, int height)
         {
             //CAREFULL sometimes: experiece wird behaviours:
             // parfois les "leader" de regiment semblent interverti
@@ -106,7 +110,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int RunStep2(NativeArray<float> costs, NativeArray<byte> masks, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width, ref int2 pathStart)
+        private static int RunStep2(float[] costs, byte[] masks, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width, ref int2 pathStart)
         {
             while (true)
             {
@@ -129,7 +133,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int RunStep3(NativeArray<byte> masks, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width, int height, NativeArray<int2> path, int2 pathStart)
+        private static int RunStep3(byte[] masks, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width, int height, NativeArray<int2> path, int2 pathStart)
         {
             int pathIndex = 0;
             path[0] = pathStart;
@@ -151,7 +155,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int RunStep4(NativeArray<float> costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
+        private static int RunStep4(float[] costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
         {
             float minValue = FindMinimum(costs, rowsCovered, colsCovered, width);
             for (int i = 0; i < costs.Length; i++)
@@ -162,20 +166,9 @@ namespace Kaizerwald
             }
             return 2;
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float FindMinValue(NativeSlice<float> row)
-        {
-            float minValue = float.MaxValue;
-            for (int i = 0; i < row.Length; i++)
-            {
-                minValue = min(minValue, row[i]);
-            }
-            return minValue;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float FindMinimum(NativeArray<float> costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
+        private static float FindMinimum(float[] costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
         {
             float minValue = float.MaxValue;
             for (int i = 0; i < costs.Length; i++)
@@ -188,7 +181,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int FindStarInRow(NativeArray<byte> masks, int width, int y)
+        private static int FindStarInRow(byte[] masks, int width, int y)
         {
             for (int x = 0; x < width; x++)
             {
@@ -199,7 +192,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int FindStarInColumn(NativeArray<byte> masks, int x, int width, int height)
+        private static int FindStarInColumn(byte[] masks, int x, int width, int height)
         {
             for (int y = 0; y < height; y++)
             {
@@ -210,7 +203,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int FindPrimeInRow(NativeArray<byte> masks, int width, int y)
+        private static int FindPrimeInRow(byte[] masks, int width, int y)
         {
             for (int x = 0; x < width; x++)
             {
@@ -221,7 +214,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int2 FindZero(NativeArray<float> costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
+        private static int2 FindZero(float[] costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
         {
             for (int i = 0; i < costs.Length; i++)
             {
@@ -233,7 +226,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ConvertPath(NativeArray<byte> masks, NativeArray<int2> path, int pathLength, int width)
+        private static void ConvertPath(byte[] masks, NativeArray<int2> path, int pathLength, int width)
         {
             for (int i = 0; i < pathLength; i++)
             {
@@ -248,7 +241,7 @@ namespace Kaizerwald
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ClearPrimes(NativeArray<byte> masks)
+        private static void ClearPrimes(byte[] masks)
         {
             for (int i = 0; i < masks.Length; i++)
             {

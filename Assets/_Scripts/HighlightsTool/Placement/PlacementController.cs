@@ -260,34 +260,29 @@ namespace Kaizerwald
             }
             //Pour la matrice de cout, la rotation est négligée(c'est le problème des unités!)
         }
-        
-        private void TestAdaptedHungarianAlgorithm()
+
+        private NativeArray<float> GetCostMatrix(int width, NativeArray<float3> destinations)
         {
-            costsDebug = new float[SelectedRegiments.Count, SelectedRegiments.Count];
-            int width = SelectedRegiments.Count;
             int matrixLength = square(width);
             NativeArray<float> nativeCostMatrix = new (matrixLength, Temp, UninitializedMemory);
-            NativeArray<float3> nativeDestinations = new (GetDestinationsPosition(), Temp);
-            
             for (int i = 0; i < matrixLength; i++)
             {
                 (int x, int y) = KzwMath.GetXY(i, width);
                 float3 regimentPosition = SelectedRegiments[y].CurrentLeaderPosition;
-                float distance = distancesq(nativeDestinations[x], regimentPosition);
-                nativeCostMatrix[i] = distance;
-                costsDebug[y,x] = distance;
+                nativeCostMatrix[i] = distance(destinations[x], regimentPosition);
             }
+            return nativeCostMatrix;
+        }
+        
+        private void TestNativeHungarianAlgorithm()
+        {
+            //costsDebug = new float[SelectedRegiments.Count, SelectedRegiments.Count];
+            int width = SelectedRegiments.Count;
+            NativeArray<float3> nativeDestinations = new (GetDestinationsPosition(), Temp);
+            NativeArray<float> nativeCostMatrix = GetCostMatrix(width, nativeDestinations);
             
-            //NativeArray<int> sortedIndex = AdaptedHungarianAlgorithm.FindAssignments(nativeCostMatrix, width, Temp);
-            int[] sortedIndex = nativeCostMatrix.NativeFindAssignments(width);
-            /*
-            Debug.Log($"FindAssignments: length = {sortedIndex.Length}");
+            int[] sortedIndex = NativeHungarianAlgorithm.NativeFindAssignments(nativeCostMatrix, width);
             for (int i = 0; i < sortedIndex.Length; i++)
-            {
-                Debug.Log($"FindAssignments: At = {sortedIndex[i]}");
-            }
-            */
-            for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 int selectedRegimentIndex = sortedIndex[i];
                 SortedSelectedRegiments[i] = SelectedRegiments[selectedRegimentIndex];
@@ -326,16 +321,13 @@ namespace Kaizerwald
             
             SortedSelectedRegiments = new List<HighlightRegiment>(SelectedRegiments);
             //TestHungarianAlgorithm();
-            TestAdaptedHungarianAlgorithm();
+            TestNativeHungarianAlgorithm();
             
             //Here! order is "random" fixe this! must keep formation OR reversed if direction is reversed
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth[0];
-            //Debug.Log($"FIRST: {unitsToAddLength}");
             for (int i = 1; i < SortedSelectedRegiments.Count; i++)
             {
-                //float cache = unitsToAddLength;
                 unitsToAddLength -= SortedSelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
-                //Debug.Log($"{cache} - {SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX} = {unitsToAddLength}");
             }
 
             
