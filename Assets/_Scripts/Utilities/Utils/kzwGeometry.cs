@@ -8,7 +8,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 using static UnityEngine.Mathf;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class kzwGeometry
     {

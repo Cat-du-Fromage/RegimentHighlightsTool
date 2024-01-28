@@ -11,7 +11,7 @@ using static Unity.Mathematics.math;
 
 using int2 = Unity.Mathematics.int2;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     [RequireComponent(typeof(MeshRenderer), typeof(MeshFilter), typeof(MeshCollider))]
     public class TerrainManager : MonoBehaviourSingleton<TerrainManager>

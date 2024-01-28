@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using KaizerWald;
+using Kaizerwald;
 using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 using static Unity.Mathematics.math;
 
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;

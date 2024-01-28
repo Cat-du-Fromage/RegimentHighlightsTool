@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Animations;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public abstract class HighlightBehaviour : MonoBehaviour
     {

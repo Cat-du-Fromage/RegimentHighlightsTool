@@ -6,7 +6,7 @@ using static UnityEngine.Vector3;
 using static UnityEngine.Mathf;
 using static UnityEngine.Physics;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class FlockUnit : MonoBehaviour
     {

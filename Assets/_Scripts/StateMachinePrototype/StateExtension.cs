@@ -6,7 +6,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 using static Unity.Mathematics.math;
 
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
@@ -16,7 +16,7 @@ using static Unity.Collections.NativeArrayOptions;
 
 using float2 = Unity.Mathematics.float2;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class StateExtension
     {

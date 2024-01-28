@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class Unit_IdleState : UnitStateBase
     {

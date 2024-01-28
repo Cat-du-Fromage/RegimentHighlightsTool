@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1451c2cdcb667244285310cc84d021bc, type: 3}
+  m_Name: EnglishFusilier
+  m_EditorClassIdentifier: 
+  RegimentClass: {fileID: 11400000, guid: 487439540106b5e4c9775e45c0bb347d, type: 2}
+  UnitPrefab: {fileID: 4546918022380904158, guid: 57fb971f9fc63434a9d0b05220b9006f,
+    type: 3}
+  BulletPrefab: {fileID: 100000, guid: ac147cc4a2297604bb4e5bf9099ebfe8, type: 3}
+  Range: 20
+  Accuracy: 40
+  ReloadingSkill: 40
+  Speed: 1
+  Moral: 1

@@ -12,7 +12,7 @@ using Bounds = UnityEngine.Bounds;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class RegimentSelectionController : HighlightController
     {

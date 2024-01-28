@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
-using static KaizerWald.HighlightRegimentManager;
+using static Kaizerwald.HighlightRegimentManager;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class Blackboard
     {

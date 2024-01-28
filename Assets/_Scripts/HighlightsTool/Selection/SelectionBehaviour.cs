@@ -2,7 +2,7 @@
 using UnityEngine.Animations;
 using UnityEngine.Rendering.Universal;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class SelectionBehaviour : HighlightBehaviour
     {

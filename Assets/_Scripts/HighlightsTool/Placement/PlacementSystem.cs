@@ -9,7 +9,7 @@ using static UnityEngine.Physics;
 using static Unity.Mathematics.math;
 using static Unity.Mathematics.quaternion;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class PlacementSystem : HighlightSystem
     {
@@ -70,7 +70,7 @@ namespace KaizerWald
             List<Tuple<GameObject, Order>> moveOrders = new (SelectedRegiments.Count);
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
-                HighlightRegiment regiment = SelectedRegiments[i];
+                HighlightRegiment regiment = PlacementController.SortedSelectedRegiments[i];
                 if (regiment == null) continue;
                 int width = keepSameFormation ? regiment.CurrentFormation.Width : newFormationsWidth[i];
                 int numUnitsAlive = regiment.CurrentFormation.NumUnitsAlive;

@@ -7,7 +7,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 using Random = Unity.Mathematics.Random;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class ProjectileComponent : MonoBehaviour, IPoolable<ProjectileComponent>
     {

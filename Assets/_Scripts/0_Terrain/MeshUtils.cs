@@ -4,7 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class MeshUtils
     {

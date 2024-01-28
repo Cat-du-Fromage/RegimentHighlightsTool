@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Jobs;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class FormationMatrix<T> where T : MonoBehaviour
     {

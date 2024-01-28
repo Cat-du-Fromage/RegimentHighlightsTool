@@ -9,9 +9,9 @@ using UnityEngine.Jobs;
 
 using static UnityEngine.Quaternion;
 using static Unity.Mathematics.math;
-using static KaizerWald.FormationUtils;
+using static Kaizerwald.FormationUtils;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class Regiment : MonoBehaviour
     {

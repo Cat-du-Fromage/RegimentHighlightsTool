@@ -9,7 +9,7 @@ using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using static Unity.Collections.Allocator;
 using static Unity.Collections.NativeArrayOptions;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class CSharpContainerExtension
     {

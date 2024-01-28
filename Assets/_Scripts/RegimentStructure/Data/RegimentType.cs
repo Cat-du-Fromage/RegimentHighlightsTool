@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     [CreateAssetMenu(fileName = "NewRegimentType", menuName = "Regiment/RegimentType", order = 2)]
     public class RegimentType : ScriptableObject, IFormationInfo

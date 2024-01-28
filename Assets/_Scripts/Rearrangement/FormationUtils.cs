@@ -7,12 +7,12 @@ using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 using static Unity.Mathematics.math;
 using static Unity.Mathematics.float3;
 using static Unity.Mathematics.quaternion;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class FormationUtils
     {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class NullOrder : Order
     {

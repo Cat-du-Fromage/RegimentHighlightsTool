@@ -1,4 +1,4 @@
-﻿namespace KaizerWald
+﻿namespace Kaizerwald
 {
     public enum EBulletType
     {

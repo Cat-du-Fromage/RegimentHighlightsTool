@@ -5,7 +5,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class ProjectileManager : MonoBehaviour
     {

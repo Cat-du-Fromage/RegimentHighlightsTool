@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class Unit_MoveState : UnitStateBase
     {

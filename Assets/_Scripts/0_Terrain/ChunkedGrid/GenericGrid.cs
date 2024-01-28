@@ -7,8 +7,8 @@ using Unity.Mathematics;
 using UnityEngine;
 
 using static Unity.Mathematics.math;
-using static KaizerWald.KzwMath;
-using static KaizerWald.UnityMathematicsUtilities;
+using static Kaizerwald.KzwMath;
+using static Kaizerwald.UnityMathematicsUtilities;
 
 using float2 = Unity.Mathematics.float2; 
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     /*
     public partial class Unit : MonoBehaviour

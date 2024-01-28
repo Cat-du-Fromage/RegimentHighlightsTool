@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class CSharpContainerUtils
     {

@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
-using static KaizerWald.KzwMath;
-using static KaizerWald.UnityMathematicsUtilities;
+using static Kaizerwald.KzwMath;
+using static Kaizerwald.UnityMathematicsUtilities;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class TerrainGrid : MonoBehaviourSingleton<TerrainGrid>
     {

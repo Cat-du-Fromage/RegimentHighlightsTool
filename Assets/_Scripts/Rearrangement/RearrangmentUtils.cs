@@ -7,7 +7,7 @@ using Unity.Mathematics;
 
 using static Unity.Mathematics.math;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class RearrangmentUtils
     {

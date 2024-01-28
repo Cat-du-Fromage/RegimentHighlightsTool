@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     [CreateAssetMenu(fileName = "NewRegimentCategory", menuName = "Regiment/Category", order = 0)]
     public class RegimentCategory : ScriptableObject

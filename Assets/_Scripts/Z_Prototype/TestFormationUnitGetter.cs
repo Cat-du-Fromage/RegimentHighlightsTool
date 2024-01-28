@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class TestFormationUnitGetter : MonoBehaviour
     {

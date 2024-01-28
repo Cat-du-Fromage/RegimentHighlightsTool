@@ -2,9 +2,9 @@ using Unity.Collections;
 using UnityEngine;
 using Unity.Mathematics;
 
-using static KaizerWald.UnityMathematicsUtilities;
+using static Kaizerwald.UnityMathematicsUtilities;
 using static UnityEngine.LayerMask;
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 using static Unity.Mathematics.math;
 using static Unity.Mathematics.int2;
 
@@ -13,7 +13,7 @@ using Random = Unity.Mathematics.Random;
 using static Unity.Collections.Allocator;
 using static Unity.Collections.NativeArrayOptions;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
 //------------------------------------------------------------------------------------------------------------------------------
     //TODO : REVOIR le système de visé (tir absurde trop bas(tir e contre bas à 1m) ou trop haut (vise les nuages)

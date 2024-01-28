@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class SelectionSystem : HighlightSystem
     {

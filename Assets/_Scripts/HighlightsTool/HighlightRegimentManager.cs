@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     //FAIRE de régiment manager une partie intégrante de l'outil "HighlightRegimentManager"
     public partial class HighlightRegimentManager : MonoBehaviourSingleton<HighlightRegimentManager>

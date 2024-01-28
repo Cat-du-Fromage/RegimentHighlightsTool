@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class HighlightRegiment : MonoBehaviour, ISelectable
     {

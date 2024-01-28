@@ -6,7 +6,7 @@ using UnityEngine;
 using static System.Array;
 using Object = UnityEngine.Object;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class HighlightRegister
     {

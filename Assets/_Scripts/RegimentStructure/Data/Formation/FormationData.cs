@@ -10,7 +10,7 @@ using static Unity.Mathematics.math;
 using float2 = Unity.Mathematics.float2;
 using half = Unity.Mathematics.half;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     [Serializable]
     public struct FormationData

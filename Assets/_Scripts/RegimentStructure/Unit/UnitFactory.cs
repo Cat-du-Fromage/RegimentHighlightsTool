@@ -8,7 +8,7 @@ using static UnityEngine.Vector3;
 using static UnityEngine.Physics;
 using static Unity.Mathematics.math;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class UnitFactory : MonoBehaviourSingleton<MonoBehaviour>
     {

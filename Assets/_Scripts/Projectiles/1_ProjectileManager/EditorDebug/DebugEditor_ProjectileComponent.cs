@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class ProjectileComponent : MonoBehaviour
     {

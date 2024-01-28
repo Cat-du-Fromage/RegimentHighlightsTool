@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class BehaviourTreeBase : MonoBehaviour
     {

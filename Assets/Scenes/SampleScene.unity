@@ -156,12 +156,24 @@ MonoBehaviour:
   <CreationOrders>k__BackingField:
   - TeamID: 0
     OwnerID: 0
-    Number: 2
+    Number: 1
     RegimentType: {fileID: 11400000, guid: 1eec153d08be6b34e8cd69439347ebcd, type: 2}
   - TeamID: 1
     OwnerID: 1
     Number: 2
     RegimentType: {fileID: 11400000, guid: 76ef1c3bd4816bf49b1959e53fd23df3, type: 2}
+  - TeamID: 0
+    OwnerID: 0
+    Number: 1
+    RegimentType: {fileID: 11400000, guid: 76ef1c3bd4816bf49b1959e53fd23df3, type: 2}
+  - TeamID: 0
+    OwnerID: 0
+    Number: 1
+    RegimentType: {fileID: 11400000, guid: 6e632e066b3d19c40ac1f87c587b7412, type: 2}
+  - TeamID: 0
+    OwnerID: 0
+    Number: 1
+    RegimentType: {fileID: 11400000, guid: ff518aafe65427e45be4f679722c8f49, type: 2}
 --- !u!114 &71005788
 MonoBehaviour:
   m_ObjectHideFlags: 0

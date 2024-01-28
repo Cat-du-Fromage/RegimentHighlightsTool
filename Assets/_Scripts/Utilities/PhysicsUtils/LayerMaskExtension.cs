@@ -6,7 +6,7 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class LayerMaskExtension
     {

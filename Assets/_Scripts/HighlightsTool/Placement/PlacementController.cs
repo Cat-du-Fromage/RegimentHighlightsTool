@@ -21,7 +21,7 @@ using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 
 using float3 = Unity.Mathematics.float3;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class PlacementController : HighlightController
     {
@@ -49,6 +49,8 @@ namespace KaizerWald
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public PlacementSystem PlacementSystem { get; private set; }
+        
+        public List<HighlightRegiment> SortedSelectedRegiments { get; private set; }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Getters ◈◈◈◈◈◈                                                                                          ║
@@ -130,9 +132,26 @@ namespace KaizerWald
             PlaceRegiments();
         }
         
+        
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                     ◆◆◆◆◆◆ EVENT BASED CONTROLS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        /*
+        private void OnAttackCallback()
+        {
+            //Prevent order attack while trying to order place
+            //if (PlacementsVisible || PlacementSystem.PreselectedRegiments.Count != 1) return;
+            // =============================================================================
+            // TODO: FOR NOW TEAM ID IS HARDCODED (not 0 means not the player) => Change When "PlayersManager"/"TeamsManager" implemented
+            // =============================================================================
+            Regiment preselectedRegiment = PlacementSystem.PreselectedRegiments[0];
+            if (preselectedRegiment.TeamID == 0) return;
+            PlacementSystem.OnAttackOrderEvent(preselectedRegiment);
+        }
+        */
+        
         private void OnRightMouseClickAndMoveStart(CallbackContext context)
         {
             if (SelectedRegiments.Count is 0) return;
@@ -146,19 +165,7 @@ namespace KaizerWald
             mouseDistance = UpdateMouseDistance();
             tempWidths = PlaceRegiments();
         }
-        /*
-        private void OnAttackCallback()
-        {
-            //Prevent order attack while trying to order place
-            //if (PlacementsVisible || PlacementSystem.PreselectedRegiments.Count != 1) return;
-            // =============================================================================
-            // TODO: FOR NOW TEAM ID IS HARDCODED (not 0 means not the player) => Change When "PlayersManager"/"TeamsManager" implemented
-            // =============================================================================
-            Regiment preselectedRegiment = PlacementSystem.PreselectedRegiments[0];
-            if (preselectedRegiment.TeamID == 0) return;
-            PlacementSystem.OnAttackOrderEvent(preselectedRegiment);
-        }
-*/
+        
         private void OnMoveCallback(int registerIndex)
         {
             PlacementSystem.OnMoveOrderEvent(registerIndex, tempWidths);
@@ -193,10 +200,6 @@ namespace KaizerWald
             //DisablePlacements methods make "PlacementsVisible = false;"
             OrdersCallbackChoice(PlacementSystem.DynamicRegisterIndex);
             OnMouseReleased();
-            
-            //Currently only drag order work
-            //OrdersCallbackChoice();
-            //PlacementSystem.OnMoveOrderEvent(tempWidths);
 
             void OnMouseReleased()
             {
@@ -226,6 +229,88 @@ namespace KaizerWald
 //║                                            ◆◆◆◆◆◆ CLASS METHODS ◆◆◆◆◆◆                                             ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
+        // =============================================================================================================
+        // PROTOTYPE
+
+        private float[,] costsDebug;
+        private void TestHungarianAlgorithm()
+        {
+            //Goal sort selection
+            
+            //1) Matrice de Coût
+            costsDebug = new float[SelectedRegiments.Count, SelectedRegiments.Count];
+            //comme l'ordre n'est pas encore connu on utilise des destinations selon l'état Min
+            int[,] costMatrix = new int[SelectedRegiments.Count, SelectedRegiments.Count];
+            float3[] destinations = GetDestinationsPosition();
+            for (int y = 0; y < SelectedRegiments.Count; y++)
+            {
+                float3 regimentPosition = SelectedRegiments[y].CurrentLeaderPosition;
+                for (int x = 0; x < destinations.Length; x++)
+                {
+                    float distance = distancesq(destinations[x], regimentPosition);
+                    costMatrix[y, x] = (int)distance;
+                    costsDebug[y,x] = distance;
+                }
+            }
+            int[] sortedIndex = costMatrix.FindAssignments();
+            for (int i = 0; i < SelectedRegiments.Count; i++)
+            {
+                int selectedRegimentIndex = sortedIndex[i];
+                SortedSelectedRegiments[i] = SelectedRegiments[selectedRegimentIndex];
+            }
+            //Pour la matrice de cout, la rotation est négligée(c'est le problème des unités!)
+        }
+        
+        private void TestAdaptedHungarianAlgorithm()
+        {
+            costsDebug = new float[SelectedRegiments.Count, SelectedRegiments.Count];
+            int width = SelectedRegiments.Count;
+            int matrixLength = square(width);
+            NativeArray<int> nativeCostMatrix = new (matrixLength, Temp, UninitializedMemory);
+            NativeArray<float3> nativeDestinations = new (GetDestinationsPosition(), Temp);
+            
+            for (int i = 0; i < matrixLength; i++)
+            {
+                (int x, int y) = KzwMath.GetXY(i, width);
+                float3 regimentPosition = SelectedRegiments[y].CurrentLeaderPosition;
+                float distance = distancesq(nativeDestinations[x], regimentPosition);
+                nativeCostMatrix[i] = (int)distance;
+                costsDebug[y,x] = distance;
+            }
+            
+            //NativeArray<int> sortedIndex = AdaptedHungarianAlgorithm.FindAssignments(nativeCostMatrix, width, Temp);
+            int[] sortedIndex = nativeCostMatrix.NativeFindAssignments(width);
+            Debug.Log($"FindAssignments: length = {sortedIndex.Length}");
+            for (int i = 0; i < sortedIndex.Length; i++)
+            {
+                Debug.Log($"FindAssignments: At = {sortedIndex[i]}");
+            }
+            
+            for (int i = 0; i < SelectedRegiments.Count; i++)
+            {
+                int selectedRegimentIndex = sortedIndex[i];
+                SortedSelectedRegiments[i] = SelectedRegiments[selectedRegimentIndex];
+            }
+        }
+
+        private float3[] GetDestinationsPosition()
+        {
+            float2 minMaxWidth = MinMaxSelectionWidth;
+            float distanceWidth = clamp(mouseDistance, minMaxWidth[0], minMaxWidth[1]);
+            //float totalMinWidth = MinMaxSelectionWidth[0];
+            float singleWidthSpace = distanceWidth / SelectedRegiments.Count;
+            float halfSingleWidthSpace = singleWidthSpace / 2f;
+            float3[] mockedDestinationPoints = new float3[SelectedRegiments.Count];
+            for (int i = 0; i < SelectedRegiments.Count; i++)
+            {
+                float distance = i * singleWidthSpace + halfSingleWidthSpace;
+                mockedDestinationPoints[i] = (float3)MouseStart + LineDirection * distance;
+            }
+            return mockedDestinationPoints;
+        }
+        // PROTOTYPE
+        // =============================================================================================================
+
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
         //║ ◈◈◈◈◈◈ Placement Logic ◈◈◈◈◈◈                                                                              ║
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
@@ -238,13 +323,17 @@ namespace KaizerWald
                 return PlaceSingleUnitRegiment();
             }
             
+            SortedSelectedRegiments = new List<HighlightRegiment>(SelectedRegiments);
+            //TestHungarianAlgorithm();
+            TestAdaptedHungarianAlgorithm();
+            
             //Here! order is "random" fixe this! must keep formation OR reversed if direction is reversed
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth[0];
             //Debug.Log($"FIRST: {unitsToAddLength}");
-            for (int i = 1; i < SelectedRegiments.Count; i++)
+            for (int i = 1; i < SortedSelectedRegiments.Count; i++)
             {
                 //float cache = unitsToAddLength;
-                unitsToAddLength -= SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
+                unitsToAddLength -= SortedSelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
                 //Debug.Log($"{cache} - {SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX} = {unitsToAddLength}");
             }
 
@@ -285,12 +374,12 @@ namespace KaizerWald
             half2 lineDirection2D = half2(LineDirection.xz);
             half2 depthDirection2D = half2(DepthDirection.xz);
             initialTokensPositions = new (TotalUnitsSelected, TempJob, UninitializedMemory);
-            NativeList<JobHandle> jobHandles = new (SelectedRegiments.Count, Temp);
+            NativeList<JobHandle> jobHandles = new (SortedSelectedRegiments.Count, Temp);
             
             int numUnitsRegimentsBefore = 0;
-            for (int i = 0; i < SelectedRegiments.Count; i++)
+            for (int i = 0; i < SortedSelectedRegiments.Count; i++)
             {
-                FormationData regimentState = SelectedRegiments[i].CurrentFormation;
+                FormationData regimentState = SortedSelectedRegiments[i].CurrentFormation;
                 JGetInitialTokensPositions job = new()
                 {
                     NewWidth           = newWidths[i],
@@ -318,9 +407,9 @@ namespace KaizerWald
             QueryParameters queryParams = new (TerrainLayer.value);
             
             int numUnitsRegimentBefore = 0;
-            for (int i = 0; i < SelectedRegiments.Count; i++)
+            for (int i = 0; i < SortedSelectedRegiments.Count; i++)
             {
-                int numToken = SelectedRegiments[i].CurrentFormation.NumUnitsAlive;
+                int numToken = SortedSelectedRegiments[i].CurrentFormation.NumUnitsAlive;
                 JRaycastsCommands raycastJob = new()
                 {
                     OriginHeight = ORIGIN_HEIGHT,
@@ -343,7 +432,7 @@ namespace KaizerWald
         {
             float3 depthDirection = DepthDirection;
             int numUnitsRegimentBefore = 0;
-            foreach (HighlightRegiment regiment in SelectedRegiments)
+            foreach (HighlightRegiment regiment in SortedSelectedRegiments)
             {
                 int regimentId = regiment.RegimentID;
                 int numToken = regiment.CurrentFormation.NumUnitsAlive;
@@ -368,7 +457,7 @@ namespace KaizerWald
                 attempts = 0;
                 for (int i = 0; i < newWidths.Length; i++)
                 {
-                    FormationData currentState = SelectedRegiments[i].CurrentFormation;
+                    FormationData currentState = SortedSelectedRegiments[i].CurrentFormation;
                     bool notEnoughSpace = unitsToAddLength < currentState.DistanceUnitToUnitX;
                     bool isWidthAtMax   = newWidths[i] == currentState.MaxRow;
                     bool failAttempt    = notEnoughSpace || isWidthAtMax;
@@ -384,16 +473,16 @@ namespace KaizerWald
         {
             float2 lineDirection = LineDirection.xz;
             bool hasLeftOver = mouseDistance < MinMaxSelectionWidth[1];
-            float leftOver = hasLeftOver ? max(0,unitsToAddLength) / max(1,SelectedRegiments.Count - 1) : 0;
-            Debug.Log($"hasLeftOver: {mouseDistance} < {MinMaxSelectionWidth[1]} = {hasLeftOver}, leftOver = {leftOver}");
-            NativeArray<float2> starts = new (SelectedRegiments.Count, Temp, UninitializedMemory);
-            if (SelectedRegiments.Count is 0) return starts;
+            float leftOver = hasLeftOver ? max(0,unitsToAddLength) / max(1,SortedSelectedRegiments.Count - 1) : 0;
+            //Debug.Log($"hasLeftOver: {mouseDistance} < {MinMaxSelectionWidth[1]} = {hasLeftOver}, leftOver = {leftOver}");
+            NativeArray<float2> starts = new (SortedSelectedRegiments.Count, Temp, UninitializedMemory);
+            if (SortedSelectedRegiments.Count is 0) return starts;
             
             starts[0] = ((float3)MouseStart).xz;
-            for (int i = 1; i < SelectedRegiments.Count; i++)
+            for (int i = 1; i < SortedSelectedRegiments.Count; i++)
             {
-                float prevUnitSpace  = SelectedRegiments[i - 1].CurrentFormation.DistanceUnitToUnitX;
-                float currUnitSpace  = SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
+                float prevUnitSpace  = SortedSelectedRegiments[i - 1].CurrentFormation.DistanceUnitToUnitX;
+                float currUnitSpace  = SortedSelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
                 float previousLength = (newWidths[i - 1] - 1) * prevUnitSpace; // -1 because we us space, not units
                 previousLength      += csum(float2(prevUnitSpace, currUnitSpace) / 2f);//arrive at edge of last Unit + 1/2 newUnitSize
                 previousLength      += DISTANCE_BETWEEN_REGIMENT + leftOver; // add regiment space

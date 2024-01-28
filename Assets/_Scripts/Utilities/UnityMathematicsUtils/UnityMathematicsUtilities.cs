@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class UnityMathematicsUtilities
     {

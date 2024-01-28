@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public abstract class StateBase
     {

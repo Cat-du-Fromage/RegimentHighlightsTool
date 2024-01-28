@@ -8,13 +8,13 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static Unity.Mathematics.math;
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 using static UnityEngine.Vector3;
 using static UnityEngine.Quaternion;
 using float2 = Unity.Mathematics.float2;
 using float2x2 = Unity.Mathematics.float2x2;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class Regiment : MonoBehaviour
     {

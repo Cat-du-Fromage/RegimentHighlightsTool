@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class UnitAnimation : MonoBehaviour
     {

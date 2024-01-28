@@ -4,7 +4,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Jobs;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class UnitMatrixElement : IComparable<UnitMatrixElement>
     {

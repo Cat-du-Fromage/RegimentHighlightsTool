@@ -12,7 +12,7 @@ using static UnityEngine.Animator;
 using static Unity.Mathematics.math;
 using Random = Unity.Mathematics.Random;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     //TODO: FIND BETTER SOLUTION...
     public enum EUnitAnimation

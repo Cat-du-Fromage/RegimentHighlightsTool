@@ -10,7 +10,7 @@ using static Unity.Mathematics.float2;
 using float2 = Unity.Mathematics.float2;
 using float3 = Unity.Mathematics.float3;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public interface IFormationInfo
     {

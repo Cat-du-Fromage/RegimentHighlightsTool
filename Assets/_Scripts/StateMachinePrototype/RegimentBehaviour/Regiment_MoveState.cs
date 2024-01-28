@@ -8,16 +8,16 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using static Unity.Collections.Allocator;
 using static Unity.Collections.NativeArrayOptions;
 using static Unity.Mathematics.math;
-using static KaizerWald.UnityMathematicsExtension;
-using static KaizerWald.CSharpContainerUtils;
+using static Kaizerwald.UnityMathematicsExtension;
+using static Kaizerwald.CSharpContainerUtils;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public sealed class Regiment_MoveState : RegimentStateBase
     {

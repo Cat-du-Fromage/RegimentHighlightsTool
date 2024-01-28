@@ -7,7 +7,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 using float2 = Unity.Mathematics.float2;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class SelectionInfo
     {

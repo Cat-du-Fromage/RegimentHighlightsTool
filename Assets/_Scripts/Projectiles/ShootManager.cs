@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 using static Unity.Mathematics.math;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public partial class ShootManager : MonoBehaviour
     {

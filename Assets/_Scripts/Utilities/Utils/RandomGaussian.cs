@@ -6,7 +6,7 @@ using Unity.Mathematics;
 using Random = Unity.Mathematics.Random;
 using static Unity.Mathematics.math;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public class RandomGaussian
     {

@@ -5,9 +5,9 @@ using UnityEngine;
 
 using static UnityEngine.Vector2;
 using static Unity.Mathematics.math;
-using static KaizerWald.KzwMath;
+using static Kaizerwald.KzwMath;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class FormationExtension
     {

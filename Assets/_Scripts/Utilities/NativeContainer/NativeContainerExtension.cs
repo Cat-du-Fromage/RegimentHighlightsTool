@@ -5,13 +5,13 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-
+using UnityEngine.Jobs;
 using static Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility;
 using static Unity.Jobs.LowLevel.Unsafe.JobsUtility;
 using static Unity.Collections.Allocator;
 using static Unity.Collections.NativeArrayOptions;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class NativeContainerExtension
     {
@@ -37,6 +37,33 @@ namespace KaizerWald
                 key = pair.Key;
             }
             return key;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated<T>(this ref NativeArray<T> nativeArray)
+            where T : struct
+        {
+            if (nativeArray.IsCreated) nativeArray.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated(this ref TransformAccessArray transformArray)
+        {
+            if (transformArray.isCreated) transformArray.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated<T>(this ref NativeList<T> nativeContainer)
+            where T : unmanaged
+        {
+            if (nativeContainer.IsCreated) nativeContainer.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeIfCreated<T>(this ref NativeHashSet<T> nativeContainer)
+            where T : unmanaged, IEquatable<T>
+        {
+            if (nativeContainer.IsCreated) nativeContainer.Dispose();
         }
     }
 }

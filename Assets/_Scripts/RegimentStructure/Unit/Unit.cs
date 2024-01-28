@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
 //------------------------------------------------------------------------------------------------------------------------------
     //TODO : "OnDeath" Desactiver la collision APRES la fin de l'animation

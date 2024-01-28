@@ -6,7 +6,7 @@ using UnityEngine;
 
 using static UnityEngine.Mathf;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class UnityMathematicsExtension
     {

@@ -9,7 +9,7 @@ using static UnityEngine.Vector3;
 using static Unity.Mathematics.math;
 using static Unity.Mathematics.quaternion;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     /// Utility class for drawing arrows
     /// https://forum.unity.com/threads/debug-drawarrow.85980/

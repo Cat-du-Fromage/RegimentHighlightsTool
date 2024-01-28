@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class Vector2Extension
     {

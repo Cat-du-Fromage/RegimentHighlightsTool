@@ -14,7 +14,7 @@ using static Unity.Mathematics.float2;
 using static Unity.Mathematics.float3;
 using static Unity.Mathematics.quaternion;
 
-namespace KaizerWald
+namespace Kaizerwald
 {
     public static class KzwMath
     {
