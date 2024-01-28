@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -18,10 +19,32 @@ namespace Kaizerwald
 {
     public static class NativeHungarianAlgorithm
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float FindMinValue(in NativeSlice<float> row)
+        {
+            float minValue = float.MaxValue;
+            for (int i = 0; i < row.Length; i++)
+            {
+                minValue = min(minValue, row[i]);
+            }
+            return minValue;
+        }
+        
         public static int[] NativeFindAssignments(this NativeArray<float> costs, int width)
         {
             int height = costs.Length / width;
             
+            for (int y = 0; y < height; y++)
+            {
+                int minIndex = y * width;
+                float minValue = FindMinValue(costs.Slice(minIndex, width));
+                for (int x = 0; x < width; x++)
+                {
+                    int currentIndex = minIndex + x;
+                    costs[currentIndex] -= minValue;
+                }
+            }
+            /*
             for (int y = 0; y < height; y++)
             {
                 float minValue = float.MaxValue;
@@ -37,10 +60,10 @@ namespace Kaizerwald
                     costs[index] = newCost;
                 }
             }
-            
-            NativeArray<byte> masks = new (costs.Length, Temp, NativeArrayOptions.ClearMemory);
-            bool[] rowsCovered = new bool[height];
-            bool[] colsCovered = new bool[width];
+            */
+            NativeArray<byte> masks = new (costs.Length, Temp, ClearMemory);
+            NativeArray<bool> rowsCovered = new (height,Temp, ClearMemory);
+            NativeArray<bool> colsCovered = new (height,Temp, ClearMemory);
 
             for (int i = 0; i < costs.Length; i++)
             {
@@ -50,7 +73,7 @@ namespace Kaizerwald
                 rowsCovered[y] = true;
                 colsCovered[x] = true;
             }
-            ClearCovers(rowsCovered, colsCovered, width, height);
+            ClearCovers(ref rowsCovered, ref colsCovered, width, height);
 
             int2[] path = new int2[costs.Length];
             int2 pathStart = default;
@@ -60,18 +83,19 @@ namespace Kaizerwald
             {
                 step = step switch
                 {
-                    1 => RunStep1(ref masks, colsCovered, width, height),
-                    2 => RunStep2(ref costs, ref masks, rowsCovered, colsCovered, width, height, ref pathStart),
-                    3 => RunStep3(ref masks, rowsCovered, colsCovered, width, height, path, pathStart),
+                    1 => RunStep1(ref masks, ref colsCovered, width, height),
+                    2 => RunStep2(ref costs, ref masks, ref rowsCovered, ref colsCovered, width, ref pathStart),
+                    3 => RunStep3(ref masks, ref rowsCovered, ref colsCovered, width, height, path, pathStart),
                     4 => RunStep4(ref costs, rowsCovered, colsCovered, width, height),
                     _ => step
                 };
             }
-
-            int[] agentsTasks = new int[height];
             
             //CANT be on single array! we search for each row, a valid assignation
             //by doing a single Array we may break BEFORE
+            
+            // !!! DONT SINGLE ARRAY THIS !!!
+            int[] agentsTasks = new int[height];
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -82,11 +106,10 @@ namespace Kaizerwald
                     break;
                 }
             }
-            
             return agentsTasks;
         }
         
-        private static int RunStep1(ref NativeArray<byte> masks, bool[] xCovered, int width, int height)
+        private static int RunStep1(ref NativeArray<byte> masks, ref NativeArray<bool> colsCovered, int width, int height)
         {
             //CAREFULL sometimes: experiece wird behaviours:
             // parfois les "leader" de regiment semblent interverti
@@ -94,63 +117,48 @@ namespace Kaizerwald
             {
                 if (masks[i] != 1) continue;
                 int2 coords = GetXY2(i, width);
-                xCovered[coords.x] = true;
+                colsCovered[coords.x] = true;
             }
-            
-            /*
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (masks[GetIndex(x,y,width)] == 1)
-                    {
-                        xCovered[x] = true;
-                    }
-                }
-            }
-            */
             
             int colsCoveredCount = 0;
             for (int x = 0; x < width; x++)
             {
-                colsCoveredCount += xCovered[x] ? 1 : 0;
+                colsCoveredCount += colsCovered[x] ? 1 : 0;
             }
             return colsCoveredCount == height ? -1 : 2;
         }
         
-        private static int RunStep2(ref NativeArray<float> costs, ref NativeArray<byte> masks, bool[] rowsCovered, bool[] colsCovered, int width, int height, ref int2 pathStart)
+        private static int RunStep2(ref NativeArray<float> costs, ref NativeArray<byte> masks, ref NativeArray<bool> rowsCovered, ref NativeArray<bool> colsCovered, int width, ref int2 pathStart)
         {
             while (true)
             {
-                int2 loc = FindZero(costs, rowsCovered, colsCovered, width, height);
-                if (loc.y == -1) return 4;
-
-                int index = GetIndex(loc, width);
+                int2 location = FindZero(costs, rowsCovered, colsCovered, width);
+                if (location.y == -1) return 4;
+                int index = GetIndex(location, width);
                 masks[index] = 2;
-                //masks[loc.y, loc.x] = 2;
 
-                int starCol = FindStarInRow(masks, width, loc.y);
-                if (starCol != -1)
+                int starColumn = FindStarInRow(masks, width, location.y);
+                if (starColumn != -1)
                 {
-                    rowsCovered[loc.y] = true;
-                    colsCovered[starCol] = false;
+                    rowsCovered[location.y] = true;
+                    colsCovered[starColumn] = false;
                 }
                 else
                 {
-                    pathStart = loc;
+                    pathStart = location;
                     return 3;
                 }
             }
         }
         
-        private static int RunStep3(ref NativeArray<byte> masks, bool[] rowsCovered, bool[] colsCovered, int width, int height, int2[] path, int2 pathStart)
+        private static int RunStep3(ref NativeArray<byte> masks, ref NativeArray<bool> rowsCovered, ref NativeArray<bool> colsCovered, int width, int height, int2[] path, int2 pathStart)
         {
             int pathIndex = 0;
             path[0] = pathStart;
 
             while (true)
             {
-                int row = FindStarInColumn(masks, width, height, path[pathIndex].x);
+                int row = FindStarInColumn(masks, path[pathIndex].x, width, height);
                 if (row == -1) break;
                 pathIndex++;
                 path[pathIndex] = new int2(path[pathIndex - 1].x, row); // path[pathIndex] = new Location(row, path[pathIndex - 1].x);
@@ -159,53 +167,31 @@ namespace Kaizerwald
                 path[pathIndex] = new int2(col, path[pathIndex - 1].y); // path[pathIndex] = new Location(path[pathIndex - 1].y, col);
             }
             ConvertPath(ref masks, path, pathIndex + 1, width);
-            ClearCovers(rowsCovered, colsCovered, width, height);
-            ClearPrimes(ref masks, width, height);
+            ClearCovers(ref rowsCovered, ref colsCovered, width, height);
+            ClearPrimes(ref masks);
             return 1;
         }
         
-        private static int RunStep4(ref NativeArray<float> costs, bool[] rowsCovered, bool[] colsCovered, int width, int height)
+        private static int RunStep4(ref NativeArray<float> costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width, int height)
         {
-            float minValue = FindMinimum(costs, rowsCovered, colsCovered, width, height);
-
-            for (int y = 0; y < height; y++)
+            float minValue = FindMinimum(costs, rowsCovered, colsCovered, width);
+            for (int i = 0; i < costs.Length; i++)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    int index = GetIndex(x, y, width);
-                    //if (rowsCovered[y])
-                    float added = rowsCovered[y] ? minValue : 0;
-                    costs[index] = costs[index] + added;
-                    //if (!colsCovered[x])
-                    float subtract = !colsCovered[x] ? minValue : 0;
-                    costs[index] = costs[index] - subtract;
-                }
+                (int x, int y) = GetXY(i, width);
+                costs[i] += rowsCovered[y] ? minValue : 0;
+                costs[i] -= !colsCovered[x] ? minValue : 0;
             }
             return 2;
         }
 
-        private static float FindMinimum(in NativeArray<float> costs, bool[] rowsCovered, bool[] colsCovered, int width, int height)
+        private static float FindMinimum(in NativeArray<float> costs, NativeArray<bool> rowsCovered, NativeArray<bool> colsCovered, int width)
         {
             float minValue = float.MaxValue;
-            /*
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (!rowsCovered[y] && !colsCovered[x])
-                    {
-                        minValue = min(minValue, costs[GetIndex(x,y,width)]);
-                    }
-                }
-            }
-            */
             for (int i = 0; i < costs.Length; i++)
             {
                 (int x, int y) = GetXY(i, width);
-                if (!rowsCovered[y] && !colsCovered[x])
-                {
-                    minValue = min(minValue, costs[i]);
-                }
+                if (rowsCovered[y] || colsCovered[x]) continue;
+                minValue = min(minValue, costs[i]);
             }
             return minValue;
         }
@@ -220,7 +206,7 @@ namespace Kaizerwald
             return -1;
         }
         
-        private static int FindStarInColumn(in NativeArray<byte> masks, int width, int height, int x)
+        private static int FindStarInColumn(in NativeArray<byte> masks, int x, int width, int height)
         {
             for (int y = 0; y < height; y++)
             {
@@ -239,18 +225,15 @@ namespace Kaizerwald
             }
             return -1;
         }
-        private static int2 FindZero(in NativeArray<float> costs, bool[] rowsCovered, bool[] colsCovered, int width, int height)
+        private static int2 FindZero(in NativeArray<float> costs, in NativeArray<bool> rowsCovered, in NativeArray<bool> colsCovered, int width)
         {
-            for (int y = 0; y < height; y++)
+            for (int i = 0; i < costs.Length; i++)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    int index = GetIndex(x, y, width);
-                    //if (costs[index] == 0 && !rowsCovered[y] && !colsCovered[x]) return new int2(x, y);
-                    if (costs[index].IsZero() && !rowsCovered[y] && !colsCovered[x]) return new int2(x, y);
-                }
+                (int x, int y) = GetXY(i, width);
+                if (colsCovered[x] || rowsCovered[y] || !costs[i].IsZero()) continue;
+                return int2(x, y);
             }
-            return new int2(-1, -1);
+            return int2(-1, -1);
         }
         private static void ConvertPath(ref NativeArray<byte> masks, int2[] path, int pathLength, int width)
         {
@@ -263,35 +246,26 @@ namespace Kaizerwald
                     2 => 1,
                     _ => masks[index]
                 };
-                /*
-                masks[path[i].y, path[i].x] = masks[path[i].y, path[i].x] switch
-                {
-                    1 => 0,
-                    2 => 1,
-                    _ => masks[path[i].y, path[i].x]
-                };
-                */
             }
         }
         
-        private static void ClearPrimes(ref NativeArray<byte> masks, int width, int height)
+        private static void ClearPrimes(ref NativeArray<byte> masks)
         {
-            for (int y = 0; y < height; y++)
+            for (int i = 0; i < masks.Length; i++)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    int index = GetIndex(x, y, width);
-                    if (masks[index] == 2) masks[index] = 0;
-                }
+                if (masks[i] == 2) masks[i] = 0;
             }
         }
         
-        private static void ClearCovers(bool[] rowsCovered, bool[] colsCovered, int width, int height)
+        private static void ClearCovers(ref NativeArray<bool> rowsCovered, ref NativeArray<bool> colsCovered, int width, int height)
         {
-            //Array.Fill(rowsCovered, false);
-            //Array.Fill(colsCovered, false);
-            for (int y = 0; y < height; y++) { rowsCovered[y] = false; }
-            for (int x = 0; x < width; x++) { colsCovered[x] = false; }
+            for (int i = 0; i < width; i++)
+            {
+                rowsCovered[i] = false;
+                colsCovered[i] = false;
+            }
+            //for (int y = 0; y < height; y++) { rowsCovered[y] = false; }
+            //for (int x = 0; x < width; x++) { colsCovered[x] = false; }
         }
     }
 }
