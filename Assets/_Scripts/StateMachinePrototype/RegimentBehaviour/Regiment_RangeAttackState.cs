@@ -25,7 +25,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public Regiment_RangeAttackState(RegimentBehaviourTree behaviourTree, Blackboard blackboard) : base(behaviourTree, blackboard, EStates.Fire)
+        public Regiment_RangeAttackState(RegimentBehaviourTree behaviourTree) : base(behaviourTree, EStates.Fire)
         {
         }
         

@@ -11,16 +11,17 @@ namespace KaizerWald
 //║                                             ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                               ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         public UnitBehaviourTree BehaviourTree { get; protected set; }
-        public Unit UnitAttach { get; protected set; }
-        public Blackboard RegimentBlackboard { get; protected set; }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
-
         protected Regiment ParentRegiment => BehaviourTree.UnitAttach.RegimentAttach;
+        protected Blackboard RegimentBlackboard => BehaviourTree.RegimentBehaviourTree.RegimentBlackboard;
+        
+        protected Unit UnitAttach => BehaviourTree.UnitAttach;
         protected Transform UnitTransform => BehaviourTree.CachedTransform;
         protected UnitAnimation UnitAnimation => UnitAttach.Animation;
+        
         protected int IndexInRegiment => UnitAttach.IndexInRegiment;
         protected EStates RegimentState => BehaviourTree.RegimentState;
         
@@ -38,8 +39,6 @@ namespace KaizerWald
         protected UnitStateBase(UnitBehaviourTree behaviourTree, EStates stateIdentity) : base(stateIdentity)
         {
             BehaviourTree = behaviourTree;
-            UnitAttach = behaviourTree.UnitAttach;
-            RegimentBlackboard = behaviourTree.RegimentBehaviourTree.RegimentBlackboard;
         }
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

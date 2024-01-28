@@ -85,14 +85,9 @@ namespace KaizerWald
         //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
         public Unit Initialize(Regiment regiment, int unitLayerIndex)
         {
-            InitializeProperties(regiment, unitLayerIndex);
-            return this;
-        }
-
-        private void InitializeProperties(Regiment regiment, int unitLayerIndex)
-        {
             RegimentAttach = regiment;
             gameObject.layer = unitLayerIndex;
+            return this;
         }
 
         //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖

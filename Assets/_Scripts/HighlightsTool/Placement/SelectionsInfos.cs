@@ -28,7 +28,7 @@ namespace KaizerWald
 
         private static float2 GetMinMaxFormationLength(in FormationData formation)
         {
-            return formation.DistanceUnitToUnit.x * (float2)formation.MinMaxRow;
+            return formation.DistanceUnitToUnit * max(1, formation.MinMaxRow - 1);
         }
         
         public static NativeArray<int> GetSelectionsMinWidth(List<HighlightRegiment> selectedRegiments)

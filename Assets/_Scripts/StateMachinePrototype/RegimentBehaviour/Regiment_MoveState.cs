@@ -48,7 +48,7 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public Regiment_MoveState(RegimentBehaviourTree behaviourTree, Blackboard blackBoard) : base(behaviourTree,blackBoard,EStates.Move)
+        public Regiment_MoveState(RegimentBehaviourTree behaviourTree) : base(behaviourTree,EStates.Move)
         {
             MarchSpeed = 1;
             RunSpeed = 3;

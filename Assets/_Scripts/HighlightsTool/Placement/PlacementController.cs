@@ -70,7 +70,7 @@ namespace KaizerWald
         private float3 LineDirection => normalizesafe(MouseEnd - MouseStart);
         private float3 DepthDirection => normalizesafe(cross(up(), LineDirection));
         private int TotalUnitsSelected => SelectionInfo.GetTotalUnitsSelected(SelectedRegiments);
-        private float2 MinMaxSelectionWidth => SelectionInfo.GetMinMaxSelectionWidth(SelectedRegiments) + DISTANCE_BETWEEN_REGIMENT * (NumSelections-1);
+        private float2 MinMaxSelectionWidth => SelectionInfo.GetMinMaxSelectionWidth(SelectedRegiments) + (float2)(DISTANCE_BETWEEN_REGIMENT * (NumSelections-1));
         private NativeArray<int> MinWidthsArray => SelectionInfo.GetSelectionsMinWidth(SelectedRegiments);
         
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -239,12 +239,15 @@ namespace KaizerWald
             }
             
             //Here! order is "random" fixe this! must keep formation OR reversed if direction is reversed
-            float unitsToAddLength = mouseDistance - MinMaxSelectionWidth.x;
-
+            float unitsToAddLength = mouseDistance - MinMaxSelectionWidth[0];
+            //Debug.Log($"FIRST: {unitsToAddLength}");
             for (int i = 1; i < SelectedRegiments.Count; i++)
             {
+                //float cache = unitsToAddLength;
                 unitsToAddLength -= SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
+                //Debug.Log($"{cache} - {SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX} = {unitsToAddLength}");
             }
+
             
             NativeArray<int> newWidths = GetUpdatedFormationWidths(ref unitsToAddLength);
             NativeArray<float2> starts = GetStartsPosition(unitsToAddLength, newWidths);
@@ -366,12 +369,12 @@ namespace KaizerWald
                 for (int i = 0; i < newWidths.Length; i++)
                 {
                     FormationData currentState = SelectedRegiments[i].CurrentFormation;
-                    bool notEnoughSpace = unitsToAddLength < currentState.DistanceUnitToUnit.x;
+                    bool notEnoughSpace = unitsToAddLength < currentState.DistanceUnitToUnitX;
                     bool isWidthAtMax   = newWidths[i] == currentState.MaxRow;
                     bool failAttempt    = notEnoughSpace || isWidthAtMax;
                     attempts           += failAttempt ? 1 : 0;
                     newWidths[i]       += !failAttempt ? 1 : 0;
-                    unitsToAddLength   -= !failAttempt ? currentState.DistanceUnitToUnit.x : 0;
+                    unitsToAddLength   -= !failAttempt ? currentState.DistanceUnitToUnitX : 0;
                 }
             }
             return newWidths;
@@ -380,20 +383,20 @@ namespace KaizerWald
         private NativeArray<float2> GetStartsPosition(float unitsToAddLength, NativeArray<int> newWidths)
         {
             float2 lineDirection = LineDirection.xz;
-            bool isMaxDistanceReach = mouseDistance < MinMaxSelectionWidth.y;
-            float leftOver = isMaxDistanceReach ? unitsToAddLength / (SelectedRegiments.Count - 1) : 0;
-            
+            bool hasLeftOver = mouseDistance < MinMaxSelectionWidth[1];
+            float leftOver = hasLeftOver ? max(0,unitsToAddLength) / max(1,SelectedRegiments.Count - 1) : 0;
+            Debug.Log($"hasLeftOver: {mouseDistance} < {MinMaxSelectionWidth[1]} = {hasLeftOver}, leftOver = {leftOver}");
             NativeArray<float2> starts = new (SelectedRegiments.Count, Temp, UninitializedMemory);
             if (SelectedRegiments.Count is 0) return starts;
             
             starts[0] = ((float3)MouseStart).xz;
             for (int i = 1; i < SelectedRegiments.Count; i++)
             {
-                float currUnitSpace  = SelectedRegiments[i].CurrentFormation.DistanceUnitToUnit.x;
-                float prevUnitSpace  = SelectedRegiments[i - 1].CurrentFormation.DistanceUnitToUnit.x;
+                float prevUnitSpace  = SelectedRegiments[i - 1].CurrentFormation.DistanceUnitToUnitX;
+                float currUnitSpace  = SelectedRegiments[i].CurrentFormation.DistanceUnitToUnitX;
                 float previousLength = (newWidths[i - 1] - 1) * prevUnitSpace; // -1 because we us space, not units
-                previousLength      += csum(float2(prevUnitSpace, currUnitSpace) * 0.5f);//arrive at edge of last Unit + 1/2 newUnitSize
-                previousLength      += DISTANCE_BETWEEN_REGIMENT + max(0, leftOver); // add regiment space
+                previousLength      += csum(float2(prevUnitSpace, currUnitSpace) / 2f);//arrive at edge of last Unit + 1/2 newUnitSize
+                previousLength      += DISTANCE_BETWEEN_REGIMENT + leftOver; // add regiment space
                 
                 starts[i] = starts[i - 1] + lineDirection * previousLength;
             }
@@ -411,7 +414,7 @@ namespace KaizerWald
         private bool IsVisibilityTrigger()
         {
             if (PlacementsVisible) return true;
-            if (mouseDistance < SelectedRegiments[0].CurrentFormation.DistanceUnitToUnit.x) return false;
+            if (mouseDistance < SelectedRegiments[0].CurrentFormation.DistanceUnitToUnitX) return false;
             EnableAllDynamicSelected();
             return true;
         }

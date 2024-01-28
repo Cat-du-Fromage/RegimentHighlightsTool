@@ -10,13 +10,15 @@ namespace KaizerWald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                             ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                               ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        public Blackboard RegimentBlackboard { get; protected set; }
+
         public RegimentBehaviourTree BehaviourTree { get; private set; }
-        public Regiment RegimentAttach { get; protected set; }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                    ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        public Blackboard RegimentBlackboard => BehaviourTree.RegimentBlackboard;
+        public Regiment RegimentAttach => BehaviourTree.RegimentAttach;
+    
         public float3 Position => BehaviourTree.Position;
         public float3 Forward  => BehaviourTree.Forward;
         public float3 Back     => BehaviourTree.Back;
@@ -31,11 +33,10 @@ namespace KaizerWald
 //║                                             ◆◆◆◆◆◆ CONSTRUCTOR ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
-        protected RegimentStateBase(RegimentBehaviourTree behaviourTree, Blackboard blackboard, EStates stateIdentity) : base(stateIdentity)
+        protected RegimentStateBase(RegimentBehaviourTree behaviourTree, EStates stateIdentity) : base(stateIdentity)
         {
-            RegimentBlackboard = blackboard;
             BehaviourTree = behaviourTree;
-            RegimentAttach = behaviourTree.RegimentAttach;
+            //RegimentAttach = behaviourTree.RegimentAttach;
         }
     }
 }

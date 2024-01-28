@@ -28,16 +28,18 @@ namespace KaizerWald
         
         //ATTENTION PAS { get; private set; } sinon NextFloat2Direction ne bougera pas
         private Random randomState;
+        
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                              ◆◆◆◆◆◆ PROPERTIES ◆◆◆◆◆◆                                              ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
         public Unit UnitEnemyTarget { get; private set; }
         public float2 CurrentRandomAimDirection { get; private set; }
         public float3 AimDirection { get; private set; }
         public FormationData CacheEnemyFormation { get; private set; }
         
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
-    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                   ║
+    //║ ◈◈◈◈◈◈ Accessors ◈◈◈◈◈◈                                                                                        ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
 
         private Regiment RegimentEnemyTarget => RegimentBlackboard.EnemyTarget;

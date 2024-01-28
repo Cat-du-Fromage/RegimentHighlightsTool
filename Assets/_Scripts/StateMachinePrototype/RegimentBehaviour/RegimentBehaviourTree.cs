@@ -97,9 +97,9 @@ namespace KaizerWald
         {
             States = new Dictionary<EStates, StateBase>()
             {
-                {EStates.Idle, new Regiment_IdleState(this, RegimentBlackboard)},
-                {EStates.Move, new Regiment_MoveState(this, RegimentBlackboard)},
-                {EStates.Fire, new Regiment_RangeAttackState(this, RegimentBlackboard)},
+                {EStates.Idle, new Regiment_IdleState(this)},
+                {EStates.Move, new Regiment_MoveState(this)},
+                {EStates.Fire, new Regiment_RangeAttackState(this)},
                 //{EStates.Melee, new ChaseRegimentState(this)},
             };
             
