@@ -18,9 +18,7 @@ namespace Kaizerwald
         public static int[] NativeFindAssignments(this NativeArray<int> costs, int width)
         {
             int height = costs.Length / width;
-
-            //for (int i = 0; i < costs.Length; i++) { (int x, int y) = KzwMath.GetXY(i, width); }
-
+            
             for (int y = 0; y < height; y++)
             {
                 int minValue = int.MaxValue;
@@ -53,8 +51,8 @@ namespace Kaizerwald
 
             ClearCovers(rowsCovered, colsCovered, width, height);
 
-            Location[] path = new Location[width * height];
-            Location pathStart = default(Location);
+            int2[] path = new int2[width * height];
+            int2 pathStart = default;
             int step = 1;
 
             while (step != -1)
@@ -97,31 +95,26 @@ namespace Kaizerwald
             }
 
             int colsCoveredCount = 0;
-
             for (int x = 0; x < width; x++)
             {
-                //if (colsCovered[x]) colsCoveredCount++;
                 colsCoveredCount += xCovered[x] ? 1 : 0;
             }
-
             return colsCoveredCount == height ? -1 : 2;
-            //if (colsCoveredCount == height) return -1;
-            //return 2;
         }
         
-        private static int RunStep2(NativeArray<int> costs, byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int width, int height, ref Location pathStart)
+        private static int RunStep2(NativeArray<int> costs, byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int width, int height, ref int2 pathStart)
         {
             while (true)
             {
-                Location loc = FindZero(costs, rowsCovered, colsCovered, width, height);
-                if (loc.row == -1) return 4;
+                int2 loc = FindZero(costs, rowsCovered, colsCovered, width, height);
+                if (loc.y == -1) return 4;
 
-                masks[loc.row, loc.column] = 2;
+                masks[loc.y, loc.x] = 2;
 
-                int starCol = FindStarInRow(masks, width, loc.row);
+                int starCol = FindStarInRow(masks, width, loc.y);
                 if (starCol != -1)
                 {
-                    rowsCovered[loc.row] = true;
+                    rowsCovered[loc.y] = true;
                     colsCovered[starCol] = false;
                 }
                 else
@@ -132,21 +125,22 @@ namespace Kaizerwald
             }
         }
         
-        private static int RunStep3(byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int w, int h, Location[] path, Location pathStart)
+        private static int RunStep3(byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int w, int h, int2[] path, int2 pathStart)
         {
             int pathIndex = 0;
             path[0] = pathStart;
 
             while (true)
             {
-                int row = FindStarInColumn(masks, h, path[pathIndex].column);
+                int row = FindStarInColumn(masks, h, path[pathIndex].x);
                 if (row == -1) break;
                 pathIndex++;
-                path[pathIndex] = new Location(row, path[pathIndex - 1].column);
-
-                int col = FindPrimeInRow(masks, w, path[pathIndex].row);
+                //path[pathIndex] = new Location(row, path[pathIndex - 1].x);
+                path[pathIndex] = new int2(path[pathIndex - 1].x, row);
+                int col = FindPrimeInRow(masks, w, path[pathIndex].y);
                 pathIndex++;
-                path[pathIndex] = new Location(path[pathIndex - 1].row, col);
+                //path[pathIndex] = new Location(path[pathIndex - 1].y, col);
+                path[pathIndex] = new int2(col, path[pathIndex - 1].y);
             }
             ConvertPath(masks, path, pathIndex + 1);
             ClearCovers(rowsCovered, colsCovered, w, h);
@@ -215,27 +209,27 @@ namespace Kaizerwald
             }
             return -1;
         }
-        private static Location FindZero(NativeArray<int> costs, bool[] rowsCovered, bool[] colsCovered, int width, int height)
+        private static int2 FindZero(NativeArray<int> costs, bool[] rowsCovered, bool[] colsCovered, int width, int height)
         {
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     if (costs[GetIndex(x,y,width)] == 0 && !rowsCovered[y] && !colsCovered[x])
-                        return new Location(y, x);
+                        return new int2(x, y);
                 }
             }
-            return new Location(-1, -1);
+            return new int2(-1, -1);
         }
-        private static void ConvertPath(byte[,] masks, Location[] path, int pathLength)
+        private static void ConvertPath(byte[,] masks, int2[] path, int pathLength)
         {
             for (int i = 0; i < pathLength; i++)
             {
-                masks[path[i].row, path[i].column] = masks[path[i].row, path[i].column] switch
+                masks[path[i].y, path[i].x] = masks[path[i].y, path[i].x] switch
                 {
                     1 => 0,
                     2 => 1,
-                    _ => masks[path[i].row, path[i].column]
+                    _ => masks[path[i].y, path[i].x]
                 };
             }
         }
@@ -261,13 +255,13 @@ namespace Kaizerwald
 
         private struct Location
         {
-            internal readonly int row;
-            internal readonly int column;
+            internal readonly int y;
+            internal readonly int x;
 
-            internal Location(int row, int col)
+            internal Location(int y, int col)
             {
-                this.row = row;
-                this.column = col;
+                this.y = y;
+                this.x = col;
             }
         }
     }

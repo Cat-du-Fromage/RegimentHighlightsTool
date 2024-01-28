@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace Kaizerwald
 {
+    /*
     public partial class HighlightRegimentManager : MonoBehaviourSingleton<HighlightRegimentManager>
     {
         private void OnGUI()
@@ -24,6 +25,7 @@ namespace Kaizerwald
             unit.TriggerDeath();
         }
     }
+    */
 }
 
 #endif
