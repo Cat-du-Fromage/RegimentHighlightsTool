@@ -12,6 +12,8 @@ using static Unity.Mathematics.math;
 using static Unity.Collections.Allocator;
 using static Unity.Collections.NativeArrayOptions;
 
+using int2 = Unity.Mathematics.int2;
+
 using Kaizerwald;
 using static Kaizerwald.KzwMath;
 
@@ -76,7 +78,7 @@ namespace Kaizerwald
             ClearCovers(ref rowsCovered, ref colsCovered, width, height);
 
             int2[] path = new int2[costs.Length];
-            int2 pathStart = default;
+            int2 pathStart = int2.zero;
             
             int step = 1;
             while (step != -1)
