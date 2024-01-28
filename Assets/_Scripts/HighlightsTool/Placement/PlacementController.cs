@@ -266,7 +266,7 @@ namespace Kaizerwald
             costsDebug = new float[SelectedRegiments.Count, SelectedRegiments.Count];
             int width = SelectedRegiments.Count;
             int matrixLength = square(width);
-            NativeArray<int> nativeCostMatrix = new (matrixLength, Temp, UninitializedMemory);
+            NativeArray<float> nativeCostMatrix = new (matrixLength, Temp, UninitializedMemory);
             NativeArray<float3> nativeDestinations = new (GetDestinationsPosition(), Temp);
             
             for (int i = 0; i < matrixLength; i++)
@@ -274,18 +274,19 @@ namespace Kaizerwald
                 (int x, int y) = KzwMath.GetXY(i, width);
                 float3 regimentPosition = SelectedRegiments[y].CurrentLeaderPosition;
                 float distance = distancesq(nativeDestinations[x], regimentPosition);
-                nativeCostMatrix[i] = (int)distance;
+                nativeCostMatrix[i] = distance;
                 costsDebug[y,x] = distance;
             }
             
             //NativeArray<int> sortedIndex = AdaptedHungarianAlgorithm.FindAssignments(nativeCostMatrix, width, Temp);
             int[] sortedIndex = nativeCostMatrix.NativeFindAssignments(width);
+            /*
             Debug.Log($"FindAssignments: length = {sortedIndex.Length}");
             for (int i = 0; i < sortedIndex.Length; i++)
             {
                 Debug.Log($"FindAssignments: At = {sortedIndex[i]}");
             }
-            
+            */
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 int selectedRegimentIndex = sortedIndex[i];

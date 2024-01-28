@@ -89,13 +89,13 @@ namespace Kaizerwald
 
         /// <summary>
         /// Get array Index from Coord
-        /// <param name="coord">coord in the grid</param>
+        /// <param name="coords">coord in the grid</param>
         /// <param name="width">width(X) of the grid</param>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetIndex(in int2 coord, int width)
+        public static int GetIndex(in int2 coords, int width)
         {
-            return coord.y * width + coord.x;
+            return coords.y * width + coords.x;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
