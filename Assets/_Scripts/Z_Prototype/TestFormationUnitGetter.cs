@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -83,7 +84,7 @@ namespace Kaizerwald
             if (!DebugTest || !formationAssigned) return;
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(transform.position, RADIUS);
-            float2[] positions = ((FormationData)formation).GetUnitsPositionRelativeToRegiment((float3)regTransform.position);
+            float2[] positions = ((FormationData)formation).GetUnitsPositionRelativeToRegiment(((float3)regTransform.position).xz, Allocator.Temp).ToArray();
 
             Gizmos.color = Color.green;
             foreach (float2 unitPos2D in positions)

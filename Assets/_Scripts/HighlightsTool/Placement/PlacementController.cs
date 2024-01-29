@@ -252,7 +252,7 @@ namespace Kaizerwald
                     costsDebug[y,x] = distance;
                 }
             }
-            int[] sortedIndex = costMatrix.FindAssignments();
+            int[] sortedIndex = HungarianAlgorithm2.FindAssignments(costMatrix);
             for (int i = 0; i < SelectedRegiments.Count; i++)
             {
                 int selectedRegimentIndex = sortedIndex[i];
@@ -260,8 +260,8 @@ namespace Kaizerwald
             }
             //Pour la matrice de cout, la rotation est négligée(c'est le problème des unités!)
         }
-
-        private NativeArray<float> GetCostMatrix(int width, NativeArray<float3> destinations)
+        /*
+        private NativeArray<float> GetNativeCostMatrix(int width, NativeArray<float3> destinations)
         {
             int matrixLength = square(width);
             NativeArray<float> nativeCostMatrix = new (matrixLength, Temp, UninitializedMemory);
@@ -273,19 +273,58 @@ namespace Kaizerwald
             }
             return nativeCostMatrix;
         }
-        
+        */
         private void TestNativeHungarianAlgorithm()
         {
             //costsDebug = new float[SelectedRegiments.Count, SelectedRegiments.Count];
             int width = SelectedRegiments.Count;
             NativeArray<float3> nativeDestinations = new (GetDestinationsPosition(), Temp);
-            NativeArray<float> nativeCostMatrix = GetCostMatrix(width, nativeDestinations);
-            
-            int[] sortedIndex = NativeHungarianAlgorithm.NativeFindAssignments(nativeCostMatrix, width);
+            NativeArray<float> costMatrix = GetNativeCostMatrix(nativeDestinations);
+            int[] sortedIndex = NativeHungarianAlgorithm.NativeFindAssignments(costMatrix, width);
             for (int i = 0; i < sortedIndex.Length; i++)
             {
                 int selectedRegimentIndex = sortedIndex[i];
                 SortedSelectedRegiments[i] = SelectedRegiments[selectedRegimentIndex];
+            }
+
+            return;
+            NativeArray<float> GetNativeCostMatrix(NativeArray<float3> destinations)
+            {
+                int matrixLength = square(width);
+                NativeArray<float> nativeCostMatrix = new (matrixLength, Temp, UninitializedMemory);
+                for (int i = 0; i < matrixLength; i++)
+                {
+                    (int x, int y) = KzwMath.GetXY(i, width);
+                    float3 regimentPosition = SelectedRegiments[y].CurrentLeaderPosition;
+                    nativeCostMatrix[i] = distance(destinations[x], regimentPosition);
+                }
+                return nativeCostMatrix;
+            }
+        }
+
+        private void TestStandardHungarianAlgorithm()
+        {
+            int width = SelectedRegiments.Count;
+            int[] sortedIndex = StandardHungarianAlgorithm.StandardFindAssignments(GetCostMatrix(), width);
+            for (int i = 0; i < sortedIndex.Length; i++)
+            {
+                int selectedRegimentIndex = sortedIndex[i];
+                SortedSelectedRegiments[i] = SelectedRegiments[selectedRegimentIndex];
+            }
+
+            return;
+            float[] GetCostMatrix()
+            {
+                float3[] destinations = GetDestinationsPosition();
+                int matrixLength = square(width);
+                float[] nativeCostMatrix = new float[matrixLength];
+                for (int i = 0; i < matrixLength; i++)
+                {
+                    (int x, int y) = KzwMath.GetXY(i, width);
+                    float3 regimentPosition = SelectedRegiments[y].CurrentLeaderPosition;
+                    nativeCostMatrix[i] = distancesq(regimentPosition, destinations[x]);
+                }
+                return nativeCostMatrix;
             }
         }
 
@@ -320,8 +359,10 @@ namespace Kaizerwald
             }
             
             SortedSelectedRegiments = new List<HighlightRegiment>(SelectedRegiments);
+            
             //TestHungarianAlgorithm();
-            TestNativeHungarianAlgorithm();
+            //TestNativeHungarianAlgorithm();
+            TestStandardHungarianAlgorithm();
             
             //Here! order is "random" fixe this! must keep formation OR reversed if direction is reversed
             float unitsToAddLength = mouseDistance - MinMaxSelectionWidth[0];

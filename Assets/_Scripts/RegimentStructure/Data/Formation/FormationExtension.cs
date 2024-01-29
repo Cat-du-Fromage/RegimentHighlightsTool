@@ -127,25 +127,40 @@ namespace Kaizerwald
             return formation.GetUnitRelativePositionToRegiment(unitIndex, regimentPosition.xz);
         }
 
-        public static NativeArray<float2> GetUnitsPositionRelativeToRegiment(this FormationData formation, float2 regimentPosition)
+        public static NativeArray<float2> GetUnitsPositionRelativeToRegiment(this FormationData formation, float2 regimentPosition, Allocator allocator)
         {
-            NativeArray<float2> positions = new(formation.NumUnitsAlive, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            NativeArray<float2> positions = new(formation.NumUnitsAlive, allocator, NativeArrayOptions.UninitializedMemory);
             for (int i = 0; i < formation.NumUnitsAlive; i++)
             {
                 positions[i] = formation.GetUnitRelativePositionToRegiment(i, regimentPosition);
             }
             return positions;
         }
-
-        public static float2[] GetUnitsPositionRelativeToRegiment(this FormationData formation, float3 regimentPosition)
-        {
-            return formation.GetUnitsPositionRelativeToRegiment(regimentPosition.xz).ToArray();
-        }
         
         public static Vector2[] GetUnitsPositionRelativeToRegiment(this FormationData formation, Vector3 regimentPosition)
         {
             float3 position = (float3)regimentPosition;
-            return formation.GetUnitsPositionRelativeToRegiment(position.xz).Reinterpret<Vector2>().ToArray();
+            return formation.GetUnitsPositionRelativeToRegiment(position.xz, Allocator.Temp).Reinterpret<Vector2>().ToArray();
+        }
+        
+        public static float2[] GetUnitsPositionRelativeToRegiment(this FormationData formation, float2 regimentPosition)
+        {
+            float2[] positions = new float2[formation.NumUnitsAlive];
+            for (int i = 0; i < formation.NumUnitsAlive; i++)
+            {
+                positions[i] = formation.GetUnitRelativePositionToRegiment(i, regimentPosition);
+            }
+            return positions;
+        }
+        
+        public static float3[] GetUnitsPositionRelativeToRegiment(this FormationData formation, float3 regimentPosition)
+        {
+            float3[] positions = new float3[formation.NumUnitsAlive];
+            for (int i = 0; i < formation.NumUnitsAlive; i++)
+            {
+                positions[i] = formation.GetUnitRelativePositionToRegiment3D(i, regimentPosition);
+            }
+            return positions;
         }
     }
 }

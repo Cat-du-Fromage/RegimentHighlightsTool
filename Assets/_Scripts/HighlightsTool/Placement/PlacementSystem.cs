@@ -225,7 +225,7 @@ namespace Kaizerwald
             //Blackboard blackboard = regiment.BehaviourTree.RegimentBlackboard;
             FormationData destinationFormation = regiment.DestinationFormation;
             float3 leaderDestination = regiment.DestinationLeaderPosition;
-            using NativeArray<float2> newPositions = destinationFormation.GetUnitsPositionRelativeToRegiment(leaderDestination.xz);
+            using NativeArray<float2> newPositions = destinationFormation.GetUnitsPositionRelativeToRegiment(leaderDestination.xz, Allocator.Temp);
 
             //RaycastHit[] hit = new RaycastHit[1];
             for (int i = 0; i < StaticPlacementRegister[regimentId].Length; i++)

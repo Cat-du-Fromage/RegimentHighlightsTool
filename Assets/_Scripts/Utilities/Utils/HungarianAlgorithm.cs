@@ -38,7 +38,7 @@ namespace Kaizerwald
         /// <param name="costs">A cost matrix; the element at row <em>y</em> and column <em>x</em> represents the cost of agent <em>y</em> performing task <em>x</em>.</param>
         /// <returns>A matrix of assignments; the value of element <em>y</em> is the column of the task assigned to agent <em>x</em>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="costs"/> is null.</exception>
-        public static int[] FindAssignments(this int[,] costs)
+        public static int[] FindAssignments(int[,] costs)
         {
             int height = costs.GetLength(0);
             int width = costs.GetLength(1);

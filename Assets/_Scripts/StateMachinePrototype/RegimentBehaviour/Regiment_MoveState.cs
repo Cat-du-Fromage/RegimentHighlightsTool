@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Unity.Burst;
 using UnityEngine;
 using Unity.Collections;
@@ -16,6 +17,9 @@ using static Unity.Collections.NativeArrayOptions;
 using static Unity.Mathematics.math;
 using static Kaizerwald.UnityMathematicsExtension;
 using static Kaizerwald.CSharpContainerUtils;
+
+using System.Diagnostics; 
+using Debug=UnityEngine.Debug;
 
 namespace Kaizerwald
 {
@@ -61,6 +65,7 @@ namespace Kaizerwald
 
         public override void OnSetup(Order order)
         {
+            //ATTENTION entre l'ordre et la réception des pertes on pu avoir lieu(info: formation périmée!)! prendre directement sur le régiment!
             MoveOrder moveOrder = (MoveOrder)order;
             RegimentBlackboard.OnOrder(order);
             SetSpeedModifier(moveOrder.MoveType);
@@ -72,7 +77,8 @@ namespace Kaizerwald
             UpdateDestinationReach();
             
             //SOIT on check qu'on est en "chasse" ici et on assign:
-            AssignIndexToUnits(RegimentBlackboard.DestinationFormation);
+            //JobAssignIndexToUnits(RegimentBlackboard.DestinationFormation);
+            AssignIndexToUnits2(RegimentBlackboard.DestinationFormation);
             RegimentAttach.CurrentFormation.SetWidth(RegimentBlackboard.DestinationFormation.Width);
             RegimentAttach.CurrentFormation.SetDirection(RegimentBlackboard.DestinationFormation.Direction3DForward);
         }
@@ -117,10 +123,161 @@ namespace Kaizerwald
     //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
     //║ ◈◈◈◈◈◈ On Enter ◈◈◈◈◈◈                                                                                         ║
     //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+    
+    //float3 formationCenter = leaderDestination + formation.Direction3DBack * (formation.Depth * formation.DistanceUnitToUnitY / 2f);
+    //float3 b = mul(targetRotation, destinations[x] + (unitPosition - formationCenter) - RegimentBlackboard.Destination) + RegimentBlackboard.Destination;
+    //float3 b = targetRotation * (destinations[x] + (unitPosition - formationCenter) - leaderDestination) + (Vector3)leaderDestination;
+    //nativeCostMatrix[i] = distancesq(RegimentAttach.Units[y].transform.position, b);
+
+        private float[,] GetMultiCostMatrix(in FormationData formation)
+        {
+            float3[] destinations = formation.GetUnitsPositionRelativeToRegiment(RegimentBlackboard.Destination);
+            float[,] costMatrix = new float[formation.NumUnitsAlive, formation.NumUnitsAlive];
+            
+            StringBuilder assigment = new StringBuilder();
+            for (int y = 0; y < formation.NumUnitsAlive; y++)
+            {
+                assigment.Append($"Unit index = {y}: ");
+                for (int x = 0; x < formation.NumUnitsAlive; x++)
+                {
+                    int index = GetIndex(x, y, formation.NumUnitsAlive);
+                    float3 unitPosition = RegimentAttach.Units[y].transform.position;
+                    float distancePoint = distance(unitPosition, destinations[x]) + distance(unitPosition, RegimentBlackboard.Destination);
+                    costMatrix[y,x] = distancePoint;
+                    assigment.Append($"{x} = {distancePoint} ");
+                    //costMatrix[y,x] = lengthsq(unitPosition - destinations[x]);
+                }
+                assigment.Append("\r\n");
+            }
+            Debug.Log($"CostMatrix: \r\n{assigment}");
+            return costMatrix;
+        }
         
+        
+
+        private float[] GetCostMatrix(in FormationData formation)
+        {
+            float3 leaderDestination = RegimentBlackboard.Destination;
+            float3[] destinations = formation.GetUnitsPositionRelativeToRegiment(RegimentBlackboard.Destination);
+            int matrixLength = square(formation.NumUnitsAlive);
+            float[] nativeCostMatrix = new float[matrixLength];
+            
+            //StringBuilder assigment = new StringBuilder();
+            //int previousY = -1;
+            for (int i = 0; i < matrixLength; i++)
+            {
+                (int x, int y) = GetXY(i, formation.NumUnitsAlive);
+                /*
+                if (previousY != y)
+                {
+                    //assigment.Append($"\r\nUnit index = {y}: ");
+                    previousY = y;
+                }
+                */
+                float3 unitPosition = RegimentAttach.Units[y].transform.position;
+                //SEMBLE FONCTIONNER! ajouter distance au leader(avec un poids moindre)
+                //float distanceToLeaderDest = distance(unitPosition, RegimentBlackboard.Destination);
+                float distanceToLeaderDest = distancesq(unitPosition, RegimentAttach.RegimentPosition);
+                float distanceToUnitDestination = distancesq(unitPosition, destinations[x]);
+                float distancePoint = distanceToUnitDestination + distanceToLeaderDest;
+                
+                nativeCostMatrix[i] = distancePoint;
+                //assigment.Append($"{x} = {distancePoint} ");
+            }
+            //Debug.Log($"CostMatrix: \r\n{assigment}");
+            return nativeCostMatrix;
+        }
+
+        //public Stopwatch timer = new Stopwatch();
+        //l'ALGO FONCTOIONNE! mais la matrice de cout a besoin d'être précis dans ce qu'elle demande
+        //ATTENTION distance euclidienne seule, ne suffit jamais! il faut ajouter un point "d'ancrage" comme la distance par rapport au leader
+        private void AssignIndexToUnits2(in FormationData formation)
+        {
+            //Quaternion targetRotation = Quaternion.LookRotation(formation.Direction3DForward, Vector3.up);
+            
+            
+            //timer.Start();
+            float[] costMatrix = GetCostMatrix(formation);
+            //timer.Stop();
+            //Debug.Log($"GetCostMatrix Timer: {timer.ElapsedMilliseconds} ms");
+            //timer.Reset();
+            //timer.Start();
+            int[] sortedIndex = StandardHungarianAlgorithm.StandardFindAssignments(costMatrix, formation.NumUnitsAlive);
+            //int[] sortedIndex = GabiHungarianAlgorithm.FindAssignments(GetMultiCostMatrix(formation));
+            //timer.Stop();
+            //Debug.Log($"StandardHungarianAlgorithm Timer: {timer.ElapsedMilliseconds} ms");
+            //timer.Reset();
+            /*
+            //StringBuilder beforeAssigment = new StringBuilder();
+            //StringBuilder afterAssigment = new StringBuilder();
+            int previousY = 0;
+            for (int i = 0; i < sortedIndex.Length; i++)
+            {
+                (int x, int y) = GetXY(i, formation.Width);
+                if (previousY != y)
+                {
+                    //beforeAssigment.Append("\r\n");
+                    //afterAssigment.Append("\r\n");
+                    previousY = y;
+                }
+                //beforeAssigment.Append($"[{RegimentAttach.Units[i].IndexInRegiment}] ");
+                //afterAssigment.Append($"[{sortedIndex[i]}] ");
+            }
+            //Debug.Log($"BEFORE:\r\n{beforeAssigment} \r\nAFTER:\r\n{afterAssigment}");
+            */
+            
+            List<Unit> tempUnitList = new List<Unit>(RegimentAttach.Units);
+            for (int i = 0; i < sortedIndex.Length; i++)
+            {
+                int closestUnitIndex = sortedIndex[i];
+                tempUnitList[i].SetIndexInRegiment(closestUnitIndex);
+            }
+        }
+        
+        private NativeArray<float> GetNativeCostMatrix(in FormationData formation)
+        {
+            int matrixLength = square(formation.NumUnitsAlive);
+            
+            float3[] destinations = formation.GetUnitsPositionRelativeToRegiment(RegimentBlackboard.Destination);
+            NativeArray<float> nativeCostMatrix = new (matrixLength, TempJob, UninitializedMemory);
+            
+            for (int i = 0; i < matrixLength; i++)
+            {
+                (int x, int y) = GetXY(i, formation.NumUnitsAlive);
+                float3 unitPosition = RegimentAttach.Units[y].transform.position;
+                
+                float distanceToLeaderDest = distancesq(unitPosition, RegimentAttach.RegimentPosition);
+                float distanceToUnitDestination = distancesq(unitPosition, destinations[x]);
+                float distancePoint = distanceToUnitDestination + distanceToLeaderDest;
+                
+                nativeCostMatrix[i] = distancePoint;
+            }
+            return nativeCostMatrix;
+        }
+
+        private readonly Stopwatch timer = new Stopwatch();
+        private void JobAssignIndexToUnits(in FormationData formation)
+        {
+            timer.Start();
+            NativeArray<float> nativeCostMatrix = GetNativeCostMatrix(formation);
+            NativeArray<int> sortedIndex = JobifiedHungarian2.FindAssignments(nativeCostMatrix, formation.NumUnitsAlive);
+            List<Unit> tempUnitList = new List<Unit>(RegimentAttach.Units);
+            for (int i = 0; i < sortedIndex.Length; i++)
+            {
+                int closestUnitIndex = sortedIndex[i];
+                tempUnitList[i].SetIndexInRegiment(closestUnitIndex);
+            }
+            sortedIndex.Dispose();
+            nativeCostMatrix.Dispose();
+            timer.Stop();
+            Debug.Log($"JobAssignIndexToUnits Timer: {timer.Elapsed.TotalMilliseconds} ms");
+        }
+
+
+        /*
         private void AssignIndexToUnits(in FormationData formation)
         {
-            NativeArray<float2> destinations = formation.GetUnitsPositionRelativeToRegiment(RegimentBlackboard.Destination.xz);
+            NativeArray<float2> destinations = formation.GetUnitsPositionRelativeToRegiment(RegimentBlackboard.Destination.xz, Temp);
             List<Unit> tempUnitList = new List<Unit>(RegimentAttach.Units);
             for (int i = 0; i < destinations.Length; i++)
             {
@@ -143,5 +300,6 @@ namespace Kaizerwald
             }
             return closestUnitIndex;
         }
+        */
     }
 }
