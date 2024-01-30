@@ -471,7 +471,7 @@ namespace Kaizerwald
         
         public void Execute(int index)
         {
-            (int x, int y) = KzwMath.GetXY(index, Width);
+            (int x, int y) = GetXY(index, Width);
             if (Costs[index] != 0 || YCovered[y] || XCovered[x]) return;
             Masks[index] = 1;
             YCovered[y] = true;

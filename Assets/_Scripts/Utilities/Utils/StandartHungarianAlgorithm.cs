@@ -25,7 +25,7 @@ namespace Kaizerwald
     public static class StandardHungarianAlgorithm
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int[] StandardFindAssignments(float[] costs, int width, bool debug = false)
+        public static int[] StandardFindAssignments(float[] costs, int width)
         {
             int height = costs.Length / width;
             
@@ -64,63 +64,18 @@ namespace Kaizerwald
             
             // !!! DONT SINGLE ARRAY THIS !!!
             int[] agentsTasks = new int[height];
-            if (debug)
+            for (int y = 0; y < height; y++)
             {
-                /*
-                MaskDebug();
-                StringBuilder assigment = new StringBuilder();
-                for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
                 {
-                    assigment.Append($"worker index = {y}: ");
-                    float sumCost = 0;
-                    for (int x = 0; x < width; x++)
-                    {
-                        int index = GetIndex(x, y, width);
-                        if (masks[index] != 1) continue;
-                        agentsTasks[y] = x;
-                        assigment.Append($"{x} = {cacheCost[index]} ");
-                        sumCost += cacheCost[index];
-                        break;
-                    }
-                    assigment.Append($"| total = {sumCost}");
-                    assigment.Append("\r\n");
-                }
-                Debug.Log($"Standard Hungarian Algorithm CostMatrix: \r\n{assigment}");
-                */
-            }
-            else
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        int index = GetIndex(x, y, width);
-                        if (masks[index] != 1) continue;
-                        agentsTasks[y] = x;
-                        break;
-                    }
+                    int index = GetIndex(x, y, width);
+                    if (masks[index] != 1) continue;
+                    agentsTasks[y] = x;
+                    break;
                 }
             }
             return agentsTasks;
-
-            void MaskDebug()
-            {
-                StringBuilder maskDebug = new StringBuilder();
-                for (int y = 0; y < height; y++)
-                {
-                    //maskDebug.Append($"worker index = {y}: ");
-                    for (int x = 0; x < width; x++)
-                    {
-                        int index = GetIndex(x, y, width);
-                        maskDebug.Append($"|{masks[index]}");
-                    }
-                    maskDebug.Append("|\r\n");
-                }
-                Debug.Log($"Standard Hungarian Algorithm Mask: \r\n{maskDebug}");
-            }
         }
-        
-        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void FindAndSubtractRowMinValue(float[] costs, int width, int height)
@@ -320,6 +275,219 @@ namespace Kaizerwald
             Array.Fill(colsCovered, false);
             //for (int y = 0; y < height; y++) { rowsCovered[y] = false; }
             //for (int x = 0; x < width; x++) { colsCovered[x] = false; }
+        }
+//╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+//║                                                ◆◆◆◆◆◆ Test2 ◆◆◆◆◆◆                                                 ║
+//╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int[] StandardFindAssignments2(float[] costs, int width)
+        {
+            int height = costs.Length / width;
+            
+            FindAndSubtractRowMinValue(costs, width, height);
+            
+            byte[] masks = new byte[costs.Length];
+            bool[] rowsCovered = new bool[height];
+            bool[] colsCovered = new bool[width];
+
+            for (int i = 0; i < costs.Length; i++)
+            {
+                (int x, int y) = GetXY(i, width);
+                if (!costs[i].IsZero() || rowsCovered[y] || colsCovered[x]) continue;
+                masks[i] = 1;
+                rowsCovered[y] = true;
+                colsCovered[x] = true;
+            }
+            ClearCovers(rowsCovered, colsCovered, width, height);
+
+            int2[] path = new int2[costs.Length];
+            (int step, int2 pathStart) = (1, int2.zero);
+            
+            while (step != -1)
+            {
+                step = step switch
+                {
+                    1 => InternalRunStep1(),
+                    2 => InternalRunStep2(),
+                    3 => InternalRunStep3(),
+                    4 => InternalRunStep4(),
+                    _ => step
+                };
+            }
+            
+            int[] agentsTasks = new int[height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = GetIndex(x, y, width);
+                    if (masks[index] != 1) continue;
+                    agentsTasks[y] = x;
+                    break;
+                }
+            }
+            return agentsTasks;
+            
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Utils ◈◈◈◈◈◈                                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+            void InternalClearCovers()
+            {
+                Array.Fill(rowsCovered, false);
+                Array.Fill(colsCovered, false);
+            }
+            
+            int2 InternalFindZero()
+            {
+                for (int i = 0; i < costs.Length; i++)
+                {
+                    int2 coords = GetXY2(i, width);
+                    if (colsCovered[coords.x] || rowsCovered[coords.y] || !costs[i].IsZero()) continue;
+                    return coords;
+                }
+                return new int2(-1, -1);
+            }
+            
+            float InternalFindMinimum()
+            {
+                float minValue = float.MaxValue;
+                for (int i = 0; i < costs.Length; i++)
+                {
+                    (int x, int y) = GetXY(i, width);
+                    //if (rowsCovered[y] || colsCovered[x]) continue;
+                    minValue = rowsCovered[y] || colsCovered[x] ? minValue : min(minValue, costs[i]);
+                }
+                return minValue;
+            }
+            
+            void InternalClearPrimes()
+            {
+                for (int i = 0; i < masks.Length; i++)
+                {
+                    masks[i] = (byte)(masks[i] == 2 ? 0 : masks[i]);
+                }
+            }
+            
+            void InternalConvertPath(int pathLength)
+            {
+                for (int i = 0; i < pathLength; i++)
+                {
+                    int index = GetIndex(path[i], width);
+                    //if (masks[index] is < 1 or > 2) continue;
+                    //masks[index] = (byte)(masks[index] == 1 ? 0 : 1);
+                    masks[index] = masks[index] switch
+                    {
+                        1 => 0,
+                        2 => 1,
+                        _ => masks[index]
+                    };
+                }
+            }
+            
+            int InternalFindPrimeInRow(int y)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    if (masks[index] != 2) continue;
+                    return x;
+                }
+                return -1;
+            }
+            
+            int InternalFindStarInRow(int y)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * width + x;
+                    if (masks[index] != 1) continue;
+                    return x;
+                }
+                return -1;
+            }
+            
+            int InternalFindStarInColumn(int x)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    int index = y * width + x;
+                    if (masks[index] != 1) continue;
+                    return y;
+                }
+                return -1;
+            }
+            
+        //╓────────────────────────────────────────────────────────────────────────────────────────────────────────────╖
+        //║ ◈◈◈◈◈◈ Steps ◈◈◈◈◈◈                                                                                        ║
+        //╙────────────────────────────────────────────────────────────────────────────────────────────────────────────╜
+        
+            int InternalRunStep1()
+            {
+                for (int i = 0; i < masks.Length; i++)
+                {
+                    if (masks[i] != 1) continue;
+                    int x = i % width;
+                    colsCovered[x] = true;
+                }
+                
+                int colsCoveredCount = 0;
+                for (int x = 0; x < width; x++)
+                {
+                    colsCoveredCount += colsCovered[x] ? 1 : 0;
+                }
+                return colsCoveredCount == height ? -1 : 2;
+            }
+        
+            int InternalRunStep2()
+            {
+                while (true)
+                {
+                    int2 location = InternalFindZero();
+                    if (location.y == -1) return 4;
+                    masks[GetIndex(location, width)] = 2;
+                    int starColumn = InternalFindStarInRow(location.y);
+                    if (starColumn != -1)
+                    {
+                        rowsCovered[location.y] = true;
+                        colsCovered[starColumn] = false;
+                    }
+                    else
+                    {
+                        pathStart = location;
+                        return 3;
+                    }
+                }
+            }
+            
+            int InternalRunStep3()
+            {
+                int pathIndex = 0;
+                path[0] = pathStart;
+                while (true)
+                {
+                    int y = InternalFindStarInColumn(path[pathIndex].x);
+                    if (y == -1) break;
+                    path[++pathIndex] = new int2(path[pathIndex - 1].x, y);
+                    int x = InternalFindPrimeInRow(path[pathIndex].y);
+                    path[++pathIndex] = new int2(x, path[pathIndex - 1].y);
+                }
+                InternalConvertPath(pathIndex + 1);
+                InternalClearCovers();
+                InternalClearPrimes();
+                return 1;
+            }
+            
+            int InternalRunStep4()
+            {
+                float minValue = InternalFindMinimum();
+                for (int i = 0; i < costs.Length; i++)
+                {
+                    (int x, int y) = GetXY(i, width);
+                    costs[i] += rowsCovered[y] ? minValue : 0;
+                    costs[i] -= !colsCovered[x] ? minValue : 0;
+                }
+                return 2;
+            }
         }
     }
 }

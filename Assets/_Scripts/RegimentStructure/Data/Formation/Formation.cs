@@ -118,7 +118,7 @@ namespace Kaizerwald
             MaxRow = (byte)min(byte.MaxValue,formationInfo.MinMaxRow.y);
             UnitSize = new float2(formationInfo.UnitSize.x, formationInfo.UnitSize.y);
             SpaceBetweenUnits = formationInfo.SpaceBetweenUnit;
-            Width = MaxRow;
+            Width = max(MinRow,(MaxRow) / 2);
             Depth = (int)ceil(formationInfo.BaseNumUnits / max(1f,Width));
             DirectionForward = normalizesafe(direction);
         }

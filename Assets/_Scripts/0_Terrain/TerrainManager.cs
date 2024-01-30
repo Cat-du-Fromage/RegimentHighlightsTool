@@ -76,7 +76,7 @@ namespace Kaizerwald
             if (DefaultMaterial != null) meshRenderer.sharedMaterial = DefaultMaterial;
         }
 
-        private void InitializeSpawners(int spawnerSize = 4, int borderOffset = 8)
+        private void InitializeSpawners(int spawnerSize = 4, int borderOffset = 16)
         {
             if (PlayerOneSpawn == null) PlayerOneSpawn = transform.GetChild(0).gameObject;
             if (PlayerTwoSpawn == null) PlayerTwoSpawn = transform.GetChild(1).gameObject;

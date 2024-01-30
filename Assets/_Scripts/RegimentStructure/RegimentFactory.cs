@@ -99,14 +99,16 @@ namespace Kaizerwald
             if (index == 0) return 0;
             RegimentClass regimentClass = spawner.RegimentType.RegimentClass;
             float spaceBtwUnits = regimentClass.SpaceBetweenUnits + regimentClass.Category.UnitSize.x;
-            return regimentClass.MaxRow * spaceBtwUnits  * 0.5f;
+            int defaultRow = max(regimentClass.MinRow, regimentClass.MaxRow / 2);
+            return defaultRow * spaceBtwUnits  * 0.5f;
         }
 
         private float OffsetSameRegiment(int index, RegimentClass regimentClass)
         {
             if (index == 0) return 0;
             float spaceBtwUnits = regimentClass.SpaceBetweenUnits + regimentClass.Category.UnitSize.x;
-            return regimentClass.MaxRow * spaceBtwUnits; //DISTANCE from same regiment to an other IS NOT divide by 2 !!
+            int defaultRow = max(regimentClass.MinRow, regimentClass.MaxRow / 2);
+            return defaultRow * spaceBtwUnits; //DISTANCE from same regiment to an other IS NOT divide by 2 !!
         }
     }
     

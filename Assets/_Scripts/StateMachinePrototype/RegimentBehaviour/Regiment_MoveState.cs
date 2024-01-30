@@ -77,8 +77,8 @@ namespace Kaizerwald
             UpdateDestinationReach();
             
             //SOIT on check qu'on est en "chasse" ici et on assign:
-            //JobAssignIndexToUnits(RegimentBlackboard.DestinationFormation);
-            AssignIndexToUnits2(RegimentBlackboard.DestinationFormation);
+            JobAssignIndexToUnits(RegimentBlackboard.DestinationFormation);
+            //AssignIndexToUnits2(RegimentBlackboard.DestinationFormation);
             RegimentAttach.CurrentFormation.SetWidth(RegimentBlackboard.DestinationFormation.Width);
             RegimentAttach.CurrentFormation.SetDirection(RegimentBlackboard.DestinationFormation.Direction3DForward);
         }
@@ -201,12 +201,12 @@ namespace Kaizerwald
             //timer.Stop();
             //Debug.Log($"GetCostMatrix Timer: {timer.ElapsedMilliseconds} ms");
             //timer.Reset();
-            //timer.Start();
-            int[] sortedIndex = StandardHungarianAlgorithm.StandardFindAssignments(costMatrix, formation.NumUnitsAlive);
+            timer.Start();
+            int[] sortedIndex = StandardHungarianAlgorithm.StandardFindAssignments2(costMatrix, formation.NumUnitsAlive);
             //int[] sortedIndex = GabiHungarianAlgorithm.FindAssignments(GetMultiCostMatrix(formation));
-            //timer.Stop();
-            //Debug.Log($"StandardHungarianAlgorithm Timer: {timer.ElapsedMilliseconds} ms");
-            //timer.Reset();
+            timer.Stop();
+            Debug.Log($"StandardFindAssignments Timer: {timer.Elapsed.TotalMilliseconds} ms");
+            timer.Reset();
             /*
             //StringBuilder beforeAssigment = new StringBuilder();
             //StringBuilder afterAssigment = new StringBuilder();
@@ -271,6 +271,7 @@ namespace Kaizerwald
             nativeCostMatrix.Dispose();
             timer.Stop();
             Debug.Log($"JobAssignIndexToUnits Timer: {timer.Elapsed.TotalMilliseconds} ms");
+            timer.Reset();
         }
 
 
