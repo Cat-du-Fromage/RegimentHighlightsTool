@@ -16,6 +16,7 @@ using int2 = Unity.Mathematics.int2;
 using Debug = UnityEngine.Debug;
 
 using Kaizerwald;
+using UnityEngine;
 using static Kaizerwald.KzwMath;
 
 
@@ -279,7 +280,11 @@ namespace Kaizerwald
 //╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 //║                                                ◆◆◆◆◆◆ Test2 ◆◆◆◆◆◆                                                 ║
 //╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+
+        private static readonly Stopwatch timer = new Stopwatch();
+
+        
         public static int[] StandardFindAssignments2(float[] costs, int width)
         {
             int height = costs.Length / width;
@@ -303,8 +308,21 @@ namespace Kaizerwald
             int2[] path = new int2[costs.Length];
             (int step, int2 pathStart) = (1, int2.zero);
             
+            
+            // ===== STOPWATCH ====
+            int numStep1 = 0;
+            int numStep2 = 0;
+            int numStep3 = 0;
+            int numStep4 = 0;
+            double step1Timer = 0;
+            double step2Timer = 0;
+            double step3Timer = 0;
+            double step4Timer = 0;
+            // ===== STOPWATCH ====
+            
             while (step != -1)
             {
+                /*
                 step = step switch
                 {
                     1 => InternalRunStep1(),
@@ -313,7 +331,64 @@ namespace Kaizerwald
                     4 => InternalRunStep4(),
                     _ => step
                 };
+                */
+                switch (step)
+                {
+                    case 1:
+                        numStep1++;
+                        timer.Reset();
+                        timer.Start();
+                        
+                        step = InternalRunStep1();
+                        
+                        timer.Stop();
+                        step1Timer += timer.Elapsed.TotalMilliseconds;
+                        timer.Reset();
+                        
+                        break;
+                    case 2:
+                        numStep2++;
+                        timer.Reset();
+                        timer.Start();
+                        
+                        step = InternalRunStep2();
+                        
+                        timer.Stop();
+                        step2Timer += timer.Elapsed.TotalMilliseconds;
+                        timer.Reset();
+                        
+                        break;
+                    case 3:
+                        numStep3++;
+                        timer.Reset();
+                        timer.Start();
+
+                        step = InternalRunStep3();
+                        
+                        timer.Stop();
+                        step3Timer += timer.Elapsed.TotalMilliseconds;
+                        timer.Reset();
+
+                        break;
+                    case 4:
+                        numStep4++;
+                        timer.Reset();
+                        timer.Start();
+
+                        step = InternalRunStep4();
+                        
+                        timer.Stop();
+                        step4Timer += timer.Elapsed.TotalMilliseconds;
+                        timer.Reset();
+
+                        break;
+                    default:
+                        break;
+                }
             }
+            
+            Debug.Log($"Timer Step1 for {numStep1} occurence: {step1Timer} ms\r\nTimer Step2 for {numStep2} occurence: {step2Timer} ms\r\n" +
+                      $"Timer Step3 for {numStep3} occurence: {step3Timer} ms\r\nTimer Step4 for {numStep4} occurence: {step4Timer} ms");
             
             int[] agentsTasks = new int[height];
             for (int y = 0; y < height; y++)
@@ -479,13 +554,42 @@ namespace Kaizerwald
             
             int InternalRunStep4()
             {
-                float minValue = InternalFindMinimum();
+                //float minValue = InternalFindMinimum();
+                
+                float minValue = float.MaxValue;
+                for (int i = 0; i < costs.Length; i++)
+                {
+                    (int x, int y) = GetXY(i, width);
+                    //if (rowsCovered[y] || colsCovered[x]) continue;
+                    minValue = rowsCovered[y] || colsCovered[x] ? minValue : min(minValue, costs[i]);
+                }
+                
                 for (int i = 0; i < costs.Length; i++)
                 {
                     (int x, int y) = GetXY(i, width);
                     costs[i] += rowsCovered[y] ? minValue : 0;
                     costs[i] -= !colsCovered[x] ? minValue : 0;
                 }
+                /*
+                int numIteration = costs.Length * 2;
+                float minValue = float.MaxValue;
+                for (int i = 0; i < numIteration; i++)
+                {
+                    //(int x, int y) = GetXY(i%costs.Length, width);
+                    if (i < costs.Length)
+                    {
+                        (int x, int y) = GetXY(i, width);
+                        minValue = rowsCovered[y] || colsCovered[x] ? minValue : Mathf.Min(minValue, costs[i]);
+                    }
+                    else
+                    {
+                        int index = i - costs.Length;
+                        (int x, int y) = GetXY(index, width);
+                        costs[index] += rowsCovered[y] ? minValue : 0;
+                        costs[index] -= !colsCovered[x] ? minValue : 0;
+                    }
+                }
+                */
                 return 2;
             }
         }

@@ -6,6 +6,31 @@ namespace Kaizerwald
 {
     public static class GabiHungarianAlgorithm
     {
+	    /*
+	     private float[,] GetMultiCostMatrix(in FormationData formation)
+        {
+            float3[] destinations = formation.GetUnitsPositionRelativeToRegiment(RegimentBlackboard.Destination);
+            float[,] costMatrix = new float[formation.NumUnitsAlive, formation.NumUnitsAlive];
+            
+            StringBuilder assigment = new StringBuilder();
+            for (int y = 0; y < formation.NumUnitsAlive; y++)
+            {
+                assigment.Append($"Unit index = {y}: ");
+                for (int x = 0; x < formation.NumUnitsAlive; x++)
+                {
+                    int index = GetIndex(x, y, formation.NumUnitsAlive);
+                    float3 unitPosition = RegimentAttach.Units[y].transform.position;
+                    float distancePoint = distance(unitPosition, destinations[x]) + distance(unitPosition, RegimentBlackboard.Destination);
+                    costMatrix[y,x] = distancePoint;
+                    assigment.Append($"{x} = {distancePoint} ");
+                    //costMatrix[y,x] = lengthsq(unitPosition - destinations[x]);
+                }
+                assigment.Append("\r\n");
+            }
+            Debug.Log($"CostMatrix: \r\n{assigment}");
+            return costMatrix;
+        }
+	     */
         public static int[] FindAssignments(float[,] _costMatrix)
 		{
 			int length = _costMatrix.GetLength(0);

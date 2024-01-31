@@ -292,11 +292,10 @@ namespace Kaizerwald
             
             public void Execute()
             {
-                
-                
                 int step = 1;
                 while (step != -1)// <-- THIS WHILE is ne one crashing
                 {
+                    /*
                     step = step switch
                     {
                         1 => RunStep1(),
@@ -305,6 +304,24 @@ namespace Kaizerwald
                         4 => RunStep4(),
                         _ => step
                     };
+                    */
+                    switch (step)
+                    {
+                        case 1:
+                            step = RunStep1();
+                            break;
+                        case 2:
+                            step = RunStep2();
+                            break;
+                        case 3:
+                            step = RunStep3();
+                            break;
+                        case 4:
+                            step = RunStep4();
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
                 for (int i = 0; i < Costs.Length; i++)
@@ -315,22 +332,9 @@ namespace Kaizerwald
                     AgentsTasks[y] = x;
                     i += Width - x - 1; // -1 car i++
                 }
-                /*
-                for (int y = 0; y < Width; y++)
-                {
-                    for (int x = 0; x < Width; x++)
-                    {
-                        int index = y * Width + x;
-                        if (Masks[index] == 1)
-                        {
-                            AgentsTasks[y] = x;
-                            break; 
-                        }
-                    }
-                }
-                */
             }
             
+            //TODO Check if Mathf.Approximately is still bugged for burst!
             private bool Approximately(float a, float b)
             {
                 return abs(a - b) < EPSILON;
@@ -388,7 +392,7 @@ namespace Kaizerwald
                 }
             }
             
-            //EXPENSIVE
+            //CHEAP!
             private int RunStep3()
             {
                 int pathIndex = 0;
@@ -407,6 +411,7 @@ namespace Kaizerwald
                 return 1;
             }
             
+            //Expensive!
             private int RunStep4()
             {
                 float minValue = float.MaxValue;
